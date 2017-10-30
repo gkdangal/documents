@@ -1,0 +1,172 @@
+Red Hat Satellite Architecture Slides
+==============================
+Module Topics
+
+    Red Hat Satellite Design Center
+
+    Macro Trends Driving New Solutions
+
+    What is Satellite 6?
+
+    Red Hat Satellite 5 Versus 6
+
+    What Comes in the Box?
+
+    Lifecycle Management
+
+    Modular Content View Deployment
+
+    Provisioning
+
+    Discovery
+
+    Subscription Management
+
+    Interfaces (GUI, CLI, API)
+
+    Transitioning to Satellite 6
+
+    Satellite 6 Releases to Date
+
+    What is New in Satellite 6.1?
+-----------------------------------------------
+Red Hat Satellite Design Center
+
+    Tackles the most daunting tasks in Linux system management
+
+    10 years of experience with:
+
+        Managing and optimizing builds for Red Hat and custom content
+
+        Exercising the deployment lifecycle for applications and the operating system
+
+        Provisioning, configuring, and updating bare-metal, virtual, and cloud infrastructures
+-------------------------------------------------------
+Macro Trends Driving New Solutions
+
+    Datacenters are rapidly trending towards hyperscale
+
+    Hybrid clouds are making legacy approaches obsolete
+
+    DevOps models mandate agile deployment and configuration of application stacks
+
+    Complexity is increasing
+
+        Governance, security, and cost control remain important
+
+    Innovation has outpaced commercial solutions
+
+        Adds risk and complexity for IT
+-----------------------------------
+What is Satellite 6?
+
+    New modern design, cutting-edge open source software
+
+    Designed for software lifecycle (SLC) management
+
+    Bare-metal, virtual machine, and cloud deployment
+
+    Key components built on mature open source projects
+
+=> puppet for configuration management
+=> foreman for provisioning
+=> pulp for repository management
+=> Content/Lifecycle management
+=> katello for conent and life cycle management
+=> Candlepin for Subscription manage mant
+----------------------------------------------
+
+-------------------------------------------------------
+Red Hat Satellite 5 
+    Provision systems
+
+    Configuration management
+
+    Automated software distribution
+
+    Lifecycle management <1>
+
+    Drift reporting
+
+Red Hat Satellite 5
+____________________
+    Provision to bare metal, private, and public clouds
+
+    Declarative configuration management
+
+    Automated software distribution
+
+    Lifecycle management
+
+    Drift remediation
+
+    Simplified content management
+
+    Federated services and management
+
+    Red Hat subscription management
+
+    Localization 
+------------------------------------------------------
+What Comes in the Box?
+Red Hat Satellite Server
+
+    Multi-tenant
+
+    On-premise repository management
+
+    User and group role-based access control (RBAC) with external directories
+
+    Powerful graphical user interface (GUI), command-line interface (CLI), and application programming interfaces (API)
+
+    Advanced subscription management
+---------------------------------------------
+What Else Comes in the Box?
+Red Hat Satellite Capsule Server
+
+    Federated services
+
+    Automated provisioning
+
+    Discovery of new physical and virtual machines
+
+    Everything except the user interface (UI is part of Satellite Server)
+--------------------------------------
+Subscription Management
+
+    Subscription accounting (including virtualized)
+
+    End-to-end subscription consumption visibility
+
+    Built-in reporting engine
+--------------------------------------
+GUI, API, CLI
+
+    Modern architecture
+
+    API-first
+
+    Enables advanced integration
+---------------------------------------
+What is New in Satellite 6.1?
+
+    OpenSCAP
+
+    Customer Portal ISO downloads
+
+    Enhanced subscription reporting
+
+    Errata management
+
+    Capsule communication enhancements
+
+    Discovery policy engine
+
+    Advanced networking support
+
+    Docker image management
+---------------------------------
+
+
+
+

@@ -1,0 +1,61 @@
+OK- now that we’ve covered the basics, it’s time to actually automate with Ansible.
+
+There are three ways to run Ansible: by directly calling a module from the command line, calling a Playbook from the command line, or by using Ansible Tower.
+
+First, we’ll look at how to run ad-hoc commands. We can run raw commands on target systems, or call modules directly. Let’s see what this looks like…
+
+(from quickstart) ansible web –a /bin/date
+
+From our control node, we’ll just execute a simple remote command.
+
+ansible web –m ping
+
+Now, let’s call a module. This one is really simple- it just ensures that the system is up and that Ansible can access it for further automation.
+
+Good news! My systems are all alive and ready to be automated.
+
+ansible web –m yum –a “name=openssl state=latest”
+
+You can also do more complex things-- like ensure a package is updated.
+
+Running one-off tasks across a number of systems is cool, but in order to do more complex things, we need to use a Playbook. Let’s look at what it takes to run one of these.
+
+(from quickstart) ansible-playbook my-playbook.yml
+
+From our control node, we’ll call our sample playbook.
+
+Let’s talk about the output when we run this. We get statuses of each of the systems that Ansible automated.
+
+Again, the tasks are executed in order, and the output will change depending on what actually happens-- for example. if the state of the target machine is changed.
+
+ansible-playbook my-playbook.yml
+
+Now let’s see what happens if we run the same Playbook again.
+
+Note that in this case, Ansible reported that everything was “ok”-- this means that no state changes were made, and the target systems were already in the desired state.
+
+echo >> files/httpd.j2 ansible-playbook my-playbook.yml
+
+However, if we make even the slightest change to the config file and re-run the playbook, we’ll see that the file is updated, and apache is restarted.
+
+Ansible also has the concept of a check mode, or dry-run.
+
+It’s a way of validating the existing running state of your system.
+
+Not all of the modules support check mode, but a good number of them do, and this is a powerful way to validate changes you want to make before you actually change the end state of target systems.
+
+(from quickstart) ansible web –C –m yum –a “name=kernel state=latest”
+
+From our control node, we’ll check to see if our webservers all have the latest kernel.
+
+ansible-playbook –C my-playbook.yml
+
+We can also run playbooks in a check mode.
+
+ansible-playbook -C no-checkmode.yml
+
+If there’s a module that doesn’t support check mode-- such as the command module-- then that task will be skipped.
+
+echo >> files/httpd.j2 ansible-playbook –C my-playbook.yml
+
+If we change our template file again, and re-run the Playbook in check mode, you’ll see what Ansible would do, but leaves the end state of the systems unchanged. Powerful stuff.

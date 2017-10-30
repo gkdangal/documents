@@ -1,0 +1,13 @@
+Table of Contents
+
+    Demonstrate OpenShift Pipelines Integration Lab
+    1. Prepare for Demonstration
+        1.1. Install Command Line Tools
+        1.2. Create Projects for Demonstration
+        1.3. Deploy the CICD Environment
+        1.4. Deploy Mock Applications
+        1.5. Create Initial Build Config Pipeline
+        1.6. Test the New Pipeline
+    2. Demonstrate OpenShift Pipelines Integration
+    3. Additional Demonstrations
+

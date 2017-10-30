@@ -1,0 +1,255 @@
+Enhancing Bash Shell Scripts With Conditionals and Control Structures Lab
+
+In this lab, you create a Bash shell script to automate the process of creating Apache virtual hosts.
+
+Your company provides web hosting service to customers, and you are tasked with writing a Bash shell script called /usr/local/sbin/mkvhost to automate the many steps involved in setting up an Apache name-based virtual host for your customers. You plan to use the script for virtual host creation on all servers going forward, so it must also accommodate the one-time tasks that are executed the first time a new server is configured for name-based virtual hosting.
+
+The script needs to take two arguments:
+
+    The fully qualified domain name of the new virtual host
+
+    A number between 1 and 3, which represents the support tier that the customer purchased. The support tier determines the support email address, which are set with the Apache ServerAdmin directive for the virtual host.
+
+The script needs to create a configuration file under /etc/httpd/conf.vhosts.d with the name <VIRTUALHOSTNAME>.conf for each virtual host. It also needs to create a document root directory for the virtual host at /srv/<VIRTUALHOSTNAME>/www. Prior to creating the virtual host configuration file and document root directory, the script must confirm that they do not already exist to avoid a potential conflict.
+
+    Reset server1.example.com.
+
+    Log in to server1.example.com and become root with sudo -i.
+
+    Install the httpd package, then enable and start httpd.
+
+        Install the httpd package with yum.
+
+        [root@server1 ~]# yum install -y httpd
+
+        Enable and start httpd.
+
+        [root@server1 ~]# systemctl enable httpd
+        ln -s '/usr/lib/systemd/system/httpd.service' '/etc/systemd/system/multi-user.target.wants/httpd.service'
+        [root@server1 ~]# systemctl start httpd
+
+    Begin writing your script. Store the first and second argument of the script in the VHOSTNAME and TIER variables, respectively. Set the following variables:
+    Variable	Value
+
+    HTTPDCONF
+    	
+
+    /etc/httpd/conf/httpd.conf
+
+    VHOSTCONFDIR
+    	
+
+    /etc/httpd/conf.vhosts.d
+
+    DEFVHOSTCONFFILE
+    	
+
+    $VHOSTCONFDIR/00-default-vhost.conf
+
+    VHOSTCONFFILE
+    	
+
+    $VHOSTCONFDIR/$VHOSTNAME.conf
+
+    WWWROOT
+    	
+
+    /srv
+
+    DEFVHOSTDOCROOT
+    	
+
+    $WWWROOT/default/www
+
+    VHOSTDOCROOT
+    	
+
+    $WWWROOT/$VHOSTNAME/www
+
+        Create the new script file with a text editor.
+
+        [root@server1 ~]# vim /usr/local/sbin/mkvhost
+
+        Specify the interpreter program for the script.
+
+        #!/bin/bash
+
+        Set the variables for the arguments.
+
+        # Variables
+        VHOSTNAME=$1
+        TIER=$2
+
+        Set the other variables.
+
+        HTTPDCONF=/etc/httpd/conf/httpd.conf
+        VHOSTCONFDIR=/etc/httpd/conf.vhosts.d
+        DEFVHOSTCONFFILE=$VHOSTCONFDIR/00-default-vhost.conf
+        VHOSTCONFFILE=$VHOSTCONFDIR/$VHOSTNAME.conf
+        WWWROOT=/srv
+        DEFVHOSTDOCROOT=$WWWROOT/default/www
+        VHOSTDOCROOT=$WWWROOT/$VHOSTNAME/www
+
+    Check the argument values in the VHOSTNAME and TIER variables.
+
+        If either is blank, display the message "Usage: mkvhost VHOSTNAME TIER" and exit with a status of 1.
+
+        If the arguments are passed correctly, then use a case statement to set a VHOSTADMIN variable to the proper support email address, based on the value of $TIER. The case statement uses the $TIER values of 1, 2, and 3 to set VHOSTADMIN to the corresponding support email address.
+
+        If any other $TIER value is encountered, the case statement should display the message "Invalid tier specified." and exit with a status of 1.
+
+        TIER
+        	
+
+        $VHOSTADMIN
+
+        1
+        	
+
+        basic_support@example.com
+
+        2
+        	
+
+        business_support@example.com
+
+        3
+        	
+
+        enterprise_support@example.com
+
+            Create the if/then/else/fi statement. Use an OR conditional to check whether either of the arguments is blank and, if so, display the usage message and exit with a status of 1.
+
+            # Check arguments
+            if [ "$VHOSTNAME"  = '' ] || [ "$TIER" = '' ]; then
+                    echo "Usage: $0 VHOSTNAME TIER"
+                    exit 1
+            else
+
+            Create the case statement.
+
+            # Set support email address
+                    case $TIER in
+                            1)      VHOSTADMIN='basic_support@example.com'
+                                    ;;
+                            2)      VHOSTADMIN='business_support@example.com'
+                                    ;;
+                            3)      VHOSTADMIN='enterprise_support@example.com'
+                                    ;;
+                            *)      echo "Invalid tier specified."
+                                    exit 1
+                                    ;;
+                    esac
+
+            Close the if statement.
+
+            fi
+
+    Check to see if the $VHOSTCONFDIR directory is nonexistent. If so, create the directory. Check the exit status of the directory creation and display the error message "ERROR: Failed creating $VHOSTCONFDIR" if the directory creation failed.
+
+    # Create conf directory one time if non-existent
+    if [ ! -d $VHOSTCONFDIR ]; then
+            mkdir $VHOSTCONFDIR
+
+            if [ $? -ne 0 ]; then
+                    echo "ERROR: Failed creating $VHOSTCONFDIR."
+                    exit 1 # exit 1
+            fi
+    fi
+
+    For Apache to be aware of the $VHOSTCONFDIR directory, you need an include statement in $HTTPDCONF. Check to see if the following entry exists in the configuration file. If not, make a backup of the file to $HTTPDCONF.orig and then append the entry to the end of the configuration file. Check the exit status of the file modification and display the error message "ERROR: Failed adding include directive" if it failed.
+
+    # Add include one time if missing
+    grep -q '^IncludeOptional conf\.vhosts\.d/\*\.conf$' $HTTPDCONF
+
+    if [ $? -ne 0 ]; then
+            # Backup before modifying
+            cp -a $HTTPDCONF $HTTPDCONF.orig
+
+            echo "IncludeOptional conf.vhosts.d/*.conf" >> $HTTPDCONF
+
+            if [ $? -ne 0 ]; then
+                    echo "ERROR: Failed adding include directive."
+                    exit 1
+            fi
+    fi
+
+    Check to see if a default virtual host already exists and, if not, create it.
+
+        Verify if the default virtual host configuration file already exists and, if not, create and populate it with the following statement:
+
+        # Check for default virtual host
+        if [ ! -f $DEFVHOSTCONFFILE ]; then
+                cat <<DEFCONFEOF > $DEFVHOSTCONFFILE
+        <VirtualHost _default_:80>
+          DocumentRoot $DEFVHOSTDOCROOT
+          CustomLog "logs/default-vhost.log" combined
+        </VirtualHost>
+
+        <Directory $DEFVHOSTDOCROOT>
+          Require all granted
+        </Directory>
+        DEFCONFEOF
+        fi
+
+        Verify if the default virtual host document root directory already exists and, if not, create it. Also set up the SELinux policy for the document root and apply it.
+
+        if [ ! -d $DEFVHOSTDOCROOT ]; then
+                semanage fcontext -a -t httpd_sys_content_t '/srv(/.*)?'
+                mkdir -p $DEFVHOSTDOCROOT
+                restorecon -Rv /srv/
+        fi
+
+    Check to see if the virtual host’s configuration file already exists and, if so, display the error message "ERROR: $VHOSTCONFFILE already exists." and exit with a status of 1. Check to see if the virtual host’s document root directory already exists and, if so, display the error message "ERROR: $VHOSTDOCROOT already exists." and exit with a status of 1. If no errors are encountered with the previous two checks, continue with the creation of the virtual host configuration file, $VHOSTCONFFILE, and document root directory, $VHOSTDOCROOT. Populate the virtual host configuration file with the following statement:
+
+    # Check for virtual host conflict
+    if [ -f $VHOSTCONFFILE ]; then
+            echo "ERROR: $VHOSTCONFFILE already exists."
+            exit 1
+    elif [ -d $VHOSTDOCROOT ]; then
+            echo "ERROR: $VHOSTDOCROOT already exists."
+            exit 1
+    else
+            cat <<CONFEOF > $VHOSTCONFFILE
+    <Directory $VHOSTDOCROOT>
+      Require all granted
+      AllowOverride None
+    </Directory>
+
+    <VirtualHost *:80>
+      DocumentRoot $VHOSTDOCROOT
+      ServerName $VHOSTNAME
+      ServerAdmin $VHOSTADMIN
+      ErrorLog "logs/${VHOSTNAME}_error_log"
+      CustomLog "logs/${VHOSTNAME}_access_log" common
+    </VirtualHost>
+    CONFEOF
+
+            mkdir -p $VHOSTDOCROOT
+            restorecon -Rv $WWWROOT
+    fi
+
+    Verify the syntax of the configuration file with the command apachectl configtest. If there are no errors, then reload httpd.service. Otherwise, display the error message "ERROR: Configuration error." and exit with a status of 1.
+
+    # Check config and reload
+    apachectl configtest &> /dev/null
+
+    if [ $? -eq 0 ]; then
+            systemctl reload httpd &> /dev/null
+    else
+            echo "ERROR: Config error."
+            exit 1
+    fi
+
+    Save and execute the script.
+
+        Make the script executable.
+
+        [root@server1 ~]# chmod u+x /usr/local/sbin/mkvhost
+
+        Execute the script.
+
+        [root@server1 ~]# /usr/local/sbin/mkvhost www1.example.com 3
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT

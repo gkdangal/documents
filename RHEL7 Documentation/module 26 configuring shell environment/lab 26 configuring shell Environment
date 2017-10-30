@@ -1,0 +1,139 @@
+Configuring the Shell Environment Labs
+1. Work With Login and Non-Login Shells
+
+In this lab, you apply changes to the scripts used to establish the initial shell environment for log in and non-login shells.
+
+    Reset your server1.example.com system. After the reset completes, log in as the student user.
+
+    Change the student user’s PS1 environment variable to [\u@\h \t \w]$.
+
+        Since this is an environment variable, and it should affect only student, edit ~/.bash_profile.
+
+        [student@server1 ~]$ vi ~/.bash_profile
+
+        Add an entry for the PS1 variable, setting it to [\u@\h \t \w]$.
+
+         ...
+        # User specific environment and startup programs
+
+        PATH=$PATH:$HOME/.local/bin:$HOME/bin
+        PS1='[\u@\h \t \w]$ '
+
+        export PATH PS1
+
+    Set aliases for the student user so that when the rm, cp, or mv commands are used, they are automatically called with the -i option.
+
+        Edit the student's ~/.bashrc configuration file.
+
+        [student@server1 ~]$ vi ~/.bashrc
+
+        Add aliases for the commands into the file.
+
+         ...
+        # User specific aliases and functions
+
+        alias rm='rm -i'
+        alias cp='cp -i'
+        alias mv='mv -i'
+
+    You decided that users on server1.example.com need an application to help them divine the future. Add a function called 8ball, available to all users, that selects a random number between zero and three. Based on the random value, the function should present a message to help them make a decision about the future.
+
+        Edit the /etc/bashrc file as root.
+
+        [student@server1 ~]$ su
+        [root@server1 ~]# vi /etc/bashrc
+
+        At the bottom of the file, add the 8ball function.
+
+         ...
+        8ball () {
+          echo "Shaking ..."
+          echo
+          sleep 3
+          value="$[ $RANDOM % 3 ]"
+          case $value in
+            0) echo "All signs point to yes." ;;
+            1) echo "The answer is no." ;;
+            2) echo "Ask again later." ;;
+            3) echo "Outlook hazy." ;;
+          esac
+          echo
+        }
+
+    Use an ssh session to create a login shell to verify that the environment changes are effective.
+
+    [root@server1 ~]# exit
+    [student@server1 ~]$ ssh student@localhost
+    student@localhost's password: r3dh@t1!
+    [student@server1 00:06:57 ~]$ touch file1
+    [student@server1 00:06:57 ~]$ rm file1
+    rm: remove regular empty file ‘file1’? y
+    [student@server1 00:06:57 ~]$ 8ball
+    The answer is no.
+
+2. Configure the Shell Environment
+
+In this lab, you make configuration changes to the shell environment for individual users, and all users, on the machine.
+
+Your international co-workers complain that when they log in to the console of server1.example.com, the language on the machine is set incorrectly. You must configure the machine such that when a user logs in with the terminal type of linux, the LANG variable is set to en_US.
+
+The student user requires an additional command in his environment: diskcheck, which runs iostat -d and df -hP --type xfs.
+
+The student user also needs an environment variable JAVA_HOME set to /usr/lib/jvm.
+
+    Reset your server1.example.com system.
+
+    Detect the terminal type of a shell. If it is xterm, make sure the language is set to en_US.
+
+        Edit the /etc/profile file. At the bottom of the file, add a bit of script which checks the TERM variable to see if it is set to xterm. If it is, assign the LANG variable to en_US and export the LANG setting.
+
+        [root@server1 ~]$ vi /etc/profile
+
+        if [ "$TERM" == "xterm" ]
+        then
+          LANG=en_US
+          export LANG
+        fi
+
+        To verify the setting works, use SSH to connect to localhost as student. Check the value of the LANG variable.
+
+        [root@server1 ~]# ssh student@localhost
+        [student@server1 ~]$ echo $LANG
+        en_US
+
+    Add a function to the student user’s environment. The function is called diskcheck, and when called, it displays the output of the iostat -d and df -hP --type xfs commands.
+
+        Edit the student user’s ~/.bashrc and add the function definition. Add the new function at the end of the file.
+
+        [student@server1 ~]$ vi ~/.bashrc
+
+        # User specific aliases and functions
+        diskcheck() {
+          iostat -d
+          echo
+          df -hP --type xfs
+        }
+
+        Source the ~/.bashrc and verify the function.
+
+        [student@server1 ~]$ . ~/.bashrc
+        [student@server1 ~]$ diskcheck
+
+    Set an environment variable, JAVA_HOME, to /usr/lib/jvm for the student user.
+
+        Edit the student user’s .bash_profile, and at the bottom of the file, add an entry for JAVA_HOME. Set JAVA_HOME to /usr/lib/jvm. Use the export command to tag the variable to be available for all sub-shells.
+
+        [student@server1 ~]$ vi ~/.bash_profile
+
+        JAVA_HOME=/usr/lib/jvm
+        export JAVA_HOME
+
+        Source the .bash_profile to read the changes into the environment.
+
+        [student@server1 ~]$ . ~/.bash_profile
+
+        Ensure the variable is available in sub-shells.
+
+        [student@server1 ~]$ bash
+        [student@server1 ~]$ echo $JAVA_HOME
+        /usr/lib/jvm

@@ -1,0 +1,645 @@
+Module Topics
+
+    Validating Network Configuration
+
+    Configuring Networking
+
+    Network Configuration Files
+
+    Hostnames and Name Resolution
+----------------------------------------------------------
+Validating Network Configuration
+Displaying IP Addresses
+
+    To show device and address information, use /sbin/ip
+
+    [student@desktop1 ~]$ ip addr show eth0
+    2:eth0: <BROADCAST,MULTICAST, <1> UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+     <2> link/ether 52:4:00:00:00:0a brd ff:ff:ff:ff:ff:ff
+     <3> inet 192.168.0.1/24 brd <4> 192.168.0.255 scope global eth0
+           valid_lft forever preferred_lft forever
+     <5> inet6 fe80:5054:ff:fe00:b/64 scope link
+           valid_lft forever preferred_lft forever
+----------------------------------
+Validating Network Configuration
+Displaying Network Performance Statistics
+
+    To show statistics about network performance, use ip with options
+
+    Received (RX) and transmitted (TX) packets, errors, and dropped counters can identify network issues caused by congestion, low memory, and overruns
+
+    [student@desktop1 ~]$ ip -s link show eth0
+    2:eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:4:00:00:00:0a brd ff:ff:ff:ff:ff:ff
+        RX:bytes  packets  errors  dropped overrun mcast
+        269850     2931     0       0       0       0
+        TX:bytes  packets  errors  dropped carrier collsns
+        300556     3250     0       0       0       0
+----------------------------------------------
+Validating Network Configuration
+Displaying Routing Information
+
+    To show routing information, use /sbin/ip route
+
+    [student@desktop1 ~]$ ip route
+    default via 192.168.0.254 dev eth0  proto static  metric 1024
+    192.168.0.0/24 dev eth0  proto kernel  scope link  src 192.168.0.1
+    10.0.0.0/8 dev eth1  proto kernel  scope link  src 10.0.0.11
+
+    Packets destined for 10.0.0.0/8 go directly through eth1
+
+    Packets destined for 192.168.0.0/24 go directly through eth0
+
+    Other packets go through eth0 to default router at 192.168.0.254
+-------------------------------------------------------------
+Validating Network Configuration
+Testing Connectivity
+
+    To test connectivity, use ping
+
+    ping runs until Ctrl-c unless options limit number of packets sent
+
+    [student@desktop1 ~]$ ping -c3 192.168.0.254
+
+-------------------------------------------------------
+Validating Network Configuration
+Tracing a Network Path
+
+    To trace path to remote host, use traceroute or tracepath
+
+        Both commands trace path with UDP packets
+
+        Many networks block UDP and ICMP traffic
+
+    traceroute has options to trace path with UDP (default), ICMP (-I), or TCP (-T) packets
+
+        traceroute may not be installed
+---------------------------------------
+Validating Network Configuration
+
+    Each line in tracepath output represents router or hop that packet passes between source and destination
+
+    May also include:
+
+        Round-trip timing (RTT)
+
+        Changes in size of maximum transmission unit (MTU)
+
+        Other info, if available
+
+        [student@desktop1 ~]$ tracepath access.redhat.com
+        ...
+         4: 71-32-28-145.rcmt.qwest.net                          48.853ms asymm  5
+         5: dcp-brdr-04.inet.qwest.net                          100.732ms asymm  7
+         6: 206.111.0.153.ptr.us.xo.net                          96.245ms asymm  7
+         7: 207.88.14.162.ptr.us.xo.net                          85.270ms asymm  8
+         8: ae1d0.cir1.atlanta6-ga.us.xo.net                     64.160ms asymm  7
+         9: 216.156.108.98.ptr.us.xo.net                        108.652ms
+        10: bu-ether13.atlngamq46w-bcr00.tbone.rr.com           107.286ms asymm 12
+------------------------------------------
+Validating Network Configuration
+Ports and Services
+
+    TCP services use sockets as communication endpoints
+
+        Endpoints comprise IP address, protocol, and port number
+
+    Services typically listen on standard ports; clients on random ports
+
+    Well-known names for standard ports are listed in /etc/services
+
+    To display socket statistics, use ss
+
+        Similar to netstat, which may not be installed
+------------------------------------
+Validating Network Configuration
+Options for ss and netstat Commands
+
+    This table shows options available for ss and netstat
+
+Option
+	
+
+Purpose
+
+-n
+	
+
+Show numbers instead of names for interfaces and ports
+
+-t
+	
+
+Show TCP sockets
+
+-u
+	
+
+Show UDP sockets
+
+-l
+	
+
+Show only listening sockets
+
+-a
+	
+
+Show all sockets (listening and established)
+
+-p
+	
+
+Show processes using the sockets
+	
+
+For more info, see:
+
+    ip-link(8), ip-address(8), ip-route(8), ip(8), ping(8), tracepath(8), traceroute(8), ss(8), and netstat(8) man pages
+
+    Red Hat Enterprise Linux Networking Guide at http://docs.redhat.com/
+
+------------------------------------------------------------
+Configuring Networking
+NetworkManager
+
+    NetworkManager is a daemon that monitors and manages network settings
+
+    Includes GNOME notification area for status information
+
+    Communicates via command line and graphical tools
+
+    Configuration files saved in /etc/sysconfig/network-scripts
+-------------------------------------------------
+Configuring Networking
+Connections
+
+    A device is a network interface
+
+    A connection is a device configuration, which consists of settings
+
+    Device can have multiple connections, but only one can be active
+
+        Example: System normally connects to network with settings provided by DHCP
+
+        System needs to connect to lab that uses static networking
+
+        Can store configurations as separate connections
+---------------------------------------
+Configuring Networking
+Viewing Network Information
+
+    To display list of all connections, use nmcli con show
+
+    To list only active connections, add --active
+
+    [root@desktop1 ~]# nmcli con show
+    NAME            UUID                                  TYPE             DEVICE
+    static-eth0  f3e8dd32-3c9d-48f6-9066-551e5b6e612d  802-3-ethernet   eth0
+    System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet   --
+    guest        f601ca8a-6647-4188-a431-dab48cc63bf4  802-11-wireless  wlp3s0
+    [root@desktop1 ~]# nmcli con show --active
+    NAME            UUID                                  TYPE             DEVICE
+    static-eth0  f3e8dd32-3c9d-48f6-9066-551e5b6e612d  802-3-ethernet   eth0
+    guest        f601ca8a-6647-4188-a431-dab48cc63bf4  802-11-wireless  wlp3s0
+-------------------------------------------------------------
+Configuring Networking
+Viewing Network Details
+
+    To see connection details, specify ID (name)
+
+        Lowercase settings are connection configuration
+
+        Uppercase settings are active data
+
+        [root@desktop1 ~]# nmcli con show "static-eth0"
+        ...
+        ipv4.method:                           manual
+        ipv4.dns:                              192.168.0.254, 8.8.8.8
+        ipv4.dns-search:
+        ipv4.addresses:                        { ip = 192.168.0.10/24, gw = 192.168.0.254 }
+        ipv4.routes:
+        ipv4.ignore-auto-routes:               no
+        ipv4.ignore-auto-dns:                  no
+        ipv4.dhcp-client-id:                   --
+        ipv4.dhcp-send-hostname:               yes
+        ipv4.dhcp-hostname:                    --
+        ipv4.never-default:                    no
+        ipv4.may-fail:                         yes
+        ipv6.method:                           auto
+        ...
+
+        	For more info on setting and property names, see the nm-settings(5) man page.
+-----------------------------------
+Configuring Networking
+Viewing Device Status
+
+    To show device status and details, use nmcli dev status
+
+    [root@desktop1 ~]# nmcli dev status
+    DEVICE  TYPE      STATE      CONNECTION
+    eth0    ethernet  connected  static-eth0
+    wlp3s0  wifi      connected  guest
+    lo      loopback  unmanaged  --
+    [root@desktop1 ~]# nmcli dev show eth0
+    GENERAL.DEVICE:                        eth0
+    GENERAL.TYPE:                          ethernet
+    GENERAL.HWADDR:                        52:54:00:00:00:0A
+    GENERAL.MTU:                           1500
+    GENERAL.STATE:                         100 (connected)
+    GENERAL.CONNECTION:                    static-eth0
+    GENERAL.CON-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/1
+    WIRED-PROPERTIES.CARRIER:              on
+    IP4.ADDRESS[1]:                        ip = 192.168.0.10/24, gw = 192.168.0.254
+    IP4.DNS[1]:                            192.168.0.254
+    IP6.ADDRESS[1]:                        ip = fe80::5054:ff:fe00:b/64, gw = ::
+------------------------------------------------------
+Configuring Networking
+Creating Network Connections With nmcli
+
+    Order of arguments is important
+
+        Common arguments, including type and interface
+
+        Type-specific arguments
+
+        IP address, prefix, and gateway information
+
+    Can specify multiple IP addresses for single device
+
+    After creating connection, define additional settings as modifications
+---------------------------------------------------------------
+Configuring Networking
+nmcli Syntax: Creating Connections
+
+    Define new connection named "default" that autoconnects as Ethernet connection on eth0 using DHCP
+
+    [root@desktop1 ~]# nmcli con add con-name "default" type ethernet ifname eth0
+
+    Create new connection named "static" and specify IP address and gateway (do not autoconnect)
+
+    [root@desktop1 ~]# nmcli con add con-name "static" ifname eth0 autoconnect no type ethernet ip4 192.168.0.10/24 gw4 192.168.0.254
+
+    Change autoconnect with DHCP at boot to static connection
+
+    [root@desktop1 ~]# nmcli con up "static"
+
+    Change back to DHCP connection
+
+    [root@desktop1 ~]# nmcli con up "default"
+
+    	If the static connection is lost, the default connection attempts to autoconnect. To administratively disable an interface and prevent autoconnection, use nmcli dev disconnect DEVICENAME.
+------------------------------------
+Configuring Networking
+nmcli Syntax: Creating Connections
+
+    Define new connection named "default" that autoconnects as Ethernet connection on eth0 using DHCP
+
+    [root@desktop1 ~]# nmcli con add con-name "default" type ethernet ifname eth0
+
+    Create new connection named "static" and specify IP address and gateway (do not autoconnect)
+
+    [root@desktop1 ~]# nmcli con add con-name "static" ifname eth0 autoconnect no type ethernet ip4 192.168.0.10/24 gw4 192.168.0.254
+
+    Change autoconnect with DHCP at boot to static connection
+
+    [root@desktop1 ~]# nmcli con up "static"
+
+    Change back to DHCP connection
+
+    [root@desktop1 ~]# nmcli con up "default"
+
+    	If the static connection is lost, the default connection attempts to autoconnect. To administratively disable an interface and prevent autoconnection, use nmcli dev disconnect DEVICENAME.
+-----------------------------------------------------------
+Configuring Networking
+Connection Type Options
+
+    Options vary according to type of connection
+
+    Ethernet connection may optionally specify MAC address
+
+    Wifi connection must specify SSID and may specify other options
+
+    Other connection types include bridge, bond, team, VPN, and VLAN
+
+    To view all options, use nmcli con add help
+
+    [root@desktop1 ~]# nmcli con add help
+    Usage:nmcli connection add { ARGUMENTS | help }
+
+    ARGUMENTS : COMMON_OPTIONS TYPE_SPECIFIC_OPTIONS IP_OPTIONS
+
+      COMMON_OPTIONS:
+                      type <type>
+                      ifname <interface name> | "*"
+                      [con-name <connection name>
+                      [autoconnect yes|no]
+
+                      [save yes|no]
+
+      TYPE_SPECIFIC_OPTIONS:
+        ethernet:    [mac <MAC address>
+                      [cloned-mac <cloned MAC address>
+                      [mtu <MTU>
+    ...
+-------------------------------------------------------
+Configuring Networking
+Modifying Network Interfaces
+
+    To modify connection, use nmcli con mod with arguments
+
+        Arguments are sets of key/value pairs
+
+        Key includes setting and property names
+
+    To see list of current values for connection, use nmcli con show "<ID>"
+
+    [root@desktop1 ~]# nmcli con show "static"
+    connection.id:                         static
+    connection.uuid:                       f3e8dd32-3c9d-48f6-9066-551e5b6e612d
+    connection.interface-name:             eth0
+    connection.type:                       802-3-ethernet
+    connection.autoconnect:                yes
+    connection.timestamp:                  1394905322
+    connection.read-only:                  no
+    ...
+
+    	For more info on setting and property names and usage, see the nm-settings(5) man page.
+----------------------------------------------------
+Configuring Networking
+nmcli Syntax: Modifying Connections
+
+    Turn off autoconnect
+
+    [root@desktop1 ~]# nmcli con mod "static" connection.autoconnect no
+
+    Specify a DNS server
+
+    [root@desktop1 ~]# nmcli con mod "static" ipv4.dns 192.168.0.254
+
+    	Some configuration arguments can have values added or removed.
+
+    Add +/- symbol in front of argument, then add secondary DNS server
+
+    [root@desktop1 ~]# nmcli con mod "static" +ipv4.dns 8.8.8.8
+------------------------------------------------------------
+Configuring Networking
+
+    Replace static IP address and gateway
+
+    [root@desktop1 ~]# nmcli con mod "static" ipv4.addresses "192.168.0.10/24 192.168.0.254"
+
+    Add secondary IP address without a gateway
+
+    [root@desktop1 ~]# nmcli con mod "static" +ipv4.addresses 10.10.10.10/16
+
+	
+
+nmcli con mod saves the setting to the configuration files. To activate the changes, activate or reactivate the connection:
+
+[root@desktop1 ~]# nmcli con up "static"
+------------------------------------------------
+Configuring Networking
+nmcli Command Summary
+
+    Basic device and connection commands for nmcli
+
+Command
+	
+
+Purpose
+
+nmcli dev status
+	
+
+List all devices
+
+nmcli con show
+	
+
+List all connections
+
+nmcli con up "<ID>"
+	
+
+Activate a connection
+
+nmcli con down "<ID>"
+	
+
+Deactivate connection (connection restarts if autoconnect is yes)
+
+nmcli dev dis <DEV>
+	
+
+Bring down interface and temporarily disable autoconnect
+
+nmcli net off
+	
+
+Disable all managed interfaces
+
+nmcli con add ...
+	
+
+Add new connection
+
+nmcli con mod "<ID>" ...
+	
+
+Modify connection
+
+nmcli con del "<ID>"
+	
+
+Delete connection
+
+    To use graphical interface for nmcli, use `nm-connection-editor
+
+	
+
+For more info on NetworkManager and nmcli, see:
+
+    nmcli(1), nmcli-examples(5), and nm-settings(5) man pages
+
+    Red Hat Enterprise Linux Networking Guide at http://docs.redhat.com/
+
+--------------------------------------------
+Network Configuration Files
+
+    Can configure network by editing interface configuration files
+
+        Files control software interfaces for individual network devices
+
+        Usually named /etc/sysconfig/network-scripts/ifcfg-<name>
+
+            <name> is name of device or connection that file controls
+
+    Variables in file used for static and dynamic configuration
+-----------------------------------------
+Network Configuration Files
+ifcfg File Configuration Options
+
+    Static variables for IP address, prefix, and gateway end in a number
+
+        Allows multiple sets of values to be assigned to interface
+
+        DNS variable specifies lookup order for multiple servers
+
+Static
+	
+
+Dynamic
+	
+
+Either
+
+BOOTPROTO=none
+
+IPADDR0=192.168.0.10
+
+PREFIX0=24
+
+GATEWAY0=192.168.0.254
+
+DEFROUTE=yes
+
+DNS1=192.168.0.254
+	
+
+BOOTPROTO=dhcp
+	
+
+DEVICE=eth0
+
+NAME="System eth0"
+
+ONBOOT=yes
+
+UUID=f3e8dd32-3...
+
+USERCTL=yes
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+---------------------------------------
+Network Configuration Files
+Reloading the ifcfg File
+
+    To make NetworkManager read configuration changes, use nmcli con reload
+
+        Must restart interface for changes to take effect
+
+        [root@server1 ~]# nmcli con reload
+        [root@server1 ~]# nmcli con down "System eth0"
+        [root@server1 ~]# nmcli con up "System eth0"
+
+	
+
+For more info on NetworkManager and nmcli, see:
+
+    nmcli(1) man page
+
+    Red Hat Enterprise Linux Networking Guide at http://docs.redhat.com/
+-------------------------------------
+Hostnames and Name Resolution
+Changing the System Hostname
+
+    To display or temporarily modify fully qualified hostname, use hostname
+
+    [root@desktop1 ~]# hostname
+    ||desktop1.example.com
+
+    Specify static hostname in /etc/hostname
+
+    To modify /etc/hostname, use hostnamectl
+
+        Also use to view status
+
+    If /etc/hostname does not exist, hostname is set by reverse DNS query after IP address is assigned to interface
+-----------------------------------
+Hostnames and Name Resolution
+Configuring Name Resolution
+
+    Stub resolver converts hostnames to IP addresses, or reverse
+
+        Checks contents of /etc/hosts first
+
+        [root@desktop1 ~]# cat /etc/hosts
+        127.0.0.1       localhost localhost.localdomain localhost4 localhost4.localdomain4
+        :1             localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+        192.168.0.254 instructor.example.com
+        192.168.0.254 content.example.com
+
+    To test hostname resolution with /etc/hosts, use getent hosts hostname
+
+    If no entry is found, stub resolver looks for information from DNS nameserver
+----------------------------
+Hostnames and Name Resolution
+Stub Resolver DNS Query
+
+    /etc/resolv.conf file controls how DNS query is done:
+
+        nameserver: IP address of nameserver to query
+
+            Can have up to three nameserver directives
+
+        search: List of domain names to try with short hostname
+
+            Do not set this and domain in same file
+
+            If they are, last instance wins
+
+            [root@desktop1 ~]# cat /etc/resolv.conf
+            # Generated by NetworkManager
+            domain example.com
+            search example.com
+            nameserver 192.168.0.254
+----------------------------------
+Hostnames and Name Resolution
+Updating /etc/resolv.conf
+
+    NetworkManager uses DNS settings in configuration files to update /etc/resolv.conf
+
+    To modify connections, use nmcli
+
+    [root@desktop1 ~]# nmcli con mod ID ipv4.dns IP
+    [root@desktop1 ~]# nmcli con down ID
+    [root@desktop1 ~]# nmcli con up ID
+    [root@desktop1 ~]# cat /etc/sysconfig/network-scripts/ifcfg-ID
+    ...
+    DNS1=8.8.8.8
+-------------------------------------------
+Hostnames and Name Resolution
+
+    Default behavior of nmcli con mod ID ipv4.dns IP is to replace previous DNS settings with the new IP list provided
+
+    To add or remove individual entry, use + or - before ipv4.dns
+
+    [root@desktop1 ~]# nmcli con mod ID +ipv4.dns IP
+
+    To test DNS server connectivity, use HOSTNAME
+
+    [root@desktop1 ~]# host instructor.example.com
+    instructor.example.com has address 192.168.0.254
+    [root@desktop1 ~]# host 192.168.0.254
+    254.0.168.192.in-addr.arpa domain name pointer instructor.example.com.
+-----------------------------------
+Hostnames and Name Resolution
+
+    If DHCP is in use as interfaces are started, /etc/resolv.conf is automatically rewritten
+
+    To prevent this, use nmcli to specify PEERDNS=no in configuration files
+
+    [root@desktop1 ~]# nmcli con mod "System eth0" ipv4.ignore-auto-dns yes
+
+	
+
+For more info, see:
+
+    nmcli(1), hostnamectl(1), hosts(5), getent(1), host(1), and resolv.conf(5) man pages
+
+    Red Hat Enterprise Linux Networking Guide at http://docs.redhat.com/
+---------------------------------------------
+
+
+

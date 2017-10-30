@@ -1,0 +1,7 @@
+Finally, we have Galaxy.
+
+Ansible Galaxy completes our “batteries included” story by giving you access to thousands upon thousands of user-contributed roles, playbooks, and modules.
+
+With the ansible-galaxy command line, you can use roles directly from this repo, but you can also easily download and customize the roles locally before running them in your environment.
+
+The great thing about Galaxy is that no matter what you’re trying to automate, there’s a good chance that someone else has done it, so why not learn from them? It helps you do real work with Ansible that much faster.

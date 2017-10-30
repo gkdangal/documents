@@ -1,0 +1,17 @@
+
+
+In this module, you learn the following:
+
+    Ansible is an agentless configuration management tool built on Python.
+
+    Ansible is installed on the control node and keeps its configuration files there.
+
+    Ansible copies modules from the control node to the managed hosts, where it executes them in the order specified in the playbook.
+
+    Ansible is ideal for deploying applications in parallel on Red Hat Enterprise Linux, JBoss, and OpenShift Enterprise, and it can assist with Red Hat Satellite system management.
+
+    Ansible can finish provisioning application servers post-installation, using the ansible-pull script.
+
+    Ansible can orchestrate zero-downtime rollover application upgrades.
+
+    Native SSH is Ansible’s default connection plug-in, but the Paramiko plug-in provides efficient SSH communications with Red Hat Enterprise Linux 5 systems.

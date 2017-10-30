@@ -1,0 +1,306 @@
+Demonstrate Exploring OpenShift Resources Lab
+Scenario
+
+In the scenario for this demonstration lab, a developer wants to deploy the cakephp-mysql-example application from a Git repository and review the different OpenShift resources created for it.
+1. Demonstrate Authentication to OpenShift Master
+
+    Action: Log in to the OPENTLC shared OpenShift web console using either of these methods:
+
+        Method 1: Go to https://master.na1.openshift.opentlc.com
+
+        Method 2: Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        LocalMachine$ oc login https://master.na1.openshift.opentlc.com --username shacharb-redhat.com
+        Username: shacharb-redhat.com
+        Password: **********
+        Logged into "https://master.na1.openshift.opentlc.com" as "shacharb-redhat.com" using existing credentials.
+
+2. Demonstrate Creating a Project
+
+    Action: Click New Project to create a project for your demonstration:
+    Demo01 New Project Button
+
+        Explain what projects are and how different projects can have different user permissions and quotas attached to them.
+
+    Action: Fill in the Name, Display Name, and Description fields:
+    Explore Demo02 Create Project Details
+    	Make sure you replace unique-id or GUID with a unique identifier (such as your client’s name). Project names must be unique in OpenShift.
+    	
+
+    Two other options for completing this task:
+
+        Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        [sborenst@ip-192-168-20-158 ~]$ oc new-project ${GUID}-exploring-openshift --description="This is the Project for exploring OpenShift UI" --display-name="Exploring OpenShift UI"
+        Now using project "guid-exploring-openshift" on server "https://master.na1.openshift.opentlc.com".
+
+        Run the oc new-project ${GUID}-exploring-openshift command without the description and display name information.
+
+3. Demonstrate Deploying an Application Based on a Template
+
+    Action: After creating your project or after clicking Add to project, enter cakephp in the catalog filter and select CakePHP + MySQL (Ephermal):
+    Explore Demo03 Select Template
+
+        Explain the following aspects of the Application Creation page:
+
+            Point out the Name for this deployment.
+
+            Point out the Memory limits for your PHP application and for the MySQL database container.
+
+            Point out that the Git Repository URL field allows you to define the Git repository that contains the source code for your application.
+            Explore Demo04 App Template Options1
+
+        Explain that there are more settings that you can define as you scroll down the page:
+
+            Point out that you can set different variables in your deployment, such as the database user, passwords, and more, and that these settings are used to deploy the front-end application and the back-end database.
+
+            Point out that you can use Labels to add information to deployment objects and resources that you can then use to group, inspect, scale, or delete them.
+            Explore Demo05 App Template Options2
+
+    Action: When you are done, click Create.
+
+        (Optional) Explain the following features on this screen:
+
+            Point out that on the left you can see an example of how to log in to OpenShift using the OpenShift client utility (oc).
+
+            Point out that on the right you can easily access the webhook trigger to create a new build.
+
+            Point out that you can view the deployment parameters values by clicking Show parameter values:
+            Explore Demo06 App Create1 a
+
+        (Optional) Explain (if you clicked the link) that the expanded parameters now visible at the bottom provide another view of all the settings you can use for this application:
+        Explore Demo07 App Create2 a
+
+    Action: When you are done, click Continue to overview at the top.
+
+4. Demonstrate Deployment Overview Page & Grouping
+
+    Action: While your application is being built and deployed, review the Overview page.
+
+        Explain the following aspects:
+
+            Point out that the Route has been created for the application and once it is deployed, you can open the link in a another tab to access the application.
+
+            Point out the Build status and that you can click the link to go to the build page.
+            Explore Demo08 Overview Grouping1
+
+    Action: From the Menu on the left select Applications → Services:
+
+        Point out that Services were created for your front-end pods and your database back end.
+        Explore Demo09 Overview Grouping2
+
+    Action: Click the mysql Service
+    Explore Demo10 Overview Grouping3
+
+        Point out you can see the Route and the Pods
+        Explore Demo10a Overview Grouping4
+
+        Explain the following:
+
+            In addition to seeing the route and the status of the deployment, once the build is complete, the number of replicas can be easily increased or decreased from this panel (or via an API).
+
+            Point out that you can see the current aggregated resource consumption for a group of pod replicas.
+            Explore Demo10b Overview Grouping5
+
+5. Demonstrate Exploring Build Pages
+
+In this section, you look at the information available in the UI about your builds.
+
+    Action: From the menu on the left, select Builds → Builds:
+    Explore Demo11 Builds01
+
+        Explain that the project’s Builds page displays all the builds for the project.
+
+            Point out that you can see the status and completion time for each build in the project.
+
+            Point out that you can easily navigate to the source code repository where the build source is stored.
+
+    Action: Select one of the builds in the list:
+    Explore Demo11 Builds02
+
+        Explain that in the application’s Builds page you can see the following:
+
+            Point out that you can start a new build by clicking Start Build on the top right.
+
+            Point out that you can view the configuration used for this build in the Configuration tab.
+
+    Action: Click build #1:
+    Explore Demo11 Builds03
+
+        Explain that in the individual Builds page you can see details about a specific build.
+
+            Mention that you can click Rebuild to trigger a new build.
+
+            Point out that you can see the status of the build and the reason it was triggered.
+
+            Point out that you can see the configuration for the build, including the base image that was used and the name of the output image.
+            Explore Demo11 Builds04
+
+    Action: When you are done, select the Logs tab.
+
+        Explain that the Logs tab displays the logs for the build, which in this example are minimal.
+
+        Explain that in other examples you may see code dependencies pulled down for the container and other configuration logs.
+
+            Point out that in this example the source code repository is cloned/downloaded to your container.
+
+            Point out that you can see that the completed image is automatically pushed into the integrated registry under your project name.
+            Explore Demo11 Builds05
+
+6. Demonstrate Exploring Deployment Pages
+
+    Action: From the menu on the left, select Applications → Deployments:
+    Explore Demo12 Deployments01
+
+        Explain that the project’s Deployments page displays all of the deployments for the project.
+
+            Point out that you can see the last deployment numbers and click each one to drill down (#1 in this example).
+
+            Point out that you can see the Status and Replica Count for each deployment.
+
+            Point out that you can see the Trigger that started the last deployment.
+            Explore Demo12 Deployments02
+
+    Action: When you are done, click the application deployment link in the list of deployments.
+    Explore Demo12 Deployments02a
+
+        Explain the following features of an individual applications Deployment page:
+
+            Point out that you can start a new deployment by clicking Deploy.
+
+            Point out you can select the individual deployments
+
+    Action: When you are done, click the deployment link in the list of deployments.
+
+        Point out that you can view the configuration used for this deployment, including the template, source, open ports, memory limit, and more.
+
+        You can also see Readiness and Liveness probes that were set.
+
+        Mention that you can add, remove or change probes using the Actions list in the top right.
+
+        Point out that you can add persistent volumes for this application if required.
+
+        You can also add an autoscaler pod for the deployment.
+        Explore Demo12 Deployments03
+
+    Action: When you are done, select the Environment tab.
+
+        Explain that the Environment tab displays the environment variables set for your deployment.
+
+            Point out that the environment variables are used to set different parameters within your containers and pods such as user names, database service name, and more.
+
+            Point out that you can add your own environment variables and address them from your application’s code.
+            Explore Demo12 Deployments04
+
+    Action: When you are done, select the Events tab.
+
+        Explain that in the Events tab you can see different events related to your deployment.
+
+            Point out that the events list offers a useful way to see if something went wrong in a deployment or to track back a chain of events.
+            Explore Demo12 Deployments05
+
+7. Demonstrate Exploring Pods Pages
+
+    Action: From the menu on the left, select Applications → Pods:
+    Explore Demo13 Pods01
+
+        Explain that the project’s Pods page displays all of the pods that are currently running in the project.
+
+            Point out that you can see the container status: Running, Pending, etc.
+
+            Point out that the Containers Ready column shows the true status of the application in the container based on readiness checks.
+            Explore Demo13 Pods02
+
+    Action: When you are done, select your application’s Pod from the list.
+
+        Explain that the individual Pod page displays the following:
+
+            Point out the pod’s status and the OpenShift node hosting it.
+
+            Point out the information displayed in the Template section, including image, build, source, ports, mount points, CPU, and memory usage ranges.
+
+            Point out that you can inspect and change readiness and liveness probes from this page.
+
+            Point out that you can view volumes and secrets used by the pod here as well.
+            Explore Demo13 Pods03
+
+    Action: When you are done, select the Metrics tab.
+
+        Explain that the Metrics tab displays the resources used by your pod:
+
+            Point out available memory (based on the pod’s memory limits) and used memory.
+
+            Point out available CPU (based on the pod’s CPU limits) and used CPU.
+
+            Point out that if you scroll down, you can also see the network stats for the pod.
+            Explore Demo13 Pods04
+
+    Action: When you are done, select the Logs tab.
+
+        Explain that the Logs tab displays the log for the pod:
+
+            Point out the pod’s messages that are displayed here and note that you can follow the log as it updates.
+
+            Mention that if you click View archive, you are seamlessly connected to the Kibana aggregated logging facility where you can view logs for all pods—past and present—running in your project. (This is discussed in later demonstrations).
+            Explore Demo13 Pods05
+
+    Action: When you are done, select the Terminal tab.
+
+        Explain that the Terminal tab allows you to use a terminal inside any of the containers in the pod.
+
+            Point out that you can run commands within the container for debugging and testing.
+            Explore Demo13 Pods06
+
+    Action: When you are done, select the Events tab.
+
+        Explain that the Events tab displays events related to the pod.
+
+            Point out that you can use this list to see if something went wrong in the pod deployment or to track back a chain of events.
+            Explore Demo13 Pods07
+
+8. Demonstrate Exploring Services & Routes Pages
+
+    Action: From the menu on the left, select Applications → Services:
+    Explore Demo14 Services and Routes01
+
+        Explain that the project’s Services page displays all of the services that currently exist in the project:
+
+            Point out that Cluster IP is the permanent IP address that the service uses to represent its pods.
+
+            Point out the Ports that the service is listening on.
+
+            Point out that the Selector describes the labels that the pods must have to be regarded as part of the service.
+            Explore Demo14 Services and Routes02
+
+    Action: When you are done, select your application’s pod from the list.
+
+    Action: From the menu on the left, select Applications → Routes:
+    Explore Demo14 Services and Routes03
+
+        Explain that the project’s Routes page displays all of the routes that currently exist in the project.
+
+            Point out the list of routes and the services they represent.
+            Explore Demo14 Services and Routes04
+
+9. Cleanup
+
+If you are not going do do any additional demonstrations go back to the OpenShift Homepage and delete your project.
+10. Additional Demonstrations
+
+You can do the following optional demonstrations:
+
+    Show adding storage to a container.
+
+    Show metrics and logging for a container.
+-------------------------------------------
+4100-exploring-openshift
+Exploring Openshift GUI
+This is the project for exploring Openshift GUI 
+-----------------------------
+https://github.com/openshift/cakephp-ex.git
+-------------------------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project 4100-exploring-openshift
+oc status
+---------------------------------
+

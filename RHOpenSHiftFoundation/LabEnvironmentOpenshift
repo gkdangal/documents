@@ -1,0 +1,86 @@
+1. Set Up the Lab Environment
+
+In This lab you will provision the environment(s) required to complete the labs in the OpenShift Foundations training.
+
+Environments can be provisioned through the OPENTLC lab portal (https://labs.opentlc.com), you can log in to the portal using your OPENTLC credentials.
+2. Lab Environment Overview
+
+The OpenShift Foundations training is using the OPENTLC OpenShift Portal, a Shared environment used by many courses offered by the OPEN Program.
+
+you can log in to the portal using your OPENTLC credentials, but first you must request access through the OPENTLC lab portal.
+
+In this training you will need to use the Command Line for some of the tasks covered.
+
+You can attempt to use your own laptop/workstation if you are able to install the required software. This is only recommended for experienced users and might cause technical issues due to the local environment.
+
+You can also provision a client VM from the OPENTLC lab portal, the labs in this training will assume that you are using the provided client VM.
+3. Request Access to OPENTLC OpenShift Portal
+
+To do the demonstration labs in this training, you must provision the lab environment which provides access to all of the components required to perform the labs.
+
+    Go to the OPENTLC lab portal and use your OPENTLC credentials to log in.
+    	If you forgot your username or password, go to OPENTLC Account Management Page to reset your password or obtain a user name reminder.
+
+    Navigate to Services → Catalogs → All Services → OPENTLC OpenShift Labs.
+
+    On the left, select OPENTLC OpenShift 3.5 Shared Access.
+
+    On the right, click Order.
+
+    On the bottom right, click Submit.
+
+        After a few minutes, you receive an email with instructions on how to connect to the environment. +
+        	The e-mail will include a URL for the OpenShift Master similar to ` https://master.na1.openshift.opentlc.com:443`. This e-mail will depend on the region you are located in - in this example the region is "na1". Whenever you see ${REGION} in a URL from now on make sure to replace it with the region that your environment has been provisioned in.
+        	Do not select App Control → Start after ordering the lab. The build has already started. Selecting Start may corrupt the lab environment or cause other complications.
+        	The lab environment is a shared cloud-based environment, so you can access it over the WAN from anywhere. Do not, however, expect performance to match a dedicated environment.
+
+4. Deploy a Client
+
+To deploy the Client VM for this training you must provision it from the OPENTLC lab portal
+
+    Go to the OPENTLC lab portal and use your OPENTLC credentials to log in.
+
+    Navigate to Services → Catalogs → All Services → OPENTLC OpenShift Labs.
+
+    On the left, select OpenShift 3.5 - Client VM.
+
+    On the right, click Order.
+
+    On the bottom right, click Submit.
+
+        After a few minutes, you receive an email with instructions on how to connect to the environment.
+        	Do not select App Control → Start after ordering the lab. The build has already started. Selecting Start may corrupt the lab environment or cause other complications.
+        	The lab environment is a shared cloud-based environment, so you can access it over the WAN from anywhere. Do not, however, expect performance to match a dedicated environment.
+
+4.1. Share Your Public Key With OPENTLC
+
+To access any of your lab systems via SSH, you must use your personal OPENTLC SSO user name and public SSH key.
+
+If you have not already done so, you must provide a public SSH key to the OPENTLC authentication system:
+
+    Go to OPENTLC Account Management Page
+
+    Select "Update SSH Key" and log in using your OPENTLC credentials.
+
+    Paste your public key in that location.
+    	For more information on generating an SSH key, see https://www.opentlc.com/ssh.html.
+
+4.2. Test Your Server Connections
+
+The ocplab host, (aka the administration host) is there to serve as an access point into the environment and is not part of the OpenShift environment. (You do use ocplab as your dedicated DNS server, but that is not an OpenShift component.)
+
+    Connect to your administration host and make sure you can access each of your provisioned hosts:
+
+    ssh -i ~/.ssh/yourprivatekey.key opentlc-username@ocplab-${GUID}.oslab.opentlc.com
+
+    	
+
+    The GUID is a unique 4-character identifier generated for your lab environment. Your GUID is provided at the top of the lab provisioning email.
+
+    In these labs, you may see $guid and $GUID used to signify your unique identifier. Red Hat recommends that you create an environment variable so you do not have to type it each time.
+    Example
+
+    Laptop$ export GUID=c3po
+    Laptop$ export guid=${GUID}
+    Laptop$ ssh -i ~/.ssh/mykey.key shacharb-redhat.com@ocplab-${GUID}.oslab.opentlc.com
+    (root password is: r3dh4t1!)

@@ -1,0 +1,702 @@
+Module Topics
+
+    Introduction to DevOps and CICD
+
+    Deployment
+
+    CICD Workflow
+
+    Builds and S2I
+
+    OpenShift Pipelines
+--------------------------
+Introduction to DevOps and CICD
+What Is DevOps, Anyway?
+
+    Approach to culture, automation, and platform design to provide better business value and responsiveness
+
+    Goal: Increase speed and flexibility with which new features and services are delivered
+----------------------------------
+Introduction to DevOps and CICD
+Red Hat’s DevOps Vision
+-----
+    Red Hat’s culture, built on openness and transparency, has worked for more than 20 years
+
+    Red Hat has history to guide customers through making DevOps a reality
+
+    Red Hat is building the tools, platforms, and infrastructure to support customers throughout DevOps journey
+
+    Technologies expected to enable DevOps over next 2 years include:
+
+        Platform-as-a-Service (PaaS)
+
+        Infrastructure-as-a-Service (IaaS)
+
+        Configuration automation
+
+        Microservices
+
+        Containers
+
+        DevOps consulting services
+-------------------------------------------
+Introduction to DevOps and CICD
+Silos Create Inefficiency
+Developers care about:
+
+    Building apps
+
+    Automating tests
+
+    Continuous integration
+
+    Performance tuning
+
+    Debugging
+
+Operations cares about:
+
+    Deploying applications
+
+    Managing applications and infrastructure
+
+    Reliability
+
+    Security
+
+    Compliance
+--------------------
+Introduction to DevOps and CICD
+Application Development Without Platform-as-a-Service (PaaS)
+
+    Processes below repeat for every application project
+
+****
+Physical
+
+    Have idea
+
+    Get budget
+
+    Submit hardware acquisition request
+
+    Wait
+
+    Get hardware
+
+    Rack and stack hardware
+
+    Install operating system
+
+    Install OS patches/fix-packs
+
+    Create user accounts
+
+    Deploy framework/application server
+
+    Deploy testing tools
+
+    Test testing tools
+
+    Code
+
+    Configure production servers (buy them if needed)
+
+    Push to production
+
+    Launch
+
+    Order more servers to meet demand
+
+    Wait
+
+    Deploy new servers
+
+    Etc.
+********
+Virtual
+
+    Have idea
+
+    Get budget
+
+    Submit VM request
+
+    Wait
+
+    Deploy framework/application server
+
+    Deploy testing tools
+
+    Test testing tools
+
+    Code
+
+    Configure production VMs
+
+    Push to production
+
+    Launch
+
+    Order more production VMs to meet demand
+
+    Wait
+
+    Deploy application to new VMs
+
+    Etc.
+----------------------------
+Introduction to DevOps and CICD
+
+    "The use of Platform-as-a-Service technologies will enable IT organizations to become more agile and more responsive to the business needs."
+
+— Gartner
+Application Development with PaaS
+With PaaS
+
+Assembly Line
+    Have idea
+
+    Get budget
+
+    Code
+
+    Test
+
+    Launch
+
+    Scale automatically
+-------------------
+Introduction to DevOps and CICD
+What DevOps Is About - Collaboration and Cooperation
+
+    Eliminating silos:
+
+        Improves communication and consensus
+
+        Increases agility and efficiency
+
+        Accelerates time-to-market
+----------------
+Introduction to DevOps and CICD
+Who Is Involved?
+
+    Getting product out the door is a team effort
+
+    No longer "us versus them" or "this department versus that department"
+
+    Turns common interest into lean and agile concepts for everyone
+
+devops_who_is_involved_1 Developers
+
+    More involved with product/code
+
+    Do not need to spend months in requirements phase, then hand off to operations
+
+devops_who_is_involved_2 Operations
+
+    Dramatically accelerates performance by leveraging practices like continuous deployment
+
+    As performance improves, so do profitability, market share, productivity
+-----------------------
+Deployments and Deployment Strategies
+
+    OpenShift deployments provide fine-grained management over applications based on a user-defined template called a deployment configuration.
+
+    The deployment system in response to a deployment configuration will create a replication controller to run an application.
+-------------------------------
+Deployments
+Features Provided by the Deployment System
+
+    Deployment configuration (which is template for running applications)
+
+        Contains version number that is incremented each time new replication controller is created from that configuration
+
+        Contains cause of last deployed replication controller, added to deployment configuration
+
+    Triggers that drive automated deployments in response to events
+
+    Strategies to transition from previous version to new version
+
+    Rollbacks to previous version, either manually or automatically in case of deployment failure
+
+    Manual replication scaling and autoscaling
+----------------------
+Deployments
+Rollbacks
+
+    Deployments allow rollback to previous versions of application
+
+        Rollbacks revert application back to previous revision
+
+        Can be performed using REST API, CLI, or web console
+
+    Deployment configurations also support automatically rolling back to last successful revision of configuration in case latest template fails to deploy
+--------------------------
+Deployments
+Deployment Strategy
+
+    Defined by deployment configuration
+
+    Determines deployment process
+
+        During deployments each application has different requirements for availability and other considerations
+
+    OpenShift provides strategies to support variety of deployment scenarios
+
+    Readiness checks determine if new pod is ready for use
+
+        If readiness check fails, deployment configuration retries until it times out
+
+Copyright ©2016 Red Hat, Inc. - 1.8R
+Your browser does not support the audio tag.
+Deployments
+Rolling Deployment Strategy
+
+    Performs rolling update
+
+    Supports life-cycle hooks for injecting code into deployment process
+
+    Waits for pods to pass readiness check before scaling down old components
+
+        Does not allow pods that do not pass readiness check within timeout
+
+    Used by default if no strategy specified in deployment configuration
+
+Copyright ©2016 Red Hat, Inc. - 1.8R
+Your browser does not support the audio tag.
+Deployments
+Rolling Deployment Strategy Process
+
+    Steps in rolling strategy process:
+
+        Execute pre life-cycle hook
+
+        Scale up new deployment by one or more pods ( based on maxSurge value)
+
+            Wait for readiness checks to complete
+
+        Scale down old deployment by one or more pods ( based on maxUnavailable value)
+
+        Repeat scaling until:
+
+            New deployment reaches desired replica count
+
+            Old deployment has scaled to zero
+
+        Execute any post life-cycle hook
+
+    When scaling down, strategy waits for pods to become ready
+
+        Lets it decide whether further scaling would affect availability
+
+    If scaled-up pods never become ready, deployment times out
+
+        Results in deployment failure
+
+Copyright ©2016 Red Hat, Inc. - 1.8R
+------------------------------------
+Deployments
+Rolling Deployment Strategy
+
+    Performs rolling update
+
+    Supports life-cycle hooks for injecting code into deployment process
+
+    Waits for pods to pass readiness check before scaling down old components
+
+        Does not allow pods that do not pass readiness check within timeout
+
+    Used by default if no strategy specified in deployment configuration
+-----------------------------------------
+Deployments
+Rolling Deployment Strategy Process
+
+    Steps in rolling strategy process:
+
+        Execute pre life-cycle hook
+
+        Scale up new deployment by one or more pods ( based on maxSurge value)
+
+            Wait for readiness checks to complete
+
+        Scale down old deployment by one or more pods ( based on maxUnavailable value)
+
+        Repeat scaling until:
+
+            New deployment reaches desired replica count
+
+            Old deployment has scaled to zero
+
+        Execute any post life-cycle hook
+
+    When scaling down, strategy waits for pods to become ready
+
+        Lets it decide whether further scaling would affect availability
+
+    If scaled-up pods never become ready, deployment times out
+
+        Results in deployment failure
+------------------------------
+15
+Deployments
+Recreate Deployment Strategy
+
+    Has basic rollout behavior
+
+    Supports life-cycle hooks for injecting code into deployment process
+
+    Steps in recreate strategy deployment:
+
+        Execute pre life-cycle hook
+
+        Scale down previous deployment to zero
+
+        Scale up new deployment
+
+        Execute post life-cycle hook
+---------------------------------------------
+16
+Deployments
+Custom Deployment Strategy
+
+    You determine deployment behavior
+
+    Example:
+
+    "strategy": {
+      "type": "Custom",
+      "customParams": {
+        "image": "organization/strategy",
+        "command": ["command", "arg1"],
+        "environment": [
+          {
+            "name": "ENV_1",
+            "value": "VALUE_1"
+          }
+        ]
+      }
+    }
+
+        organization/strategy Docker image provides deployment behavior
+
+        Optional command array overrides CMD directive specified in image Dockerfile
+
+        Optional environment variables added to strategy process’s execution environment
+--------------------------------------------------
+17
+CICD Workflow
+CICD as DevOps Practice
+
+    DevOps = Continuous Integration (CI) + Continuous Deployment (CD)
+--------------------------------
+CICD Workflow
+What Is CI?
+
+Feature
+	
+
+Description
+
+Verifies build integrity
+	
+
+    Checks if source code can be pulled from repository and built for deployment
+
+    Build process may include compiling, packaging, configuring software
+
+Validates test results
+	
+
+    Runs tests created by developers in production-like environment
+
+    Verifies source code not broken as side effect from commit
+
+Checks integration among multiple systems
+	
+
+    Uses integration tests to validate systems integration used by software
+
+Identifies problems
+	
+
+    Alerts affected teams to fix problems
+---------------------------------
+20
+;;;;;
+CICD Workflow
+How Is CI Executed?
+
+    Can execute CI manually, but usually managed by tool
+
+    In DevOps, CI is mandatory and executed by tool
+
+        Tool runs automation scripts created by developers
+
+        Eliminates human intervention during CI process
+-----------------------------------
+CICD Workflow
+CI Benefits
+
+    Rapid feedback
+    Reduced risk
+    Team ownership
+    Building deployable software
+    Automated process
+----------------------------
+CICD Workflow
+CI Best Practices
+
+    Maintain code repository
+
+    Automate build
+
+    Make build self-testing
+
+    Make sure everyone commits every day
+
+    Keep build fast
+
+    Test in production clone
+
+    Make getting deliverables easy
+
+    Make sure everyone can view build results
+--------------------------------
+CICD Workflow
+OpenShift Enables DevOps
+
+    OpenShift provides "configuration in code"
+
+    Accomplishes this with standardized environment, Linux containers, automated provisioning
+
+    Has built-in support for Jenkins CI server
+
+    Jenkins provides automated testing and deployment of applications to OpenShift environment
+
+    Features help shorten cycle time from idea to deployed product feature
+-------------------------
+26
+Builds and S2I
+Builds
+
+    Process of transforming input parameters into resulting object
+
+        Most often used to transform input parameters or source code into runnable image
+
+    BuildConfig object is definition of entire build process
+
+    OpenShift leverages Kubernetes by creating Docker containers from build images and pushing them to integrated registry
+----------------------------------------------------
+Builds and S2I
+Build Strategies
+
+    OpenShift’s build system provides extensible support for build strategies based on selectable types specified in build API
+
+    Three primary build strategies:
+
+        Docker build
+
+        Source-to-Image (S2I) build
+
+        Custom build
+
+        Pipeline build (Tech-preview in OCP 3.3)
+
+    Object resulting from build depends on builder used to create it
+
+        For Docker and S2I builds, resulting objects are runnable images
+
+        For custom builds, resulting object are whatever builder image author specified
+-------------------------------------
+Builds and S2I
+Docker Build
+
+    Docker build strategy invokes plain docker build command
+
+    Expects repository with Dockerfile and all artifacts required to produce runnable image
+
+Reference
+
+    docker build command:
+
+    https://docs.docker.com/engine/reference/commandline/build/
+------------------------------
+Builds and S2I
+Source-to-Image (S2I) Build
+
+    Source-to-Image (S2I) is tool for building reproducible Docker images
+
+        Produces ready-to-run images by injecting application source into Docker image and assembling new Docker image
+
+        New image incorporates base image (builder) and built source and is ready to use with docker run command
+
+    S2I supports incremental builds, which reuse previously downloaded dependencies, previously built artifacts, etc.
+----------------------------------------------
+Builds and S2I
+Source-to-Image (S2I) Build Advantages
+
+    Image flexibility
+	    S2I scripts can be written to inject application code into almost any existing Docker image, taking advantage of existing ecosystem
+
+    Currently, S2I relies on tar to inject application source, so image needs to be able to process tarred content
+
+    Speed
+	    With S2I, assemble process can perform large number of complex operations without creating new layer at each step, resulting in fast process
+
+    S2I scripts can be written to reuse artifacts stored in previous version of application image, rather than having to download or build them each time build is run
+
+    Patchability
+	S2I allows you to rebuild application consistently if underlying image needs patch due to security issue
+
+    Operational efficiency
+	By restricting build operations and preventing arbitrary actions that Dockerfile allows, PaaS operator can avoid accidental or intentional abuses of build system
+-----------------------------
+Builds and S2I
+Source-to-Image (S2I) Build Advantages
+
+    Operational security
+
+        Building arbitrary Dockerfile exposes host system to root privilege escalation
+
+        Can be exploited by malicious user because entire Docker build process is run as user with Docker privileges
+
+        S2I restricts operations performed as root user and can run scripts as non-root user
+    Ecosystem
+
+        S2I encourages shared ecosystem of images, allowing developers to leverage best practices for applications
+    Reproducibility
+
+        Produced images can include all inputs, including specific versions of build tools and dependencies
+
+        Ensures that image can be reproduced precisely
+------------------------------------
+Builds and S2I
+Custom Build
+
+    Custom build strategy allows you to define specific builder image responsible for entire build process
+
+        Using own builder image allows you to customize build process
+
+    Custom builder image is plain Docker image embedded with build process logic
+
+        Examples: building RPMs or base Docker images
+
+        openshift/origin-custom-docker-builder image available on Docker Hub as example implementation of custom builder image
+---------------------------
+Builds and S2I
+Image Stream
+
+    Comprises number of Docker images identified by tags
+
+    Presents single virtual view of related images, similar to Docker image repository
+
+    May contain images from any of following:
+
+        Its own image repository in OpenShift’s integrated registry
+
+        Other image streams
+
+        Docker image repositories from external registries
+--------------------------------
+Builds and S2I
+Image Stream
+
+    Can be used to automatically perform action when new images are created
+
+    Builds and deployments can watch an image stream to receive notifications when new images are added and react by performing build or deployment
+
+    Example: If deployment uses certain image and new version of that image is created, deployment can be performed automatically
+------------------------
+OpenShift Pipelines
+
+    Jenkins jobs enabled by Pipeline plug-in
+
+        Built with simple text scripts that use Pipeline DSL (domain-specific language) based on Groovy programming language
+
+    Enable one script to address all steps in complex workflow
+
+    Leverage power of multiple steps to execute both simple and complex tasks according to user-established parameters
+
+    Can build code and orchestrate work required to drive applications from commit to delivery
+
+    For more information, see https://jenkins.io/doc/book/pipeline/overview/
+---------------------------------
+OpenShift Pipelines
+
+    Enable you to define entire application life cycle
+
+    Support continuous deployment (CD)
+
+    Plug-in built with requirements for flexible, extensible, script-based CD workflow
+--------------------------------
+OpenShift Pipelines
+Pipeline Characteristics
+
+    Durable
+
+        Can survive both planned and unplanned restarts of Jenkins master
+    Pausable
+    Can stop and wait for human input or approval before completing jobs
+    Versatile
+
+        Support complex real-world CD requirements, including ability to fork or join, loop, and work in parallel with other pipelines
+    Extensible
+
+        Plug-in supports custom extensions to its DSL and multiple options for integration with other plug-ins
+---------------------------------
+OpenShift Pipelines
+Pipeline Build
+
+    Pipeline build strategy allows developers to define Jenkins pipeline for execution by Jenkins pipeline plug-in
+
+    Build can be started, monitored, and managed by OpenShift same as any other build type
+-----------------------------------
+OpenShift Pipelines
+
+    Pipeline workflows are defined in Jenkinsfile
+
+        Embedded directly in build configuration
+
+        Or supplied in Git repository and referenced by build configuration
+
+    First time project defines build configuration using Pipeline strategy, OpenShift instantiates Jenkins server to execute pipeline
+
+    Subsequent Pipeline build configurations in project share this Jenkins server
+
+Copyright ©2016 Red Hat, Inc. - 1.8R
+Your browser does not support the audio tag.
+Summary
+
+    Introduction to DevOps and CICD
+
+    Deployment
+
+    CICD Workflow
+
+    Builds and S2I
+
+    OpenShift Pipelines
+
+Copyright ©2016 Red Hat, Inc. - 1.8R
+Module Completion
+
+Nice job!
+
+Click the button below to complete this module of the course:
+
+Copyright ©2016 Red Hat, Inc. - 1.8R
+
+------------------------------
+oc new-project pipeline-${GUID}-test --description="Cat of the Day Testing Environment" --display-name="Cat Of The Day - Test"
+---------------
+oc new-project pipeline-${GUID}-dev --description="Cat of the Day Development Environment" --display-name="Cat Of The Day - Dev"
+-----------------
+oc new-project pipeline-${GUID}-test --description="Cat of the Day Testing Environment" --display-name="Cat Of The Day - Test"
+------------------
+oc new-project pipeline-${GUID}-prod --description="Cat of the Day Production Environment" --display-name="Cat Of The Day - Prod"
+----------------------
+
+
+
+

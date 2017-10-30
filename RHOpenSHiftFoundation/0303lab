@@ -1,0 +1,166 @@
+Demonstrate Aggregated Logging & Metrics Lab
+Scenario
+
+In the scenario for this demonstration lab, a developer wants to deploy the openshift-tasks application, review the build process, scale the application up, and explore the metrics collection and aggregated logging features.
+1. Demonstrate Authentication to OpenShift Master
+
+    Action: Log in to the OPENTLC shared OpenShift web console using either of these methods:
+
+        Method 1: Go to https://master.na1.openshift.opentlc.com
+
+        Method 2: Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        LocalMachine$ oc login https://master.na1.openshift.opentlc.com --username shacharb-redhat.com
+        Username: shacharb-redhat.com
+        Password: **********
+        Logged into "https://master.na1.openshift.opentlc.com" as "shacharb-redhat.com" using existing credentials.
+
+2. Demonstrate Creating a Project
+
+    Action: Click New Project to create a project for your demonstration:
+    Demo01 New Project Button
+
+        Explain what projects are and how different projects can have different user permissions and quotas attached to them.
+
+    Action: Fill in the Name, Display Name, and Description fields:
+    MetricNLogging Demo02 Create Project Details
+    	Make sure you replace unique-id or GUID with a unique identifier (such as your client’s name). Project names must be unique in OpenShift.
+    	
+
+    Two other options for completing this task:
+
+        Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        [sborenst@ip-192-168-20-158 ~]$ oc new-project ${GUID}-logging-metrics --description="Review Aggregated Logging and Metrics" --display-name="Exploring Aggregated Logging and Metrics"
+        Now using project "guid-logging-metrics" on server "https://master.na1.openshift.opentlc.com".
+
+        Run the oc new-project ${GUID}-logging-metrics command without the description and display name information.
+
+3. Demonstrate Deploying an Application Using S2I
+
+    Action: After creating your project or after clicking Add to project, enter eap64 in the catalog filter and select jboss-eap64-openshift version 1.4 from the dropdown:
+    MetricNLogging Demo03 Select Deploy Image
+
+    Action: Enter openshift-tasks in the Name field.
+
+    Action: Enter https://github.com/openshiftdemos/openshift-tasks in the Git Repository URL field.
+
+        Explain that you can look at more advanced deployment options by clicking Show advanced routing, build, and deployment options.
+
+    Action: Click Create:
+    MetricNLogging Demo04 Create App
+
+    Action: Click Continue to overview:
+    MetricNLogging Demo05 Application Created
+
+4. Demonstrate Viewing Build Logs
+
+    Action: While your application is being built and deployed, review the Overview page.
+
+        Explain the following aspects:
+
+            Point out that the Route has been created for the application and once it is deployed, you can open the link in a another tab to access the application.
+
+            Point out the Build status and that you can click the link to go to the build page.
+
+            Point out that Services were created for your application.
+
+        Explain that while the application is not yet running, the build for it has probably started by now.
+
+    Action: Click View Log to see the build log.
+
+        Explain that in some cases it may take a moment for the logs to appear, and that this is usually due to the deployer image being pulled to the node hosting the build pod.
+        MetricNLogging Demo06 Application Overview
+
+        Explain that you can view the logs for the build by going to the Logs tab.
+
+            Point out the source code repository that was cloned and downloaded to your container.
+
+    Action: Click Follow to follow the log until the build is finished:
+    MetricNLogging Demo07 BuildL Logs1
+
+        Explain that the build uses a base-image and the provided source code to create an image.
+
+            Point out that software dependencies and artifacts are pulled and placed in the created image.
+
+                Mention that these can be created by the build process or injected if the build process happens elsewhere—for example, via a Maven build on the Jenkins server.
+
+            Point out that you can see that the completed image is pushed automatically.
+
+            MetricNLogging_Demo07_BuildL_Logs2
+
+    Action: When you are done, select Overview to return to the Overview page.
+
+5. Demonstrate Exploring Metrics Collection
+
+    Action: Right-click the route’s link and open it in a new tab:
+    MetricNLogging Demo08 Open Route
+
+    Action: Enter 300 in the Seconds field under Load Generator and click Load!.
+
+        Explain that this creates load for this pod for 300 seconds.
+        MetricNLogging Demo09 Application Load
+
+    Action: Go back to the Overview page.
+
+        Explain that in a few seconds you will be able to see the Memory, CPU, and Network throughput of your deployment (aggregated across pods).
+
+    Action: Click the Pod button to navigate to the Pods page:
+    MetricNLogging Demo10 Pod Metrics1
+    	If you don’t see the metrics next to the pod ring go to https://metrics.cloudapps.na1.openshift.opentlc.com/hawkular/metrics and accept the certificate.
+
+    Action: Select the running pod for the application (not the build pod):
+    MetricNLogging Demo10 Pod Metrics2
+
+    Action: Select the Metrics tab:
+    MetricNLogging Demo10 Pod Metrics3
+
+        Explain that this page displays the resources used by this specific pod.
+
+            Point out that it displays, along with the resources, the limits of each container (e.g. "0.505 cores used of Available of .500 cores", as shown on the left in this example):
+            MetricNLogging Demo10 Pod Metrics4
+
+    Action: Select Overview to go back to the Overview page.
+
+6. Demonstrate Exploring Aggregated Logging
+
+    Action: Go back to the tab in your browser with the application page and click each of the Log buttons a few times to generate some messages.
+    MetricNLogging Demo11 Pod LogsX
+
+    Action: Scale your application to 3 pods by clicking the Up button (marked with a green square below) twice.
+
+        Explain that you can see that OpenShift is scaling up the pods.
+
+    Action: Click the Pod button to navigate to the Pods page and select one of your pods:
+    MetricNLogging Demo11 Pod Logs1
+
+    Action: Select the Logs tab and click View archive.
+
+        Explain that the Kibana aggregated logging view is integrated into OpenShift authentication and authorization, allowing you to view all log messages in all of the projects you own.
+        MetricNLogging Demo11 Pod Logs2
+
+        Explain that in Kibana you can view aggregated logs from all of your pods, both running and terminated.
+
+            Point out that the field at the top displays the filter you are using to view only log messages that belong to this project and a specific pod.
+
+            Point out that messages are displayed at the bottom of the screen.
+            MetricNLogging Demo11 Pod Logs3
+
+    Action: Delete the first part of the filter to show all of the pods in the project:
+    MetricNLogging Demo11 Pod Logs4
+
+    Action: Add *error* at the end of the filter to display all of the error messages:
+    MetricNLogging Demo11 Pod Logs5
+
+    Action: Change the filter to include message = \*thunderstorm* to display all of the messages containing the phrase "thunderstorm" (make sure to include spaces):
+
+    MetricNLogging_Demo11_Pod_Logs6
+
+7. Cleanup
+
+If you are not going do do any additional demonstrations go back to the OpenShift Homepage and delete your project.
+8. Additional Demonstration
+
+You can do the following optional demonstration:
+
+    Set an auto-scaler and demonstrate how the deployment is scaled up.

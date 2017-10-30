@@ -1,0 +1,153 @@
+Module Topics
+
+    Rising Cost of IT
+
+    Cost of Complexity
+
+    Simplifed Infrastructure for Higher Efficiency
+
+    Benefits of Standardized Operating Environment
+
+    Benefits of Simplicity
+
+    Standardizing on Red Hat Technologies
+
+    Red Hat Satellite Overview
+
+    Provisioning
+
+    Configuration, Software, and Subscription Management
+
+    Red Hat Satellite Components
+
+    Red Hat Satellite 6 High-Level Topology
+---------------------------------------------------------
+rising cpst of IT
+Complexcity and coat grows over time
+operational expenses account for over 50% of overal IT infrastructure costs
+
+More complexity = higher operational Cost.
+
+---------------------------------------------
+The cost of complexity
+=> increase donwn time
+=> Chalange for management
+=> Secirity concern
+=> disparate process
+=> Delaying Provisioning
+=> Large IT staff (more people need with deep undestanding)
+=> Interoperability Issue
+-------------------------------------------
+Simplified infrastructure for higher Efficiency
+=> Non-Standardized environment require more time to manage
+=> Standardized environment is not require more time.
+--------------------------------------------------
+===================================
+########Red Hat Satellite############
+---------------------------------------
+
+Benefits of a Standardized Operating Environment
+
+    Simplified infrastructure
+
+    Easier management and administration
+
+    Less downtime
+
+    Increased automation and efficiency
+
+    Higher productivity
+------------------------------------
+Component Of Red hat Satellite
+________________
+Provisioning
+
+    Provision to bare-metal, private, and public clouds
+
+    Federate content delivery
+
+    Discover non-provisioned hosts
+--------------------------------------
+Configuration Management
+
+    Define desired state of systems
+
+    Enforce compliance to configuration standards
+
+    Audit and report when changes are made
+---------------------------------------
+Software Management
+
+    Define and manage standard operating environments
+
+    Respond quickly to security vulnerabilities (Heartbleed/ShellShock)
+
+    Deploy scalable and secure patching policies
+
+    Manage releases centrally
+------------------------------------------
+Subscription Management
+
+    Centrally governed subscription usage
+
+    Accurate inventory and utilization information
+
+    Helps “buy-up, re-up, true-up”
+
+    Reporting
+-------------------------------------------------
+Red Hat Satellite Components
+
+Satellite Server
+-> Multi-Tenant
+Multi-tenancy means that a single instance of the software and all of the supporting infrastructure serves multiple customers. Each customer shares the software application and also shares a single database.
+
+-> On promise Repository Management
+-> User and Group role based access Control(RBAC)
+-> powerfull User Interfaces(GUI, API, and ClI)
+-> Advanced Subscription management.
+
+Satellite Capsule Server
+-> Federated services
+-> Automated Provisioning
+-> Discovery Of new physical and virtual machines
+
+Smart management
+------------
+Required for each subscription managed via satellite.
+===================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

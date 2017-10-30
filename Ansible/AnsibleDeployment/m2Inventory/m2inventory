@@ -1,0 +1,177 @@
+Topics
+
+    Inventories
+
+    Static Host Inventory
+
+    Hosts and Groups variables
+
+    Dynamic Host Inventory
+In this module, you learn the concepts of static and dynamic inventories, INI files that identify the hosts and groups of hosts that Ansible manages.
+-----------------------------
+Inventories
+
+    Host inventory defines hosts Ansible manages
+
+    Hosts may belong to groups
+
+        Typically used to identify host’s role in datacenter
+
+        Host can be member of more than one group
+
+    Two ways to define host inventories:
+
+        Static host inventory defined by text file
+
+        Dynamic host inventory generated from outside providers
+=== Transcript
+
+A host inventory defines the hosts that Ansible manages. Hosts may belong to groups that are typically used to identify the host’s role in the datacenter. A host can be a member of more than one group.
+
+There are two ways in which host inventories can be defined. A static host inventory is defined by a text file, while a dynamic host inventory is generated from outside providers.
+--------------------------
+Static Host Inventory
+Example
+
+    Host inventory defines two host groups: webservers and db-servers
+
+    SSH on web2.example.com configured to listen on port 1234
+
+    Ansible must log in to host as ftaylor
+
+    [webservers]
+    localhost 				ansible_connection=local
+    web1.example.com
+    web2.example.com:1234 	ansible_connection=ssh ansible_user=ftaylor
+    192.168.3.7
+
+    [db-servers]
+    web1.example.com
+    db1.example.com
+=== Transcript
+
+In the example shown here, the host inventory defines two host groups, webservers and db-servers.
+
+SSH on web2.example.com is configured to listen on a non-standard port, port 1234.
+
+The account Ansible must use to log in to that host is ftaylor.
+----------------------------------
+Static Host Inventory
+Groups of Groups
+
+    Host inventories can include groups of host groups
+
+    To do this, use :children suffix
+
+    Example: Create new group nwcapitols that includes all hosts from olympia and salem groups
+
+    [olympia]
+    washington1.example.com
+    washington2.example.com
+    [salem]
+    oregon01.example.com
+    oregon02.example.com
+    [nwcapitols:children]
+    olympia
+    salem
+=== Transcript
+
+Ansible host inventories can include groups of host groups. To accomplish this, use the :children suffix. The example shown here creates a new group, called nwcapitols, that includes all of the hosts from the olympia and salem groups.
+--------------------------
+Static Host Inventory
+Ranges
+
+    To simplify Ansible host inventories, specify ranges in host names or IP addresses
+
+        Supports numeric and alphabetic ranges
+
+    Range syntax: [START:END]
+
+    Ranges match all values between START and END
+
+    Examples:
+
+        192.168.[1:5].[0:255]: All IP addresses in 192.168.1.0/24 through 192.168.5.0/24 networks
+
+        server[01:20].example.com: All hosts named server01.example.com through server20.example.com
+
+=== Transcript
+
+You can simplify Ansible host inventories by specifying ranges in the host names or IP addresses. Numeric and alphabetic ranges are supported. Ranges have the syntax [START:END].
+
+Ranges match all the values between START and END, inclusive. Consider the following examples:
+
+    In the first example, the range syntax covers all IP addresses in the 192.168.1.0/24 through 192.168.5.0/24 networks.
+
+    In the second example, the range syntax covers all hosts named server01.example.com through server20.example.com.
+-------------------
+Static Host Inventory
+Leading Zeros
+
+    Include or remove leading zeros for numeric ranges
+
+    Example: Simplify olympia and salem group definitions by using ranges:
+
+    [olympia]
+    washington[1:2].example.com
+    [salem]
+    oregon[01:02].example.com
+=== Transcript
+
+You can include or remove leading zeros for numeric ranges, as desired. The example shown here simplifies the olympia and salem group definitions by using ranges.
+-------------------
+Static Host Inventory
+Playbook Variables
+
+    Specify values for variables used by playbooks in host inventory files
+
+        To specify variable values for individual host, append them at end of host line in inventory
+
+        To specify values for group of hosts, declare them in stanza with :vars suffix
+
+    Example: Defines two group-level variable values, http_port and maxRequestsPerChild, for webservers group
+
+        Value of http_port is set to 8080 for web2.example.com:
+
+        [webservers]
+        web1.example.com
+        web2.example.com:1234 http_port=8080
+        [webservers:vars]
+        http_port=80 maxRequestsPerChild=500
+        [db-servers]
+        web1.example.com
+        db1.example.com
+
+=== Transcript
+
+You specify values for variables used by playbooks in host inventory files. To specify variable values for an individual host, append them at the end of the relevant host line in the inventory. To specify values for a group of hosts, declare them in a stanza with a :vars suffix.
+
+This example defines two group-level variable values, http_port and maxRequestsPerChild, for the webservers group. The value of http_port is set to 8080 for web2.example.com.
+---------------------
+
+Dynamic Host Inventory
+
+    Ansible host inventory information can be dynamically generated
+
+    Sources for dynamic inventory information include:
+
+        Public and private cloud providers
+
+        Cobbler system information
+
+        LDAP database
+
+        Configuration management database (CMDB)
+
+    Ansible includes scripts that handle dynamic host, group, and variable information from common providers
+
+        Examples: Amazon EC2, Cobbler, Rackspace Cloud, OpenStack
+
+    For cloud providers, authentication and access information must be defined in files that scripts can access
+
+=== Transcript
+
+Ansible host inventory information can also be dynamically generated. Sources for dynamic inventory information include public and private cloud providers, Cobbler system information, an LDAP database, or a configuration management database, or CMDB. Ansible includes scripts that handle dynamic host, group, and variable information from the most common providers, such as Amazon EC2, Cobbler, Rackspace Cloud, and OpenStack. For cloud providers, authentication and access information must be defined in files that the scripts can access. Later course modules discuss dynamic host inventories in more detail.
+--------------------
+
+

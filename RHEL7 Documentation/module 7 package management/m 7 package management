@@ -1,0 +1,1002 @@
+Module Topics
+
+    Attaching Systems to Subscriptions
+
+    Managing Software Updates
+
+    yum Command Summary
+
+    Enabling yum Repositories
+----------------------------------------------------------------
+Attaching Systems to Subscriptions
+Red Hat Subscription Management
+
+    Provides tools to entitle machines to product subscriptions
+
+        Update software packages
+
+        Track information about support contracts and subscriptions
+
+    PackageKit and yum obtain software packages and updates from Red Hat content distribution network
+----------------------------------------------------------------
+Attaching Systems to Subscriptions
+Subscription Management Tasks
+
+Four basic tasks are performed with Red Hat Subscription Management tools.
+
+Task
+	
+
+Description
+
+Register
+	
+
+Associate system with Red Hat account to allow Subscription Manager to inventory system
+
+Subscribe
+	
+
+Entitle system to updates for Red Hat products
+
+    Subscriptions have specific support levels, expiration dates, and default repositories
+
+    Tools can auto-attach or select specific entitlement
+
+    As needs change, subscriptions can be removed
+
+Enable repositories
+	
+
+Provide software packages from repositories
+
+    Multiple repositories are enabled by default
+
+    Other repositories can be enabled or disabled as needed
+
+Review and track
+	
+
+Track which entitlements are available or consumed
+
+    Can view information locally on specific system or for account
+
+    Can use Red Hat Customer Portal Subscriptions page or Subscription Asset Manager (SAM)
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+----------------------------------------------------------------
+Attaching Systems to Subscriptions
+Registering a System
+
+    From main GNOME menu, select Applications → Other → Red Hat Subscription Manager to launch subscription-manager-gui.
+
+    Enter root password.
+
+    Click Register.
+
+-------------------------------------------------
+
+Attaching Systems to Subscriptions
+Working With Subscriptions
+
+    To automatically attach system to best subscriptions (without a graphical environment), use subscription-manager
+
+    To register system to Red Hat account:
+
+    [root:server1 ~]# subscription-manager register --username=yourusername --password=yourpassword
+
+    To view available subscriptions:
+
+    [root:server1 ~]# subscription-manager list --available | less
+
+    To auto-attach subscription:
+
+    [root:server1 ~]# subscription-manager attach --auto
+
+    To view consumed subscriptions:
+
+    [root:server1 ~]# subscription-manager list --consumed
+
+    To unregister system:
+
+    [root:server1 ~]# subscription-manager unregister
+
+---------------------------------------
+Attaching Systems to Subscriptions
+Activation Keys
+
+    Allow register and assign predefined subscriptions without username or password
+
+    Useful for automated installations and deployments
+
+    Usually issued by on-premise subscription management service
+---------------------------------------------------------------
+
+Your browser does not support the audio tag.
+Attaching Systems to Subscriptions
+Working With Subscriptions
+
+    To automatically attach system to best subscriptions (without a graphical environment), use subscription-manager
+
+    To register system to Red Hat account:
+
+    [root:server1 ~]# subscription-manager register --username=yourusername --password=yourpassword
+
+    To view available subscriptions:
+
+    [root:server1 ~]# subscription-manager list --available | less
+
+    To auto-attach subscription:
+
+    [root:server1 ~]# subscription-manager attach --auto
+
+    To view consumed subscriptions:
+
+    [root:server1 ~]# subscription-manager list --consumed
+
+    To unregister system:
+
+    [root:server1 ~]# subscription-manager unregister
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Attaching Systems to Subscriptions
+Activation Keys
+
+    Allow register and assign predefined subscriptions without username or password
+
+    Useful for automated installations and deployments
+
+    Usually issued by on-premise subscription management service
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Attaching Systems to Subscriptions
+Entitlement Certificates
+
+    Entitlement is a subscription attached to a system
+
+    Stored in digital certificates in /etc/pki and its subdirectories
+
+        /etc/pki/product contains certificates of installed Red Hat products
+
+        /etc/pki/consumer contains certificates that indicate Red Hat account to which system is registered
+
+        /etc/pki/entitlement contains certificates that indicate which subscriptions are attached to system
+
+    Can inspect certificates directly with rct
+
+        subscription-manager is more user-friendly
+-----------------------------------------------------------
+Attaching Systems to Subscriptions
+Subscription Management Versions
+
+    Older versions of Red Hat Enterprise Linux use RHN Classic for subscription management
+
+        RHN Classic not supported by Red Hat Enterprise Linux 7
+
+    Red Hat Subscription Management is only method used by version 7
+
+        For version 6, is default method after 6.3
+
+        For version 5, is default method after 5.9
+
+    Red Hat Enterprise Linux 4 supports only old method
+
+	
+
+For more info, see:
+
+    The subscription-manager-gui(8), subscription-manager(8), and rct(8) man pages.
+
+    Get Started with Red Hat Subscription Management at https://access.redhat.com/site/articles/433903.
+
+    Red Hat Subscription Management, "Migrating from RHN and Satellite," at https://access.redhat.com/site/documentation/en-US/.
+--------------------------------------------------------
+Managing Software Updates
+Working With yum
+
+    yum: Command-line tool used to install, update, remove, and query software packages
+
+    Download official packages from Red Hat’s content distribution network
+
+    Registering system to subscription management service automatically configures access to software repositories based on attached subscriptions
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing Software Updates
+Listing Available Packages
+
+    To display usage information, use yum help
+
+    To display installed and available packages, use yum list
+
+    [root@server1 ~]# yum list 'http*'
+    Loaded plugins:langpacks
+    Available Packages
+    httpcomponents-client.noarch                4.2.5-4.el7                 rhel_dvd
+    httpcomponents-core.noarch                  4.2.4-6.el7                 rhel_dvd
+    httpd.x86_64                                2.4.6-17.el7                rhel_dvd
+    httpd-devel.x86_64                          2.4.6-17.el7                rhel_dvd
+    httpd-manual.noarch                         2.4.6-17.el7                rhel_dvd
+    httpd-tools.x86_64                          2.4.6-17.el7                rhel_dvd
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing Software Updates
+Searching for Available Packages
+
+    To list packages by keywords in name and summary fields, use yum search KEYWORD
+
+    To search for packages by name, summary, and description fields, use search all
+
+    Example: Search for packages with web server in name, summary or description
+
+    [root@server1 ~]# yum search all 'web server'
+    Loaded plugins:langpacks
+    ============================= Matched:web server ==============================
+    freeradius.x86_64 :High-performance and highly configurable free RADIUS server
+    hsqldb.noarch :HyperSQL Database Engine
+    httpd.x86_64 :Apache HTTP Server
+    libcurl.i686 :A library for getting files from web servers
+    libcurl.x86_64 :A library for getting files from web servers
+    mod_revocator.x86_64 :CRL retrieval module for the Apache HTTP server
+    mod_security.x86_64 :Security module for the Apache HTTP Server
+    python-paste.noarch :Tools for using a Web Server Gateway Interface stack
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+
+-----------------------------------------------
+Managing Software Updates
+Listing Available Packages
+
+    To display usage information, use yum help
+
+    To display installed and available packages, use yum list
+
+    [root@server1 ~]# yum list 'http*'
+    Loaded plugins:langpacks
+    Available Packages
+    httpcomponents-client.noarch                4.2.5-4.el7                 rhel_dvd
+    httpcomponents-core.noarch                  4.2.4-6.el7                 rhel_dvd
+    httpd.x86_64                                2.4.6-17.el7                rhel_dvd
+    httpd-devel.x86_64                          2.4.6-17.el7                rhel_dvd
+    httpd-manual.noarch                         2.4.6-17.el7                rhel_dvd
+    httpd-tools.x86_64                          2.4.6-17.el7                rhel_dvd
+----------------------------------------
+Managing Software Updates
+Searching for Available Packages
+
+    To list packages by keywords in name and summary fields, use yum search KEYWORD
+
+    To search for packages by name, summary, and description fields, use search all
+
+    Example: Search for packages with web server in name, summary or description
+
+    [root@server1 ~]# yum search all 'web server'
+    Loaded plugins:langpacks
+    ============================= Matched:web server ==============================
+    freeradius.x86_64 :High-performance and highly configurable free RADIUS server
+    hsqldb.noarch :HyperSQL Database Engine
+    httpd.x86_64 :Apache HTTP Server
+    libcurl.i686 :A library for getting files from web servers
+    libcurl.x86_64 :A library for getting files from web servers
+    mod_revocator.x86_64 :CRL retrieval module for the Apache HTTP server
+    mod_security.x86_64 :Security module for the Apache HTTP Server
+    python-paste.noarch :Tools for using a Web Server Gateway Interface stack
+---------------------------------------
+Managing Software Updates
+Viewing Package Information
+
+    To get detailed information about a package, including disk space requirements, use yum info PACKAGENAME
+
+    Example: Get info on Apache HTTP Server
+
+    [root@server1 ~]# yum info httpd
+    Loaded plugins:langpacks
+    Available Packages
+    Name        :httpd
+    Arch        :x86_64
+    Version     :2.4.6
+    Release     :17.el7
+    Size        :1.1 M
+    Repo        :rhel_dvd
+    Summary     :Apache HTTP Server
+    URL         :http://httpd.apache.org/
+    License     :ASL 2.0
+    Description :The Apache HTTP Server is a powerful, efficient, and extensible
+                :web server.
+---------------------------------------------------
+Managing Software Updates
+Searching for Packages by Pathname
+
+    To display packages with specified pathname, use yum provides PATHNAME
+
+        Path can include wildcard characters
+
+    Example: Find packages that provide /var/www/html
+
+    [root@server1 ~]# yum provides /var/www/html
+    Loaded plugins:langpacks
+    httpd-2.4.6-17.el7.x86_64 :Apache HTTP Server
+    Repo        :rhel_dvd
+    Matched from:
+    Filename    :/var/www/html
+
+    1:hp-pear-1.9.4-21.el7.noarch : PHP Extension and Application Repository
+                                   :framework
+    Repo        :rhel_dvd
+    Matched from:
+    Filename    :/var/www/html
+----------------------------------------------
+Managing Software Updates
+Installing Packages
+
+    To obtain and install software package, including any dependencies, use yum install PACKAGENAME
+----------------------------------------
+Managing Software Updates
+Updating Packages and Kernels
+
+    To obtain and install software package update, including dependencies, use yum update PACKAGENAME
+
+        Process tries to preserve configuration files
+
+        Renames files if packager thinks old name will not work after update
+
+        If PACKAGENAME is not specified, yum update installs all relevant updates
+
+        [root@server1 ~]# yum update
+
+    To install new kernel, use yum update kernel
+
+    Configuration files contain list of packages to always install, even if only update is requested
+--------------------------------
+Managing Software Updates
+Viewing Kernel Information
+
+    To list all installed and available kernels, use yum list kernel
+
+    To view currently running kernel, use uname
+
+        To show only kernel version and release, use -r
+
+        To show kernel release and additional information, use -a
+
+        [root@server1 ~]# yum list kernel
+        Loaded plugins:langpacks
+        Installed Packages
+        kernel.x86_64             3.10.0-123.0.1.el7             @anaconda/7.0
+        kernel.x86_64             3.10.0-84.el7                  @rhel-7-server-htb-rpms
+        [root@server1 ~]# uname -r
+        3.10.0-123.el7.x86_64
+        [root@server1 ~]# uname -a
+        Linux demo.example.com 3.10.0-123.el7.x86_64 #1 SMP Tue Nov 26 16:1:22 EST 2013 x86_64 x86_64 x86_64 GNU/Linux
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing Software Updates
+Removing Packages
+
+    To remove installed software package, including supported packages, use yum remove PACKAGENAME
+
+    [root@server1 ~]# yum remove httpd
+
+	
+
+    yum remove removes:
+
+        Package listed
+
+        Packages that require package being removed
+
+        Packages that require those packages, and so on
+
+    Can lead to packages being removed unexpectedly
+
+    Carefully check list of packages to be removed!
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing Software Updates
+yum Groups
+
+    Collections of related software installed for a particular purpose
+
+        Regular: Collections of packages
+
+        Environment: Collections of groups that include their own packages
+
+    Types of packages or groups provided by a group:
+
+        Mandatory: Must be installed if group is installed
+
+        Default: Normally installed if group is installed
+
+        Optional: Not installed unless asked for
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+---------------------------------
+Managing Software Updates
+Removing Packages
+
+    To remove installed software package, including supported packages, use yum remove PACKAGENAME
+
+    [root@server1 ~]# yum remove httpd
+
+	
+
+    yum remove removes:
+
+        Package listed
+
+        Packages that require package being removed
+
+        Packages that require those packages, and so on
+
+    Can lead to packages being removed unexpectedly
+
+    Carefully check list of packages to be removed!
+---------------------------------------
+Managing Software Updates
+yum Groups
+
+    Collections of related software installed for a particular purpose
+
+        Regular: Collections of packages
+
+        Environment: Collections of groups that include their own packages
+
+    Types of packages or groups provided by a group:
+
+        Mandatory: Must be installed if group is installed
+
+        Default: Normally installed if group is installed
+
+        Optional: Not installed unless asked for
+----------------------------------------
+Managing Software Updates with yum
+Listing Groups
+
+    To show names of installed and available groups, use yum group list or yum grouplist
+
+    Some groups installed through environment groups are hidden by default
+
+        To list hidden groups, use yum group list hidden
+
+        To see group ID, use ids
+
+    Can install, update, remove, and query groups by name or ID
+
+    [root@server1 ~]# yum group list
+    Loaded plugins:langpacks
+    Available environment groups:
+       Minimal install
+       Infrastructure Server
+       File and Print Server
+       Web Server
+       Virtualization Host
+       Server with GUI
+    Installed groups:
+       Base
+       Desktop Debugging and Performance Tools
+       Dial-up Networking Support
+       Fonts
+       Input Methods
+       Internet Browser
+       PostgreSQL Database server
+       Printing client
+       X Window System
+    Available Groups:
+       Additional Development
+       Backup Client
+       Backup Server
+    ...
+
+
+------------------------------------
+Managing Software Updates
+Group Markers
+
+    To display information about a group, use yum group info or yum groupinfo
+
+    Group information includes list of mandatory, default, and optional package names or group IDs
+
+    Package names and group IDs may have marker in front of them:
+
+Marker
+	
+
+Meaning
+
+=
+	
+
+Package is installed, was installed as part of group
+
++
+	
+
+Package isn’t installed, will be if group is installed or updated
+
+-
+	
+
+Package isn’t installed, will not be if group is installed or updated
+
+No marker
+	
+
+Package is installed, but was not installed through group
+
+[root@server1 ~]# yum group info "Identity Management Server"
+Loaded plugins:langpacks
+
+Group:Identity Management Server
+ Group-Id:identity-management-server
+ Description:Centralized management of users, servers and authentication policies.
+ Default Packages:
+   +389-ds-base
+   +ipa-admintools
+   +ipa-server
+   +pki-ca
+ Optional Packages:
+   +ipa-server-trust-ad
+   +nuxwdog
+   +slapi-nis
+-----------------------------------
+Managing Software Updates
+Installing yum Groups
+
+    To install group, its mandatory and default packages, and packages they depend on, use yum group install or yum groupinstall
+
+    [root@server1 ~]# yum group install "Infiniband Support"
+    ...
+    Transaction Summary
+    ======================================================================
+    Install  17 Packages (+7 Dependent packages)
+
+    Total download size:9.0 M
+    Installed size:33 M
+    Is this ok [y/d/N]:
+    ...
+--------------------------------
+Managing Software Updates
+Group Behavior
+
+    Groups are treated as objects and tracked by system
+
+    If installed group is updated, and new mandatory or default packages are added, new packages are installed on update
+
+    Group considered installed only if yum group install installed it
+
+    To mark group installed, use`yum group mark install GROUPNAME`
+
+        Missing packages and dependencies installed on next update
+
+    Two-word command form new in Red Hat Enterprise Linux 7
+--------------------------------------
+Managing Software Updates
+Viewing Transaction History
+
+    All install and remove transactions are logged in /var/log/yum.log
+
+    [root@server1 ~]# tail -5 /var/log/yum.log
+    Feb 16 14:0:41 Installed: libnes-1.1.3-5.el7.x86_64
+    Feb 16 14:0:42 Installed: libmthca-1.0.6-10.el7.x86_64
+    Feb 16 14:0:43 Installed: libmlx4-1.0.5-7.el7.x86_64
+    Feb 16 14:0:43 Installed: libibcm-1.0.5-8.el7.x86_64
+    Feb 16 14:0:45 Installed: rdma-7.0_3.13_rc8-3.el7.noarch
+
+    To view transaction summary, use yum history
+
+    [root@server1 ~]# yum history
+    Loaded plugins:langpacks
+    ID     | Login user               | Date and time    | Action(s)      | Altered
+    -------------------------------------------------------------------------------
+         6 | Student User <student>   | 2014-02-16 14:9 | Install        |   25
+         5 | Student User <student>   | 2014-02-16 14:1 | Install        |    1
+         4 | System <unset>           | 2014-02-08 22:3 | Install        | 1112 EE
+         3 | System <unset>           | 2013-12-16 13:3 | Erase          |    4
+         2 | System <unset>           | 2013-12-16 13:3 | Erase          |    1
+         1 | System <unset>           | 2013-12-16 13:8 | Install        |  266
+    history list
+------------------------------------
+Managing Software Updates
+
+    To reverse transaction, use history undo
+
+    [root@server1 ~]# yum history undo 6
+    Loaded plugins:langpacks
+    Undoing transaction 6, from Sun Feb 16 14:9:51 2014
+        Install     dapl-2.0.39-2.el7.x86_64              @rhel-7-server-htb-rpms
+        Dep-Install graphviz-2.30.1-18.el7.x86_64         @rhel-7-server-htb-rpms
+        Dep-Install graphviz-tcl-2.30.1-18.el7.x86_64     @rhel-7-server-htb-rpms
+        Install     ibacm-1.0.8-4.el7.x86_64              @rhel-7-server-htb-rpms
+        Install     ibutils-1.5.7-9.el7.x86_64            @rhel-7-server-htb-rpms
+        Dep-Install ibutils-libs-1.5.7-9.el7.x86_64       @rhel-7-server-htb-rpms
+    ...
+----------------------------------
+yum Command Summary
+
+Command
+	
+
+Action
+
+yum list NAME-PATTERN
+	
+
+List installed and available packages by name
+
+yum grouplist
+	
+
+List installed and available groups
+
+yum search KEYWORD
+	
+
+Search for package by keyword
+
+yum info PACKAGENAME
+	
+
+Show package details
+
+yum install PACKAGENAME
+	
+
+Install package
+
+yum groupinstall GROUPNAME
+	
+
+Install package group
+
+yum update
+	
+
+Update all packages
+
+yum remove PACKAGENAME
+	
+
+Remove package
+
+yum history
+	
+
+Display transaction history
+	
+
+For more info, see:
+
+    yum(1) and yum.conf(5) man pages
+
+    Red Hat Enterprise Linux System Administrator’s Guide for Red Hat Enterprise Linux 7 at http://docs.redhat.com/
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Enabling yum Repositories
+
+    Registering system to subscription management service automatically configures access to repositories based on attached subscriptions
+
+    To view available repositories:
+
+    [root@server1 ~]# yum repolist all
+    Loaded plugins:langpacks
+    repo id                        repo name                          status
+    rhel-7-public-beta-debug-rpms  Red Hat Enterprise Linux 7 Public  disabled
+    rhel-7-public-beta-rpms        Red Hat Enterprise Linux 7 Public  enabled:8,520
+    rhel-7-public-beta-source-rpms Red Hat Enterprise Linux 7 Public  disabled
+    repolist:8,520
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Enabling yum Repositories
+
+    To enable and disable repositories, use yum-config-manager
+
+        Changes enabled parameter in /etc/yum.repos.d/redhat.repo
+
+        [root@server1 ~]# yum-config-manager --enable rhel-7-public-beta-debug-rpms
+        Loaded plugins:langpacks
+        ===================== repo:rhel-7-public-beta-debug-rpms ======================
+         [rhel-7-public-beta-debug-rpms]
+        async = True
+        bandwidth = 0
+        base_persistdir = /var/lib/yum/repos/x86_64/7Server
+        baseurl = https://cdn.redhat.com/content/beta/rhel/everything/7/x86_64/debug
+        cache = 0
+        cachedir = /var/cache/yum/x86_64/7Server/rhel-7-public-beta-debug-rpms
+        cost = 1000
+        deltarpm_percentage =
+        enabled = 1
+        ...
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+
+---------------------------
+Enabling yum Repositories
+
+    Registering system to subscription management service automatically configures access to repositories based on attached subscriptions
+
+    To view available repositories:
+
+    [root@server1 ~]# yum repolist all
+    Loaded plugins:langpacks
+    repo id                        repo name                          status
+    rhel-7-public-beta-debug-rpms  Red Hat Enterprise Linux 7 Public  disabled
+    rhel-7-public-beta-rpms        Red Hat Enterprise Linux 7 Public  enabled:8,520
+    rhel-7-public-beta-source-rpms Red Hat Enterprise Linux 7 Public  disabled
+    repolist:8,520
+-----------------------------------
+Enabling yum Repositories
+
+    To enable and disable repositories, use yum-config-manager
+
+        Changes enabled parameter in /etc/yum.repos.d/redhat.repo
+
+        [root@server1 ~]# yum-config-manager --enable rhel-7-public-beta-debug-rpms
+        Loaded plugins:langpacks
+        ===================== repo:rhel-7-public-beta-debug-rpms ======================
+         [rhel-7-public-beta-debug-rpms]
+        async = True
+        bandwidth = 0
+        base_persistdir = /var/lib/yum/repos/x86_64/7Server
+        baseurl = https://cdn.redhat.com/content/beta/rhel/everything/7/x86_64/debug
+        cache = 0
+        cachedir = /var/cache/yum/x86_64/7Server/rhel-7-public-beta-debug-rpms
+        cost = 1000
+        deltarpm_percentage =
+        enabled = 1
+        ...
+----------------------------------------
+Enabling yum Repositories
+Third-Party Repositories
+
+    Directories of software packages provided by non-Red Hat sources
+
+    Can be accessed by yum from website, FTP server, or local file system
+
+    To enable support for third-party repositories, put file in /etc/yum.repos.d/
+
+    Configuration file must end in .repo
+
+    Repository definition contains:
+
+        URL of repository
+
+        Name
+
+        Whether to use GPG to check package signatures
+
+            URL pointing to trusted GPG key (if using GPG)
+---------------------------------------------------
+Enabling yum Repositories
+Using yum-config-manager
+
+    To create configuration file for yum repository with known URL, use yum-config-manager
+
+        Creates file in /etc/yum.repos.d:
+
+        [root@server1 ~]# yum-config-manager --add-repo="http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/"
+        Loaded plugins:langpacks
+        adding repo from:http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/
+
+         [dl.fedoraproject.org_pub_epel_beta_7_x86_64_]
+        name=added from:http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/
+        baseurl=http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/
+        enabled=1
+
+    Can modify file to customize name and location of GPG key
+-----------------------------------
+Enabling yum Repositories
+
+    Download key to local file
+
+    Do not allow yum to retrieve key from external source
+
+
+     [EPEL]
+    name=EPEL 7 Beta
+    baseurl=http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/
+    enabled=1
+    gpgcheck=1
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+--------------------------------------------------
+Enabling yum Repositories
+RPM Configuration Package
+
+    Some repositories provide RPM configuration file and GPG public key as part of RPM package
+
+        Example: Volunteer project EPEL (Extra Packages for Enterprise Linux)
+
+        EPEL provides software not supported by Red Hat but compatible with Red Hat Enterprise Linux
+
+    To install Red Hat Enterprise Linux 7 EPEL repo package:
+
+    [root@server1 ~]# rpm --import http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+    [root@server1 ~]# yum install http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.1.noarch.rpm
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Enabling yum Repositories
+Software Repository References
+
+    Configuration files often list multiple repository references
+
+    Each reference begins with single-word name in square brackets
+
+     [root@server1 ~]# cat /etc/yum.repos.d/epel.repo
+
+    [epel]
+    name=Extra Packages for Enterprise Linux 7 - $basearch
+    #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+    mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
+    failovermethod=priority
+    enabled=1
+    gpgcheck=0
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+    [epel-debuginfo]
+    name=Extra Packages for Enterprise Linux 7 - $basearch - Debug
+    #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch/debug
+    mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-7&arch=$basearch
+    failovermethod=priority
+    enabled=0
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    gpgcheck=1
+
+    [epel-source]
+    name=Extra Packages for Enterprise Linux 7 - $basearch - Source
+    #baseurl=http://download.fedoraproject.org/pub/epel/7/SRPMS
+    mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-7&arch=$basearch
+    failovermethod=priority
+    enabled=0
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    gpgcheck=1
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Enabling yum Repositories
+
+    To define a repository that is not searched by default, use enabled=0
+
+    Repositories can be enabled and disabled:
+
+        Persistently with yum-config-manager
+
+        Temporarily with --enablerepo=PATTERN and --disablerepo=PATTERN
+
+    Install RPM GPG key before installing signed packages
+
+        Verifies packages belong to imported key
+
+        yum complains about missing key
+
+    To ignore missing GPG keys, use --nogpgcheck
+
+        Can cause forged or insecure packages to be installed
+
+	
+
+For more info, see:
+
+    Red Hat Enterprise Linux System Administrator’s Guide for Red Hat Enterprise Linux 7, section on configuring yum and yum repositories, at http://docs.redhat.com/.
+
+    yum(1), yum.conf(5), and yum-config-manager(1) man pages
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+--------------------------------
+Your browser does not support the audio tag.
+Enabling yum Repositories
+Software Repository References
+
+    Configuration files often list multiple repository references
+
+    Each reference begins with single-word name in square brackets
+
+     [root@server1 ~]# cat /etc/yum.repos.d/epel.repo
+
+    [epel]
+    name=Extra Packages for Enterprise Linux 7 - $basearch
+    #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+    mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
+    failovermethod=priority
+    enabled=1
+    gpgcheck=0
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+    [epel-debuginfo]
+    name=Extra Packages for Enterprise Linux 7 - $basearch - Debug
+    #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch/debug
+    mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-7&arch=$basearch
+    failovermethod=priority
+    enabled=0
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    gpgcheck=1
+
+    [epel-source]
+    name=Extra Packages for Enterprise Linux 7 - $basearch - Source
+    #baseurl=http://download.fedoraproject.org/pub/epel/7/SRPMS
+    mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-7&arch=$basearch
+    failovermethod=priority
+    enabled=0
+    gpgkey=file://etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    gpgcheck=1
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Enabling yum Repositories
+
+    To define a repository that is not searched by default, use enabled=0
+
+    Repositories can be enabled and disabled:
+
+        Persistently with yum-config-manager
+
+        Temporarily with --enablerepo=PATTERN and --disablerepo=PATTERN
+
+    Install RPM GPG key before installing signed packages
+
+        Verifies packages belong to imported key
+
+        yum complains about missing key
+
+    To ignore missing GPG keys, use --nogpgcheck
+
+        Can cause forged or insecure packages to be installed
+
+	
+
+For more info, see:
+
+    Red Hat Enterprise Linux System Administrator’s Guide for Red Hat Enterprise Linux 7, section on configuring yum and yum repositories, at http://docs.redhat.com/.
+
+    yum(1), yum.conf(5), and yum-config-manager(1) man pages
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Summary
+
+    Attaching Systems to Subscriptions
+
+    Managing Software Updates
+
+    yum Command Summary
+
+    Enabling yum Repositories
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+-------------------------------
+Enabling yum Repositories
+
+    To define a repository that is not searched by default, use enabled=0
+
+    Repositories can be enabled and disabled:
+
+        Persistently with yum-config-manager
+
+        Temporarily with --enablerepo=PATTERN and --disablerepo=PATTERN
+
+    Install RPM GPG key before installing signed packages
+
+        Verifies packages belong to imported key
+
+        yum complains about missing key
+
+    To ignore missing GPG keys, use --nogpgcheck
+
+        Can cause forged or insecure packages to be installed
+
+	
+
+For more info, see:
+
+    Red Hat Enterprise Linux System Administrator’s Guide for Red Hat Enterprise Linux 7, section on configuring yum and yum repositories, at http://docs.redhat.com/.
+
+    yum(1), yum.conf(5), and yum-config-manager(1) man pages
+------------------------------------------------------
+
+
+

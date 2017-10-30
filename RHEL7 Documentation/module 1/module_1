@@ -1,0 +1,37 @@
+    When first invoked, redhat-support-tool prompts for subscriber login information
+
+        To avoid repetitively supplying credentials, tool asks to store account info in $HOME/.redhat-support-tool/redhat-support-tool.conf
+
+        If account is shared by many users, use --global option to save account info and systemwide configuration to /etc/redhat-support-tool.conf
+
+    To modify tool’s configuration settings, use config
+
+===========================
+
+Local and Remote Login Labs
+----------------------------
+$ ssh-keygen
+three enter
+creating ssh-key without passphrase on student one desktop.example.com
+
+ssh-copy-id server1.example.com
+
+at thsi step it will ask password after that it will not ask password.
+---------------------------------
+
+ssh student@server1.example.com
+ must be login with out password.
+____________________________________
+check rpm is installed or not
+become root on server
+$ sud -
+
+#sosreport
+see another documentation.
+
+
+
+
+
+
+

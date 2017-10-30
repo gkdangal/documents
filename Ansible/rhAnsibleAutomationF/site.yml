@@ -1,0 +1,23 @@
+---
+name: install the web server and start it
+  become: yes
+  vars:
+   httpd_packages:
+    - httpd
+    - mod_wsgi
+   apache_test_message: this is test message
+   apache_max_keep_alive_requests: 115
+  task:
+   - name: install the apache web server
+     yum:
+      name: "{{ item }}"
+      state: present
+     with_items: "{{ httpd_packages }}"
+     notify: restart apache server
+
+   - name: Generate apache's configuration files fromjinja2 templates
+     templates:
+       src: templates/httpd.conf.j2
+       dest: /etc/httpd/conf/httpd.conf
+     notify: restart apache service
+

@@ -1,0 +1,47 @@
+Module Topics
+
+    Course Overview
+
+    Assumptions
+
+    Training Environment
+----------------------------
+Course Overview
+
+    Overview of Red Hat® Satellite
+
+    Architecture
+
+    Transition from Red Hat Satellite 5 to Red Hat Satellite 6
+
+    Hands-on Satellite 6 demo lab
+----------------------------------------
+Assumptions
+
+    You want to learn how to present and demo Red Hat Satellite 6.
+
+    You know how to use Red Hat Enterprise Linux®.
+
+    You can write some form of code.
+
+    You have your own computer.
+
+    You have an SSH client installed on your computer.
+------------------------------------------------
+Training Environment
+
+    The class uses a central cloud-based environment.
+
+    You provision the following two virtual machines:
+
+        Server – A Satellite 6.x server
+
+        Client – A Red Hat Enterprise Linux 6.5 minimal installation to be configured as a managed Satellite client
+
+    Red Hat Enterprise Linux is preinstalled upon deployment.
+
+    You will receive connection details via email after provisioning the environment.
+
+    Make sure you read the email and understand how to connect to your server and client.
+----------------------------------------------
+

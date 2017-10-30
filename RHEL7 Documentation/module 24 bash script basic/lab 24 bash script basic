@@ -1,0 +1,147 @@
+Writing Bash Scripts Lab
+
+In this lab, you create a Bash shell script to automate the process of individually backing up every MariaDB database on server1.example.com and generating a report providing statistics on each database backup.
+
+You are tasked with writing a Bash shell script to perform a backup of all MariaDB databases on a server using mysqldump. Each database must be backed up to the /dbbackup directory and named DATABASENAME.dump. Your script needs to print out the message 'Backing up "DATABASENAME"' as it initiates the dump of each database.
+
+Once the backups for all the databases are complete, your script must generate a report showing the name of each database backup, its size, and the percentage of the total database dump size it accounts for. The data for each database should be lined up in columns for readability.
+
+The complete output of your script should look like the following:
+
+[root@server1 ~]# /usr/local/sbin/dbbackup
+Backing up "mysql"
+Backing up "test"
+
+/dbbackup/mysql.dump              514664    99%
+/dbbackup/test.dump                 1261     0%
+
+    Reset server1.example.com.
+
+    Log in to server1.example.com and become root with sudo -i.
+
+    Install mariadb-server package with yum.
+
+    [root@server1 ~]# yum install -y mariadb-server
+
+    Enable and start the mariadb service.
+
+    [root@server1 ~]# systemctl enable mariadb
+    ln -s '/usr/lib/systemd/system/mariadb.service' '/etc/systemd/system/multi-user.target.wants/mariadb.service'
+    [root@server1 ~]# systemctl start mariadb
+
+    Create the database backup directory.
+
+    [root@server1 ~]# mkdir /dbbackup
+
+    On the command line, formulate a command to generate a list of database names, excluding the system databases information_schema and performance_schema.
+
+        Issue the SHOW DATABASES command to mysql as the root MySQL user.
+
+        [root@server1 ~]# mysql -u root -e 'SHOW DATABASES'
+        +--------------------+
+        | Database           |
+        +--------------------+
+        | information_schema |
+        | mysql              |
+        | performance_schema |
+        | test               |
+        +--------------------+
+
+        Use the --skip-column-names and -E formatting options to simplify the output for parsing.
+
+        [root@server1 ~]# mysql --skip-column-names -E -u root -e 'SHOW DATABASES'
+        *************************** 1. row ***************************
+        information_schema
+        *************************** 2. row ***************************
+        mysql
+        *************************** 3. row ***************************
+        performance_schema
+        *************************** 4. row ***************************
+        test
+
+        Exclude the row header lines and the two system databases from the output.
+
+        [root@server1 ~]# mysql --skip-column-names -E -u root -e 'SHOW DATABASES' | grep -v '^*' | grep -v '^information_schema$' | grep -v '^performance_schema$'
+        mysql
+        test
+
+    Create your script. Store the MySQL user, the formatting options, the SHOW DATABASES command, and the backup directory as variables.
+
+        Create the new script file with a text editor.
+
+        [root@server1 ~]# vim /usr/local/sbin/dbbackup
+
+        Specify the interpreter program for the script.
+
+        #!/bin/bash
+
+        Set the variables.
+
+        # Variables
+        DBUSER=root
+        FMTOPTIONS='--skip-column-names -E'
+        COMMAND='SHOW DATABASES'
+        BACKUPDIR=/dbbackup
+
+    Initiate a for loop and loop through the list of databases to back up each one to the /dbbackup directory.
+
+        Initiate the for loop by passing in a list of database names via command substitution.
+
+        # Backup non-system databases
+        for DBNAME in $(mysql $FMTOPTIONS -u $DBUSER -e "$COMMAND" | grep -v ^* | grep -v information_schema | grep -v performance_schema); do
+
+        Add the commands to be executed within each loop.
+
+          echo "Backing up \"$DBNAME\""
+          mysqldump -u $DBUSER $DBNAME > $BACKUPDIR/$DBNAME.dump
+
+        Close the for loop.
+
+        done
+
+    Generate a report of each database’s name, dump size, and the percentage of the total dump size it accounts for.
+
+        Initiate a for loop to iterate through and total up the size of each database dump in the /dbbackup directory.
+
+        # Add up size of all database dumps
+        for DBDUMP in $BACKUPDIR/*; do
+
+        Add the commands to be executed within each loop.
+
+          SIZE=$(stat --printf "%s\n" $DBDUMP)
+          TOTAL=$[ $TOTAL + $SIZE ]
+
+        Close the for loop.
+
+        done
+
+        Create a for loop to iterate through and report on each database dump.
+
+        # Report name, size, and percentage of total for each database dump
+        echo
+        for DBDUMP in $BACKUPDIR/*; do
+
+        Add the commands to be executed within each loop.
+
+          SIZE=$(stat --printf "%s\n" $DBDUMP)
+          echo "$DBDUMP,$SIZE,$[ 100 * $SIZE / $TOTAL ]%"
+
+        Close the for loop.
+
+        done
+
+    Save and execute the script.
+
+        Make the script executable.
+
+        [root@server1 ~]# chmod u+x /usr/local/sbin/dbbackup
+
+        Execute the script.
+
+        [root@server1 ~]# /usr/local/sbin/dbbackup
+        Backing up "mysql"
+        Backing up "test"
+
+        /dbbackup/mysql.dump,514664,99%
+        /dbbackup/test.dump,1261,0%
+-----------------------------------------------------

@@ -1,0 +1,249 @@
+oc login https://master.na1.openshift.opentlc.com
+oc project nexus3
+oc status
+----------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project test-nexus
+oc status
+-------------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project nexus3
+oc status
+----------------------------
+govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc new-project ${GUID}-exploring-openshift --description="This is the Project for exploring OpenShift UI" --display-name="Exploring OpenShift UI"
+Now using project "d7b5-exploring-openshift" on server "https://master.na1.openshift.opentlc.com:443".
+
+You can add applications to this project with the 'new-app' command. For example, try:
+
+    oc new-app centos/ruby-22-centos7~https://github.com/openshift/ruby-ex.git
+
+
+to build a new example application in Ruby.
+----------------------------------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc new-project 2032-exploring-openshift --description="This is the Project for exploring OpenShift UI" --display-name="Exploring OpenShift UI"
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc new-project 500-exploring-openshift
+Now using project "500-exploring-openshift" on server "https://master.na1.openshift.opentlc.com:443".
+
+You can add applications to this project with the 'new-app' command. For example, try:
+
+    oc new-app centos/ruby-22-centos7~https://github.com/openshift/ruby-ex.git
+
+to build a new example application in Ruby.
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc new-app centos/ruby-22-centos7~https://github.com/openshift/ruby-ex.git
+--> Found Docker image 7ced0be (7 days old) from Docker Hub for "centos/ruby-22-centos7"
+
+    Ruby 2.2 
+    -------- 
+    Ruby 2.2 available as docker container is a base platform for building and running various Ruby 2.2 applications and frameworks. Ruby is the interpreted scripting language for quick and easy object-oriented programming. It has many features to process text files and to do system management tasks (as in Perl). It is simple, straight-forward, and extensible.
+
+    Tags: builder, ruby, ruby22
+
+    * An image stream will be created as "ruby-22-centos7:latest" that will track the source image
+    * A source build using source code from https://github.com/openshift/ruby-ex.git will be created
+      * The resulting image will be pushed to image stream "ruby-ex:latest"
+      * Every time "ruby-22-centos7:latest" changes a new build will be triggered
+    * This image will be deployed in deployment config "ruby-ex"
+    * Port 8080/tcp will be load balanced by service "ruby-ex"
+      * Other containers can access this service through the hostname "ruby-ex"
+
+--> Creating resources ...
+    imagestream "ruby-22-centos7" created
+    imagestream "ruby-ex" created
+    buildconfig "ruby-ex" created
+    deploymentconfig "ruby-ex" created
+    service "ruby-ex" created
+--> Success
+    Build scheduled, use 'oc logs -f bc/ruby-ex' to track its progress.
+    Run 'oc status' to view your app.
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$
+--------------------------
+4100-exploring-openshift
+Exploring Openshift GUI
+This is the project for exploring Openshift GUI 
+-----------------------------
+https://github.com/openshift/cakephp-ex.git
+----------------------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project 4100-exploring-openshift
+oc status
+---------------------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project 500-exploring-openshift
+oc status
+-----------------------------------------------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project 2032-exploring-openshift
+oc status
+------------------------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project d7b5-exploring-openshift
+oc status
+--------------------------------------
+lab 0303
+303-logging metrics
+Review Aggregated Logging and Matrics
+Explore Aggregated Logging and Matrics
+--------------------------
+under browse catelog
+eap64
+Action: Enter openshift-tasks in the Name field.
+
+Action: Enter https://github.com/openshiftdemos/openshift-tasks in the Git Repository URL field.
+
+    Explain that you can look at more advanced deployment options by clicking Show advanced routing, build, and deployment options.
+
+---------
+oc login https://master.na1.openshift.opentlc.com
+oc project 303-logging-metrics
+oc status
+----------------------------------------------
+lab 0304
+----------
+    Action: Log in to the OPENTLC shared OpenShift web console using either of these methods:
+
+        Method 1: Go to https://master.na1.openshift.opentlc.com
+
+        Method 2: Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        LocalMachine$ oc login https://master.na1.openshift.opentlc.com --username shacharb-redhat.com
+        Username: shacharb-redhat.com
+        Password: **********
+        Logged into "https://master.na1.openshift.opentlc.com" as "shacharb-redhat.com" using existing credentials.
+---------------------------------------
+connection to openshift vm client
+
+ssh -i ~/.ssh/id_rsa.pub govinda-cirruslabs.io@ocplab-d7b5.oslab.opentlc.com
+----------------------------------------
+open project on Openshinft
+name::
+32-templates-demo
+Display name::
+Demonstrating Templates
+Description::
+This is the project to host the templates demonstration
+
+click create button
+-------------------
+you can create project by using command line by this way::
+
+[sborenst@ip-192-168-20-158 ~]$ oc new-project guid-templates-demo --description="This is the project to host the templates demonstration" --display-name="Demonstrating Templates"
+--------------------------------------------------
+you can create project without putting description and display name by this way
+******
+oc new-projact <projact name>
+--------------------------------------
+Ater create a new project 
+
+oc login https://master.na1.openshift.opentlc.com
+oc project 32-templates-demo
+oc status
+------------------------------------
+CICD
+name::
+
+tok-deployments-demo
+Display name::
+Demonstrating Deployment Strategies
+--------------------
+oc login https://master.na1.openshift.opentlc.com
+oc project tok-deployments-demo-cicd
+oc status
+------------------
+govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc new-app jenkins-persistent -p ENABLE-OAUTH=false -p MEMORY_LIMIT=1.5Gi -n pipeline-govinda-dev
+error: invalid parameter assignment in "ENABLE-OAUTH=false"
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc new-app jenkins-persistent -p ENABLE_OAUTH=false -p MEMORY_LIMIT=1.5Gi -n pipeline-govinda-dev
+--------------------------------
+--> Deploying template "openshift/jenkins-persistent" to project pipeline-govinda-dev
+
+     Jenkins (Persistent)
+     ---------
+     Jenkins service, with persistent storage.
+     
+     NOTE: You must have persistent volumes available in your cluster to use this template.
+
+     A Jenkins service has been created in your project.  Log into Jenkins with your OpenShift account.  The tutorial at https://github.com/openshift/origin/blob/master/examples/jenkins/README.md contains more information about using this template.
+
+
+     * With parameters:
+        * Jenkins Service Name=jenkins
+        * Jenkins JNLP Service Name=jenkins-jnlp
+        * Enable OAuth in Jenkins=false
+        * Memory Limit=1.5Gi
+        * Volume Capacity=1Gi
+        * Jenkins ImageStream Namespace=openshift
+        * Jenkins ImageStreamTag=jenkins:latest
+
+--> Creating resources ...
+    route "jenkins" created
+    persistentvolumeclaim "jenkins" created
+    deploymentconfig "jenkins" created
+    serviceaccount "jenkins" created
+    rolebinding "jenkins_edit" created
+    service "jenkins-jnlp" created
+    service "jenkins" created
+--> Success
+    Run 'oc status' to view your app.
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ 
+---------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc policy add-role-to-user edit system:serviceaccount:pipeline-govinda-dev:jenkins -n pipeline-govinda-test
+role "edit" added: "system:serviceaccount:pipeline-govinda-dev:jenkins"
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ 
+------------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc policy add-role-to-user edit system:serviceaccount:pipeline-govinda-dev:jenkins -n pipeline-govinda-test
+role "edit" added: "system:serviceaccount:pipeline-govinda-dev:jenkins"
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc policy add-role-to-user edit system:serviceaccount:pipeline-govinda-dev:jenkins -n pipeline-govinda-prod
+role "edit" added: "system:serviceaccount:pipeline-govinda-dev:jenkins"
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$
+---------------------------------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc policy add-role-to-group system:image-puller system:serviceaccounts:pipeline-govinda-test -n pipeline-govinda-dev
+role "system:image-puller" added: "system:serviceaccounts:pipeline-govinda-test"
+----------------------------------------------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc policy add-role-to-group system:image-puller system:serviceaccounts:pipeline-govinda-prod -n pipeline-govinda-dev
+role "system:image-puller" added: "system:serviceaccounts:pipeline-govinda-prod"
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$
+-------------------------------------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc logs -f build/cotd-1 -n pipeline-govinda-dev
+Cloning "https://github.com/StefanoPicozzi/cotd.git" ...
+	Commit:	08d396a2fd4ae38090823a18ae92cf5a2d4e11c4 (Update README.md)
+	Author:	Stefano Picozzi <StefanoPicozzi@gmail.com>
+	Date:	Mon Sep 11 13:50:30 2017 +1000
+---> Installing application source...
+Pushing image 172.30.160.227:5000/pipeline-govinda-dev/cotd:latest ...
+Pushed 0/5 layers, 2% complete
+Pushed 1/5 layers, 26% complete
+Pushed 2/5 layers, 52% complete
+Pushed 3/5 layers, 82% complete
+Pushed 4/5 layers, 100% complete
+Pushed 5/5 layers, 100% complete
+Push successful
+---------------------
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ oc tag cotd:latest cotd:testready -n pipeline-govinda-dev
+Tag cotd:testready set to cotd@sha256:1e65fd18179e7ed7249d7bc428ace513fd14a1238d8f81e0a836d4f753663e33.
+[govinda-cirruslabs.io@ocplab-d7b5 ~]$ 
+------------------------------
+oc tag cotd:testready cotd:prodready -n pipeline-govinda-dev
+-------------------------------
+oc new-app pipeline-${GUID}-dev/cotd:testready --name=cotd -n pipeline-${GUID}-test
+oc new-app pipeline-${GUID}-dev/cotd:prodready --name=cotd -n pipeline-${GUID}-prod
+-------------------
+oc get dc cotd -o yaml -n pipeline-${GUID}-dev | sed 's/automatic: true/automatic: false/g' | oc replace -f -
+oc get dc cotd -o yaml -n pipeline-${GUID}-test| sed 's/automatic: true/automatic: false/g' | oc replace -f -
+oc get dc cotd -o yaml -n pipeline-${GUID}-prod | sed 's/automatic: true/automatic: false/g' | oc replace -f 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

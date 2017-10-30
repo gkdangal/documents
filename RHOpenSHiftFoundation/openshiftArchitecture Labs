@@ -1,0 +1,119 @@
+Demonstrate Deploying a Binary Container Lab
+Scenario
+
+The scenario for this demonstration lab is that a developer wants to deploy the latest Sonatype Nexus Repository Manager 3 container to their project.
+1. Demonstrate Authentication to OpenShift Master
+
+    Action: Log in to the OPENTLC shared OpenShift web console using either of these methods:
+
+        Method 1: Go to https://master.na1.openshift.opentlc.com
+
+        Method 2: Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        LocalMachine$ oc login https://master.na1.openshift.opentlc.com --username shacharb-redhat.com
+        Username: shacharb-redhat.com
+        Password: **********
+        Logged into "https://master.na1.openshift.opentlc.com" as "shacharb-redhat.com" using existing credentials.
+
+2. Demonstrate Creating a Project
+
+    Action: Click New Project to create a project for your demonstration:
+    Demo01 New Project Button
+
+        Explain what projects are and how different projects can have different user permissions and quotas attached to them.
+
+    Action: Fill in the Name, Display Name, and Description fields:
+    Demo02 Create Project Details
+    	Project names need to be unique in an OpenShift environment. Should you get an error that the project name is already taken add your initials or a similar unique string to your project name.
+    	
+
+    Two other options for completing this task:
+
+        Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        [sborenst@ip-192-168-20-158 ~]$ oc new-project nexus-binary-demo --description="This is the project to host the Nexus binary deployment demonstration" --display-name="Hosted Nexus Environment"
+        Now using project "nexus-binary-demo" on server "https://master.na.openshift.opentlc.com".
+
+        Run the oc new-project nexus-binary-demo command without the description and display name information.
+
+3. Demonstrate Deploying a Binary Container
+
+    Action: Click Deploy Image after creating your project or after clicking Add to project:
+
+    Demo03_Select_Deploy_Image
+
+    Action: Enter sonatype/nexus3 in the Image Name field.
+
+        Explain that you are entering an image name to point to the official Sonatype Nexus Repository Manager 3 container hosted by Sonatype outside of OpenShift.
+
+    Action: Click search_icon (Search).
+
+    Demo04_Binary_Image_Name
+
+        Explain the following aspects of the Environment Variables and Labels sections:
+
+            How labels are used in OpenShift and how easy it is to label new deployments.
+
+            How environment variables are used in OpenShift and how easy it is to set environment variables such as user names, database names, and others to modify deployment.
+
+    Action: When you are done, click Create:
+
+    Demo05_Env_Vars_and_Create
+
+    Action: From the Application created page, click Continue to overview:
+
+    Demo06_Application_Created
+
+        Explain the following aspects of the Project Overview page:
+
+            Point out the Nexus3 service created by OpenShift for this deployment (first arrow on the left).
+            	The first deployment can take a few minutes because Nexus is setting up a few things internally. Wait until the status ring turns solid blue before continuing (see screenshot below).
+
+            Point out the deployment’s Pod replica count and explain that you can scale the application by adding and removing nodes using this button.
+
+            Demo07_Overview_Page_Create_Route
+
+    Action: When you are done, click Create Route to create a route for the Nexus3 service.
+
+        Explain how the Create Route page allows you to set the following aspects of the route creation:
+
+            The Hostname field allows you to set any DNS name for your application (as long as the DNS resolves to the OpenShift routers).
+
+            The Path field can be used with your URL (i.e., www.mywebsite.com/portal).
+
+            The Service list lets you select which service the route should point to.
+
+            The Target Port list lets you select which network port the route directs traffic to.
+
+            Checking Secure route lets you set different TLS settings for your route.
+
+    Action: When you are done, click Create to create a route for the application:
+
+    Demo08_Create_Route_Details
+
+        Explain that a route has been created for your application that points to your service and eventually to your pods.
+        	It can take a few seconds for the router to get the latest routes. If your page doesn’t display right away, give it a few seconds, then refresh.
+
+    Action: Right-click the route’s link on the top right and select Open link in new tab:
+
+    Demo09_Click_Route_To_App
+
+        Explain that the application has been deployed, and that you can click Sign in at the top right with admin as the user and admin123 as the password.
+
+        Demo10_Application_Page_Signin
+
+4. Cleanup
+
+If you are not going do do any additional demonstrations go back to the OpenShift Homepage and delete your project.
+5. Additional Demonstrations
+
+You can do the following optional demonstrations:
+
+    Show adding storage to a container (select nexus3 as the volume name).
+
+    Show scaling a deployment up and down.
+
+    Show metrics and logging for a container.
+
+
+Build Version: 1.8R : Last updated 2017-08-25 12:26:46 EDT

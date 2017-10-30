@@ -1,0 +1,1143 @@
+Module Topics
+
+    Mounting File Systems Manually
+
+    Unmounting File Systems
+
+    Accessing Removable Storage Devices
+
+    Disk Partitioning
+
+    Managing MBR Partitions With fdisk
+
+    Managing GPT Partitions With gdisk
+
+    Creating File Systems
+
+    Mounting File Systems
+
+    Swap Space Concepts
+
+    Create a Swap Space
+
+    Activate a Swap Space
+----------------------------------------------------
+Mounting File Systems Manually
+
+    Need to manually mount file system on SATA/PATA or SCSI device
+
+    Use mount
+
+        First argument specifies file system to mount
+
+        Second argument specifies directory where file system resides after mounting
+
+            Called mount point
+
+    Two ways mount expects file system argument:
+
+        Device file of partition holding file system
+
+            Resides in /dev
+
+        UUID
+
+            Universal unique identifier of file system
+
+            Does not change unless file system is re-created, even if device order changes or new devices are added to system
+-------------------------------------
+Mounting File Systems Manually
+Partitions and UUID
+
+    blkid gives overview of:
+
+        Partitions with file system on them
+
+        File system UUID
+
+        File system used to format partition
+
+        [root@server1~]# blkid
+        /dev/vda1:UUID="46f543fd-78c9-4526-a857-244811be2d88" TYPE="xfs"
+
+    Can mount file system on existing directory
+
+        Default /mnt directory provides entry point for mount points
+
+        Recommended: Create subdirectory under /mnt to use as mount point
+
+    To mount by partition device file:
+
+    [root@server1~]# mount /dev/vdb1 /mnt/mydata
+
+    To mount by file system UUID:
+
+    [root@server1~]# mount UUID="46f543fd-78c9-4526-a857-244811be2d88" /mnt/mydata
+
+    If mount point is not empty, file in mount point not accessible while file system is mounted
+
+    All files written to mount point directory appear on file system mounted there
+
+---------------------------------------------
+Mounting File Systems Manually
+Partitions and UUID
+
+    blkid gives overview of:
+
+        Partitions with file system on them
+
+        File system UUID
+
+        File system used to format partition
+
+        [root@server1~]# blkid
+        /dev/vda1:UUID="46f543fd-78c9-4526-a857-244811be2d88" TYPE="xfs"
+
+    Can mount file system on existing directory
+
+        Default /mnt directory provides entry point for mount points
+
+        Recommended: Create subdirectory under /mnt to use as mount point
+
+    To mount by partition device file:
+
+    [root@server1~]# mount /dev/vdb1 /mnt/mydata
+
+    To mount by file system UUID:
+
+    [root@server1~]# mount UUID="46f543fd-78c9-4526-a857-244811be2d88" /mnt/mydata
+
+    If mount point is not empty, file in mount point not accessible while file system is mounted
+
+    All files written to mount point directory appear on file system mounted there
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7
+-----------------------------------------
+Unmounting File Systems
+
+    To unmount file system, use umount
+
+        Expects mount point as argument
+
+        Example:
+
+            Change to /mnt/mydata directory
+
+            Try to unmount device on /mnt/mydata mount point
+
+            It fails
+
+            [root@server1~]# cd /mnt/mydata
+            [root@server1mydata]# umount /mnt/mydata
+            umount:/mnt/mydata: target is busy.
+                    (In some cases useful info about processes that use
+                     the device is found by lsof(8) or fuser(1))
+-------------------------------------------------
+Unmounting File Systems
+Processes That Prevent Unmounting
+
+    Cannot unmount if process accesses mount point
+
+    Need to stop access to unmount
+
+    To list all open files and process accessing them in directory, use lsof
+
+        Use to identify processes preventing file system from unmounting
+
+        [root@server1mydata]# lsof /mnt/mydata
+        COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+        bash    1593 root  cwd    DIR  253,2        6  128 /mnt/mydata
+        lsof    2532 root  cwd    DIR  253,2       19  128 /mnt/mydata
+        lsof    2533 root  cwd    DIR  253,2       19  128 /mnt/mydata
+
+    After identifying, can take action
+
+        Wait for process to complete
+
+        Send SIGTERM or SIGKILL signal
+
+        Change directory to directory outside mount point
+
+        [root@server1mydata]# cd
+        [root@server1~]# umount /mnt/mydata
+
+    Common reason mount point is busy - Current directory of shell prompt is below active mount point
+
+        bash process is accessing mount point
+
+        To unmount device, change to directory outside mount point
+---------------------------------
+Accessing Removable Storage Devices
+
+    Graphical desktop environment automatically mounts removable media, i.e., USB flash devices and drives
+
+    Mount point for removable medium: /run/media/<user>/<label>
+
+        <user> is user logged in to graphical environment
+
+        <label> is name given to file system when created
+
+	
+
+    Must unmount USB media before removing it
+
+    Removing without unmounting can cause data loss
+
+	For more info on mounting and unmounting file systems, see these man pages: mount(8), umount(8), and lsof(8).
+-------------------------------------------
+Disk Partitioning
+
+    Disk partitioning: Lets you divide hard drive into multiple logical storage units (partitions)
+
+    Can use different partitions to perform different functions, such as:
+
+        Limit available space to applications or users
+
+        Allow multibooting of different operating systems from same disk
+
+        Separate operating system and program files from user files
+
+        Create separate area for OS virtual memory swapping
+
+        Limit disk space usage to improve diagnostic/imaging performance
+---------------------------------------------------
+Disk Partitioning
+MBR Partitioning Scheme
+
+    Master Boot Record (MBR): Dictates how to partition disks on BIOS firmware systems
+
+    Supports maximum four primary partitions
+
+    On Linux, can use extended and logical partitions to create maximum 15 partitions
+
+    Partition size data stored as 32-bit values
+
+    Disks partitioned with MBR have maximum 2 TiB disk/partition size limit
+
+    2 TiB limit presents real-world problem encountered frequently in production environments
+
+    MBR scheme being superseded by GUID Partition Table (GPT)
+--------------------------------------------
+Disk Partitioning
+MBR Partitioning Scheme
+
+    Master Boot Record (MBR): Dictates how to partition disks on BIOS firmware systems
+
+    Supports maximum four primary partitions
+
+    On Linux, can use extended and logical partitions to create maximum 15 partitions
+
+    Partition size data stored as 32-bit values
+
+    Disks partitioned with MBR have maximum 2 TiB disk/partition size limit
+
+    2 TiB limit presents real-world problem encountered frequently in production environments
+
+    MBR scheme being superseded by GUID Partition Table (GPT)
+---------------------------------------------------
+Disk Partitioning
+GPT Partitioning Scheme
+
+    GPT: Standard for laying out partition tables on hard disks for Unified Extensible Firmware Interface (UEFI) firmware systems
+
+    Part of UEFI standard
+
+    Addresses many limitations of MBR-based scheme
+
+    Supports up to 128 partitions
+
+    Allocates 64 bits for logical block addresses
+
+    Can accommodate partitions and disks of up to 8 ZiB (8 billion TiB)
+
+        8 ZiB limit based on 512-byte block size
+
+        With 4,096-byte blocks, limitation increases to 64 ZiB
+
+    Uses 128-bit GUIDs to identify disks and partitions
+
+    Offers redundancy of partition table information
+
+        Primary GPT resides at head of disk
+
+        Backup copy/secondary GPT housed at end of disk
+
+    Employs CRC checksum to detect errors and corruption
+-----------------------------------------
+Managing MBR Partitions With fdisk
+
+    Partition editors let administrators make changes to disk partitions
+
+        Creating partitions, deleting partitions, changing partition types
+
+    Can use fdisk partition editor to perform operations for MBR scheme disks
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing MBR Partitions With fdisk
+Creating MBR Disk Partitions
+
+    Specify disk device on which to create partition:
+
+    [root@server1~]# fdisk /dev/vdb
+    Welcome to fdisk (util-linux 2.23.2).
+
+    Changes will remain in memory only, until you decide to write them.
+    Be careful before using the write command.
+
+    Command (m for help):
+
+    Request new primary or extended partition:
+
+    Partition type:
+       p   primary (0 primary, 0 extended, 4 free)
+       e   extended
+    Select (default p):p
+
+        If you need more than four partitions, create three primary and one extended partition; use extended partition as container for multiple logical partitions
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing MBR Partitions With fdisk
+
+    Specify partition number:
+
+    Partition number (1-4, default 1):1
+
+    Specify first disk sector on which new partition will start:
+
+    First sector (2048-20971519, default 2048):2048
+
+    Specify last disk sector on which new partition will end:
+
+    Last sector, +sectors or +size{K,M,G} (6144-20971519, default 20971519):1050623
+
+        Can also enter number representing desired partition size in sectors:
+
+        Last sector, +sectors or +size{K,M,G} (6144-20971519, default 20971519):+52488
+
+        Also can specify partition size in units KiB, MiB, or GiB:
+
+        Last sector, +sectors or +size{K,M,G} (6144-20971519, default 20971519):+512M
+
+        After you enter partition’s ending boundary, fdisk displays partition creation confirmation:
+
+        Partition 1 of type Linux and of size 512 MiB is set
+
+---------------------------------------------
+Managing MBR Partitions With fdisk
+Creating MBR Disk Partitions
+
+    Specify disk device on which to create partition:
+
+    [root@server1~]# fdisk /dev/vdb
+    Welcome to fdisk (util-linux 2.23.2).
+
+    Changes will remain in memory only, until you decide to write them.
+    Be careful before using the write command.
+
+    Command (m for help):
+
+    Request new primary or extended partition:
+
+    Partition type:
+       p   primary (0 primary, 0 extended, 4 free)
+       e   extended
+    Select (default p):p
+
+        If you need more than four partitions, create three primary and one extended partition; use extended partition as container for multiple logical partitions
+--------------------------------------
+Managing MBR Partitions With fdisk
+
+    Specify partition number:
+
+    Partition number (1-4, default 1):1
+
+    Specify first disk sector on which new partition will start:
+
+    First sector (2048-20971519, default 2048):2048
+
+    Specify last disk sector on which new partition will end:
+
+    Last sector, +sectors or +size{K,M,G} (6144-20971519, default 20971519):1050623
+
+        Can also enter number representing desired partition size in sectors:
+
+        Last sector, +sectors or +size{K,M,G} (6144-20971519, default 20971519):+52488
+
+        Also can specify partition size in units KiB, MiB, or GiB:
+
+        Last sector, +sectors or +size{K,M,G} (6144-20971519, default 20971519):+512M
+
+        After you enter partition’s ending boundary, fdisk displays partition creation confirmation:
+
+        Partition 1 of type Linux and of size 512 MiB is set
+----------------------------------------------
+Managing MBR Partitions With fdisk
+
+    Define partition type:
+
+        To change partition type to anything other than Linux, use t
+
+        To display table of hex codes for all partition types, use L
+
+        Command (m for help):t
+        Selected partition 1
+        Hex code (type L to list all codes):82
+        Changed type of partition 'Linux' to 'Linux swap / Solaris'
+
+    Save partition table changes:
+
+    Command (m for help):w
+    The partition table has been altered!
+
+    Calling ioctl() to re-read partition table.
+
+    WARNING: Re-reading the partition table failed with error 16: Device or resource busy.
+    The kernel still uses the old table. The new table will be used at
+    the next reboot or after you run partprobe(8) or kpartx(8)
+    Syncing disks.
+
+    Initiate kernel re-read of new partition table:
+
+    [root@server1~]# partprobe /dev/vdb
+
+        Must use w to write partition table edits to disk
+
+        To discard erroneous commands, exit fdisk without running w
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+---------------------------------------------
+Managing MBR Partitions With fdisk
+Removing MBR Disk Partitions
+
+    Specify disk containing partition to remove:
+
+    [root@server1~]# fdisk /dev/vdb
+    Welcome to fdisk (util-linux 2.23.2).
+
+    Changes will remain in memory only, until you decide to write them.
+    Be careful before using the write command.
+
+    Command (m for help):
+
+    Identify partition number of partition to delete:
+
+    Command (m for help):p
+
+    Disk /dev/vdb:10.7 GB, 10737418240 bytes, 20971520 sectors
+    Units = sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical):512 bytes / 512 bytes
+    I/O size (minimum/optimal):512 bytes / 512 bytes
+    Disk label type:dos
+    Disk identifier:0xd2368130
+
+       Device Boot      Start         End      Blocks   Id  System
+    /dev/vdb1            2048     1050623      524288   82  Linux swap / Solaris
+------------------------------------------------
+Managing MBR Partitions With fdisk
+
+    Request partition deletion:
+
+    Command (m for help):d
+    Selected partition 1
+    Partition 1 is deleted
+
+    Save partition table changes:
+
+    Command (m for help):w
+    The partition table has been altered!
+
+    Calling ioctl() to re-read partition table.
+
+    WARNING:Re-reading the partition table failed with error 16: Device or resource busy.
+    The kernel still uses the old table. The new table will be used at
+    the next reboot or after you run partprobe(8) or kpartx(8)
+    Syncing disks.
+
+    Initiate kernel re-read of new partition table:
+
+    [root@server1~]# partprobe /dev/vdb
+-----------------------------------
+Managing GPT Partitions With gdisk
+
+    Can use gdisk partition editor to manage partitions for GPT partitioning scheme disks
+
+    Use gdisk with GPT partitioning scheme
+
+        GPT support for fdisk experimental
+-------------------------------------------------------
+Managing GPT Partitions With gdisk
+Creating GPT Disk Partitions
+
+    Specify disk device on which to create partition:
+
+    [root@server1~]# gdisk /dev/vdb
+    GPT fdisk (gdisk) version 0.8.6
+
+    Partition table scan:
+      MBR:not present
+      BSD:not present
+      APM:not present
+      GPT:not present
+
+    Creating new GPT entries.
+
+    Command (? for help):
+
+    Request new partition:
+
+    Command (? for help):n
+
+    Specify partition number:
+
+    Partition number (1-128, default 1):1
+--------------------------------------
+
+Managing GPT Partitions With gdisk
+
+    Specify disk location from which new partition will start:
+
+        Option 1: Enter absolute disk sector number representing tfirst sector of new partition
+
+        First sector (34-20971486, default = 2048) or {+-}size{KMGTP}:2048
+
+        Option 2: Indicates partition’s starting sector by position relative to first or last sector of first contiguous block of free sectors on disk
+
+            Specify input in KiB, MiB, GiB, TiB, or PiB
+
+            Example: **+**512M signifies sector position 512 MiB after beginning of next group of contiguous available sectors
+
+            **-**512M denotes sector position 512 MiB before end of group of contiguous available sectors
+
+    Specify last disk sector on which new partition will end:
+
+    Last sector (2048-20971486, default = 20971486) or {+-}size{KMGTP}:1050623
+
+        Can specify end boundary of new partition in KiB, MiB, GiB, TiB, or PiB from beginning or end of group of contiguous available sectors
+
+            Example: **+**512M signifies ending partition position 512 MiB after first sector
+
+            Last sector (2048-20971486, default = 20971486) or {+-}size{KMGTP}:+512M
+
+            **-**512M indicates ending partition position 512 MiB before the end contiguous available sectors
+
+            Last sector (2048-20971486, default = 20971486) or {+-}size{KMGTP}:-512M
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing GPT Partitions With gdisk
+
+    Define partition type:
+
+        Use hex code to change partition type to anything other than Linux
+
+        Use L to display table of hex codes for all partition types
+
+        Current type is 'Linux filesystem'
+
+        Hex code or GUID (L to show codes, Enter = 8300):8e00
+        Changed type of partition to 'Linux LVM'
+
+    Save partition table changes:
+
+    Command (? for help):w
+
+    Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+    PARTITIONS!!
+
+    Do you want to proceed? (Y/N):y
+    OK; writing new GUID partition table (GPT) to /dev/vdb.
+    The operation has completed successfully.
+
+    Initiate kernel re-read of new partition table:
+
+    [root@server1~]# partprobe /dev/vdb
+
+        Must use w to write partition table edits to disk
+
+        To discard erroneous commands, exit gdisk without running w
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Managing GPT Partitions With gdisk
+Removing GPT Disk Partitions
+
+    Specify disk containing partition to remove:
+
+    [root@server1~]# gdisk /dev/vdb
+    GPT fdisk (gdisk) version 0.8.6
+
+    Partition table scan:
+      MBR:protective
+      BSD:not present
+      APM:not present
+      GPT:present
+
+    Found valid GPT with protective MBR; using GPT.
+
+    Command (? for help):
+
+    Identify partition number of partition to delete:
+
+    Command (? for help):p
+    Disk /dev/vdb:20971520 sectors, 10.0 GiB
+    Logical sector size:512 bytes
+    Disk identifier (GUID):8B181B97-5259-4C8F-8825-1A973B8FA553
+    Partition table holds up to 128 entries
+    First usable sector is 34, last usable sector is 20971486
+    Partitions will be aligned on 2048-sector boundaries
+    Total free space is 19922877 sectors (9.5 GiB)
+
+    Number  Start (sector)    End (sector)  Size       Code  Name
+       1            2048         1050623   512.0 MiB   8E00  Linux LVM
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+--------------------------------------------------
+Managing GPT Partitions With gdisk
+
+    Define partition type:
+
+        Use hex code to change partition type to anything other than Linux
+
+        Use L to display table of hex codes for all partition types
+
+        Current type is 'Linux filesystem'
+
+        Hex code or GUID (L to show codes, Enter = 8300):8e00
+        Changed type of partition to 'Linux LVM'
+
+    Save partition table changes:
+
+    Command (? for help):w
+
+    Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+    PARTITIONS!!
+
+    Do you want to proceed? (Y/N):y
+    OK; writing new GUID partition table (GPT) to /dev/vdb.
+    The operation has completed successfully.
+
+    Initiate kernel re-read of new partition table:
+
+    [root@server1~]# partprobe /dev/vdb
+
+        Must use w to write partition table edits to disk
+
+        To discard erroneous commands, exit gdisk without running w
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+----------------------------------------
+Managing GPT Partitions With gdisk
+Removing GPT Disk Partitions
+
+    Specify disk containing partition to remove:
+
+    [root@server1~]# gdisk /dev/vdb
+    GPT fdisk (gdisk) version 0.8.6
+
+    Partition table scan:
+      MBR:protective
+      BSD:not present
+      APM:not present
+      GPT:present
+
+    Found valid GPT with protective MBR; using GPT.
+
+    Command (? for help):
+
+    Identify partition number of partition to delete:
+
+    Command (? for help):p
+    Disk /dev/vdb:20971520 sectors, 10.0 GiB
+    Logical sector size:512 bytes
+    Disk identifier (GUID):8B181B97-5259-4C8F-8825-1A973B8FA553
+    Partition table holds up to 128 entries
+    First usable sector is 34, last usable sector is 20971486
+    Partitions will be aligned on 2048-sector boundaries
+    Total free space is 19922877 sectors (9.5 GiB)
+
+    Number  Start (sector)    End (sector)  Size       Code  Name
+       1            2048         1050623   512.0 MiB   8E00  Linux LVM
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+----------------------------------------
+Managing GPT Partitions With gdisk
+
+    Request partition deletion:
+
+    Command (? for help):d
+    Using 1
+
+    Save partition table changes:
+
+    Command (? for help):w
+
+    Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+    PARTITIONS!!
+
+    Do you want to proceed? (Y/N):y
+    OK; writing new GUID partition table (GPT) to /dev/vdb.
+    The operation has completed successfully.
+
+    Initiate kernel re-read of new partition table:
+
+    [root@server1~]# partprobe /dev/vdb
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Creating File Systems
+
+    After creating block device, must apply file system format to it
+
+        File system applies structure to block device
+
+        Lets you store and retrieve data device
+
+    Red Hat Enterprise Linux supports many file system types
+
+        Two common types: xfs and ext4
+
+        anaconda (Red Hat Enterprise Linux installer) uses xfs by default
+
+    To apply file system to block device, use mkfs
+
+        To specify file system type, use -t
+
+        If no type specified, ext2 used by default
+
+        [root@server1~]# mkfs -t xfs /dev/vdb1
+        meta-data=/dev/vdb1              isize=256    agcount=4, agsize=16384 blks
+                 =                       sectsz=512   attr=2, projid32bit=1
+                 =                       crc=0
+        data     =                       bsize=4096   blocks=65536, imaxpct=25
+                 =                       sunit=0      swidth=0 blks
+        naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
+        log      =internal log           bsize=4096   blocks=853, version=2
+                 =                       sectsz=512   sunit=0 blks, lazy-count=1
+        realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Mounting File Systems
+
+    After applying file system format, need to attach file system into directory structure
+
+    Lets user space utilities access or write files on device
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+
+--------------------------------------------
+Creating File Systems
+
+    After creating block device, must apply file system format to it
+
+        File system applies structure to block device
+
+        Lets you store and retrieve data device
+
+    Red Hat Enterprise Linux supports many file system types
+
+        Two common types: xfs and ext4
+
+        anaconda (Red Hat Enterprise Linux installer) uses xfs by default
+
+    To apply file system to block device, use mkfs
+
+        To specify file system type, use -t
+
+        If no type specified, ext2 used by default
+
+        [root@server1~]# mkfs -t xfs /dev/vdb1
+        meta-data=/dev/vdb1              isize=256    agcount=4, agsize=16384 blks
+                 =                       sectsz=512   attr=2, projid32bit=1
+                 =                       crc=0
+        data     =                       bsize=4096   blocks=65536, imaxpct=25
+                 =                       sunit=0      swidth=0 blks
+        naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
+        log      =internal log           bsize=4096   blocks=853, version=2
+                 =                       sectsz=512   sunit=0 blks, lazy-count=1
+        realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Mounting File Systems
+
+    After applying file system format, need to attach file system into directory structure
+
+    Lets user space utilities access or write files on device
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Mounting File Systems
+Manually Mounting File Systems
+
+    To manually attach device to directory location (mount point), use mount
+
+    Specify:
+
+        Device
+
+        Mount point
+
+        Any option desired to customize device behavior
+
+        [root@server1~]# mount /dev/vdb1 /mnt
+
+    Can also use mount to view:
+
+        Currently mounted file systems
+
+        Mount points
+
+        Options
+
+        [root@server1~]# mount | grep vdb1
+        /dev/vdb1 on /mnt type xfs (rw,relatime,seclabel,attr2,inode64,noquota)
+
+    Manually mounting file system lets you verify that formatted device is accessible/working as desired
+
+    After system reboot, file system exists and has intact data but is not mounted into directory tree again
+
+    To permanently mount file system, add listing for file system to /etc/fstab
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+------------------------------------------------------------------
+Creating File Systems
+
+    After creating block device, must apply file system format to it
+
+        File system applies structure to block device
+
+        Lets you store and retrieve data device
+
+    Red Hat Enterprise Linux supports many file system types
+
+        Two common types: xfs and ext4
+
+        anaconda (Red Hat Enterprise Linux installer) uses xfs by default
+
+    To apply file system to block device, use mkfs
+
+        To specify file system type, use -t
+
+        If no type specified, ext2 used by default
+
+        [root@server1~]# mkfs -t xfs /dev/vdb1
+        meta-data=/dev/vdb1              isize=256    agcount=4, agsize=16384 blks
+                 =                       sectsz=512   attr=2, projid32bit=1
+                 =                       crc=0
+        data     =                       bsize=4096   blocks=65536, imaxpct=25
+                 =                       sunit=0      swidth=0 blks
+        naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
+        log      =internal log           bsize=4096   blocks=853, version=2
+                 =                       sectsz=512   sunit=0 blks, lazy-count=1
+        realtime =none                   extsz=4096   blocks=0, rtextents=0
+------------------------------------------------------------
+
+Mounting File Systems
+
+    After applying file system format, need to attach file system into directory structure
+
+    Lets user space utilities access or write files on device
+---------------------------
+Mounting File Systems
+Manually Mounting File Systems
+
+    To manually attach device to directory location (mount point), use mount
+
+    Specify:
+
+        Device
+
+        Mount point
+
+        Any option desired to customize device behavior
+
+        [root@server1~]# mount /dev/vdb1 /mnt
+
+    Can also use mount to view:
+
+        Currently mounted file systems
+
+        Mount points
+
+        Options
+
+        [root@server1~]# mount | grep vdb1
+        /dev/vdb1 on /mnt type xfs (rw,relatime,seclabel,attr2,inode64,noquota)
+
+    Manually mounting file system lets you verify that formatted device is accessible/working as desired
+
+    After system reboot, file system exists and has intact data but is not mounted into directory tree again
+
+    To permanently mount file system, add listing for file system to /etc/fstab
+---------------------------------------------
+Mounting File Systems
+Persistently Mounting File Systems
+
+    To configure device to be mounted to mount point at system boot, add device listing in /etc/fstab
+
+    /etc/fstab is white space-delimited file with six fields per line
+
+    [root@server1~]# cat /etc/fstab
+    #
+    # /etc/fstab
+    # Created by anaconda on Thu Mar 20 14:2:46 2014
+    #
+    # Accessible filesystems, by reference, are maintained under '/dev/disk'
+    # See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+    #
+    UUID=7a20315d-ed8b-4e75-a5b6-24ff9e1f9838  /  xfs  defaults  1 1
+
+    First field specifies device to be used (example uses UUID)
+
+        Could also use device file; for example, /dev/vdb1
+
+            UUID is stored in file system superblock and created at same time as file system
+
+            Recommended: Use UUID; remains intact if block device identifiers change
+-----------------------------------------
+Mounting File Systems
+blkid
+
+    To scan block devices connected to machine, use blkid
+
+        Also reports on data like assigned UUID and file system format
+
+        [root@server1~]# blkid /dev/vdb1
+        /dev/vdb1:UUID="226a7c4f-e309-4cb3-9e76-6ef972dd8600" TYPE="xfs"
+
+    Second field is mount point at which to attach device into directory hierarchy
+
+        Mount point should already exist
+
+        If not, use mkdir to create
+
+    Third field contains file system type applied to block device
+
+    Fourth field lists options to apply to mounted device to customize behavior
+
+        Required field
+
+        defaults contains set of commonly used options
+--------------------------------
+Mounting File Systems
+
+    Incorrect entry in /etc/fstab may render the machine unbootable
+
+    To verify entry is valid:
+
+        Unmount new file system
+
+        Mount file system back into place using mount -a, which reads /etc/fstab
+
+            If mount -a returns error, correct this before rebooting machine
+
+	For more info on adding partitions, file systems, and persistent mounts, see these man pages: fdisk(8), gdisk(8), mkfs(8), mount(8), fstab(5).
+-----------------------------------
+Swap Space Concepts
+
+    Swap space: Disk area you can use with Linux kernel memory management subsystem
+
+        Use to supplement system RAM by holding inactive pages of memory
+
+        System RAM + swap spaces = Virtual memory
+
+    When system memory usage exceeds limit, kernel:
+
+        Combs RAM looking for idle memory pages assigned to processes
+
+        Writes idle page to swap area
+
+        Reassigns RAM page to another process
+
+    If program requires access to page written to disk, kernel:
+
+        Locates another idle memory page
+
+        Writes it to disk
+
+        Recalls needed page from swap area
+
+
+    Swap slow compared to RAM
+
+    Keep use of swap to a minimum
+
+--------------------------------------------------------------
+Create a Swap Space
+
+    Create partition
+
+    Set partition type as 82 Linux Swap
+
+    Format swap signature on device
+---------------------------------------
+Create a Swap Space
+Create a Partition
+
+    Use tool such as fdisk to create partition
+
+        Example: Create 256 MiB partition
+
+        [root@server1~]# fdisk /dev/vdb
+        Welcome to fdisk (util-linux 2.23.2).
+
+        Changes will remain in memory only, until you decide to write them.
+        Be careful before using the write command.
+
+        Device does not contain a recognized partition table
+        Building a new DOS disklabel with disk identifier 0x34e4e6d7.
+
+        Command (m for help):n
+        Partition type:
+           p   primary (0 primary, 0 extended, 4 free)
+           e   extended
+        Select (default p):p
+        Partition number (1-4, default 1):1
+        First sector (2048-20971519, default 2048):Enter
+        Using default value 2048
+        Last sector, +sectors or +size{K,M,G} (2048-20971519, default 20971519):+256M
+        Partition 1 of type Linux and of size 256 MiB is set
+
+        Command (m for help):p
+
+        Disk /dev/vdb:10.7 GB, 10737418240 bytes, 20971520 sectors
+        Units = sectors of 1 * 512 = 512 bytes
+        Sector size (logical/physical):512 bytes / 512 bytes
+        I/O size (minimum/optimal):512 bytes / 512 bytes
+        Disk label type:dos
+        Disk identifier:0x34e4e6d7
+
+           Device Boot      Start         End      Blocks   Id  System
+        /dev/vdb1            2048      526335      262144   83  Linux
+
+-----------------------------------------------
+Create a Swap Space
+Assign the Partition Type
+
+    Recommended: Change created partition’s type (system ID) to 82 Linux Swap
+
+    Setting partition type helps administrators determine partition’s purpose
+
+    Command (m for help):t
+    Selected partition 1
+    Hex code (type L to list all codes):82
+    Changed type of partition 'Linux' to 'Linux swap / Solaris'
+
+    Command (m for help):p
+
+    Disk /dev/vdb:10.7 GB, 10737418240 bytes, 20971520 sectors
+    Units = sectors of 1 * 512 = 512 bytes
+    Sector size (logical/physical):512 bytes / 512 bytes
+    I/O size (minimum/optimal):512 bytes / 512 bytes
+    Disk label type:dos
+    Disk identifier:0x34e4e6d7
+
+       Device Boot      Start         End      Blocks   Id  System
+    /dev/vdb1            2048      526335      262144   82  Linux swap / Solaris
+------------------------------------------------------
+Create a Swap Space
+Format the Device
+
+    To apply swap signature to device, use mkswap
+
+    Writes single block of data at beginning of device
+
+        Leaves rest of device unformatted
+
+        [root@server1~]# mkswap /dev/vdb1
+        Setting up swapspace version 1, size = 262140 KiB
+        no label, UUID=fbd7fa60-b781-44a8-961b-37ac3ef572bf
+---------------------------------------------
+Activate a Swap Space
+
+    To activate formatted swap space, use swapon
+
+    To activate all swap spaces listed in /etc/fstab, use swapon -a
+
+    Can call swapon on device
+
+    [root@server1~]# free
+                 total       used       free     shared    buffers     cached
+    Mem:      1885252     791812    1093440      17092        688     292024
+    -/+ buffers/cache:    499100    1386152
+    Swap:           0          0          0
+    [root@server1~]# swapon /dev/vdb1
+    [root@server1~]# free
+                 total       used       free     shared    buffers     cached
+    Mem:      1885252     792116    1093136      17092        692     292096
+    -/+ buffers/cache:    499328    1385924
+    Swap:      262140          0     262140
+-------------------------------------------
+Activate a Swap Space
+Persistently Activate Swap Space
+
+    Swap space likely needs to automatically activate with every machine boot
+
+        Must configure this in /etc/fstab
+
+    Can use swapoff to deactivate swap space
+
+    Works only if swapped data can be written to other active swap spaces or back into memory
+-----------------------------------
+Activate a Swap Space
+Add a Previously Created Swap Space
+
+UUID=fbd7fa60-b781-44a8-961b-37ac3ef572bf  swap  swap  defaults  0 0
+
+Field
+	
+
+Description
+
+1
+	
+
+UUID or raw device name
+
+2
+	
+
+Swap devices use swap as placeholder value for mount point
+
+3
+	
+
+File system type for swap space is swap
+
+4
+	
+
+Options, such as defaults which includes auto mount option to automatically activate swap space at boot
+
+5
+	
+
+dump flag; backing up not required for swap spaces
+
+6
+	
+
+fsck order; file system checking not required for swap spaces
+-----------------------------------------------
+Activate a Swap Space
+Swap Space Priorities
+
+    Default: Swap spaces used in series
+
+        First activated swap space used until full, then kernel starts using second swap space
+
+    To display swap space priorities, use swapon -s
+
+    To set priorities, use pri= mount option
+
+    If swap spaces have same priority, kernel writes to them round-robin
+
+	For more info on managing swap space, see these man pages: mkswap(8), swapon(8), swapoff(8), mount(8), fdisk(8).
+-----------------------------------------------
+
+
+
+

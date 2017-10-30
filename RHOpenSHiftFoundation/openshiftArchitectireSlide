@@ -1,0 +1,524 @@
+Module Topics
+
+    Overview
+
+    OpenShift Architecture & Concepts
+
+    Networking Workflow
+
+    Deployment Workflow
+
+    Aggregated Logging & Metrics
+-------------------------
+OpenShift Architecture and Concepts
+Supported Infrastructures
+
+    OpenShift is supported anywhere that Red Hat Enterprise Linux is:
+
+        On bare-metal physical machines or virtualized infrastructure, and in private or certified public clouds
+
+            Includes all supported virtualization platforms: Red Hat Virtualization, vSphere, and Hyper-V
+
+        Red Hat OpenStack Platform and certified public cloud providers like Amazon, Google, Azure
+
+    Hybrid approach supports deploying OpenShift instances across all of these infrastructures
+
+        Only x86 platforms supported
+--------------------------------------
+
+Node Host
+
+    OpenShift runs on either RHEL or Red Hat Enterprise Atomic Host
+
+    OpenShift has two types of hosts: nodes and masters
+
+    Nodes are instances of RHEL 7 or Red Hat Atomic Host with OpenShift installed
+
+        Nodes are where end-user applications run
+
+        Nodes are orchestrated by masters
+
+    node daemon and other software run on node
+--------------------------------------------------------
+OpenShift Architecture and Concepts
+Containers
+
+    Application instances and components run in containers
+
+    OpenShift node can run many containers
+
+    Node capacity is related to memory and CPU capabilities of underlying resources
+
+        Hardware or virtualized
+---------------------------------------
+OpenShift Architecture and Concepts
+Pod
+
+    One or more containers deployed together on one host
+
+        Consists of co-located group of containers with shared resources such as volumes and IP addresses
+
+        Smallest compute unit that can be defined, deployed, and managed
+
+    May contain one or more co-located applications that are relatively tightly coupled—run with shared context
+
+        Example: web server and file puller/syncer
+
+        Models application-specific logical host in containerized environment
+
+        In pre-container world, applications executed on same physical or virtual host
+
+        In OpenShift, pods replace individual application containers as smallest deployable unit
+--------------------------------------------------------
+OpenShift Architecture and Concepts
+Pod
+
+    Orchestrated unit in OpenShift
+
+    OpenShift schedules, manages, and runs all containers in pod on same node
+
+    Complex applications made up of many pods
+
+        Each with own container
+
+        Interact externally and also with one another inside OpenShift environment
+
+    OpenShift runs Docker images in containers wrapped by meta object called pod
+
+    Possible to have multiple containers in single pod
+
+        But few use cases for multi-container pod
+
+        Different application components such as application server and database generally not placed in single pod
+
+    Most applications benefit from flexibility of single-container pod
+
+        Allows for individual application components to be easily scaled horizontally
+
+    Services are how application components are "wired" together
+--------------------------------
+OpenShift Architecture and Concepts
+Pod
+
+    Application or instance of something
+
+        Similar to gear in OpenShift 2.x
+
+        Reality is more complex
+
+    Use oc get pod to view pods running in environment—usually your project:
+
+    [root@ip-192-168-20-158 ec2-user]# oc get pods --all-namespaces
+    NAMESPACE         NAME                          READY     STATUS      RESTARTS   AGE
+    default           docker-registry-2-1kehz       1/1       Running     0          1h
+    default           router-1-pfjfq                1/1       Running     0          1h
+    logging           logging-curator-1-v78r3       1/1       Running     0          1h
+    logging           logging-deployer-8ypgw        0/1       Completed   0          1h
+    logging           logging-deployer-eweon        0/1       Completed   0          1h
+    logging           logging-es-rrbjvi1h-1-7zz2p   1/1       Running     0          1h
+    logging           logging-fluentd-1iquo         1/1       Running     0          1h
+    logging           logging-fluentd-7uiuq         1/1       Running     0          1h
+    logging           logging-kibana-1-sny2o        2/2       Running     1          1h
+    openshift-infra   hawkular-cassandra-1-rieq5    1/1       Running     0          1h
+    openshift-infra   hawkular-metrics-crxud        1/1       Running     0          1h
+    openshift-infra   heapster-tvgh6                1/1       Running     1          1h
+    openshift-infra   metrics-deployer-k66pl        0/1       Completed   0          1h
+--------------------------------------
+OpenShift Architecture and Concepts
+Master Host
+
+    Also instance of Red Hat Enterprise Linux or Red Hat Atomic Host
+
+    Primary functions:
+
+        Orchestrate all activities on nodes
+
+        Know and maintain state within OpenShift environment
+
+    Use multiple masters for high availability
+---------------------------------------------------
+OpenShift Architecture and Concepts
+Master - API and Authentication
+
+    Master provides single API that all tooling and systems interact with
+
+    Any request goes through this API
+
+    All API requests SSL-encrypted and authenticated
+
+    Authorizations handled via fine-grained role-based access control (RBAC)
+
+    Master can be tied into external identity management systems
+
+        Examples: LDAP, Active Directory, OAuth providers like GitHub and Google
+----------------------------------------------
+OpenShift Architecture and Concepts
+Desired and Current State
+
+    Held in data store that uses etcd as distributed key-value store
+
+    Also holds things like RBAC rules, application environment information, and non-application user data
+------------------------------
+OpenShift Architecture and Concepts
+Scheduler
+
+    Responsible for determining pod placement
+
+    Takes current memory, CPU, and other environment utilization into account when placing pods on nodes
+
+    For application high availability, spreads pod replicas between nodes
+-------------------------------------------
+
+OpenShift Architecture and Concepts
+Scheduler - Configuration
+
+    Can use real-world topology of OpenShift deployment (regions, zones)
+
+    Can handle complex scenarios for scheduling workloads
+
+    Uses JSON file in combination with node labels to carve up OpenShift environment, For example, to look like the real-world topology.
+-----------------------------------------------
+OpenShift Architecture and Concepts
+Scheduler - Configuration
+
+    Can use real-world topology of OpenShift deployment (regions, zones)
+
+    Can handle complex scenarios for scheduling workloads
+
+    Uses JSON file in combination with node labels to carve up OpenShift environment, For example, to look like the real-world topology.
+--------------------------------
+
+OpenShift Architecture and Concepts
+Integrated Docker Registry
+
+    OpenShift includes integrated Docker registry used by OpenShift to store and manage Docker images
+
+    Whenever new image pushed to registry, registry notifies OpenShift and passes along image information such as namespace, name, and image metadata
+
+        Various parts of OpenShift can react to new image by creating new builds and deployments
+--------------------------
+OpenShift Architecture and Concepts
+Service
+
+    Defines logical set of pods and policy for accessing them
+
+    As pods are created and destroyed by scaling up and down, permanent IP or hostname must be available for other applications to connect to
+
+    Service represents group of pods and provides permanent IP and hostname for other applications to use
+
+    Service layer connects application components together
+
+        Front-end web service connects to database instance by communicating with database service
+
+    Services allow simple internal load balancing across application components
+
+        OpenShift automatically injects service information into running containers for ease of discovery
+-----------------------------------
+OpenShift Architecture and Concepts
+Health and Scaling
+
+    Master monitors health of pods and automatically scales them
+
+    Users configure pod probes for liveness and readiness
+
+    Pods can be automatically scaled based on CPU utilization
+----------------------------------------
+OpenShift Architecture and Concepts
+Unhealthy Pods
+
+    What happens when master sees pod failing it’s probes?
+
+    What happens if containers inside pod exit because of crash or other issue?
+-------------------------
+OpenShift Architecture and Concepts
+Remediating Pod Failures
+
+    Master automatically restarts pods that fail probes or exit due to container crash
+
+    Pods that fail too often marked as bad and temporarily not restarted
+
+    Service layer sends traffic only to healthy pods
+
+    Master automatically orchestrates to maintain component availability
+-------------------------------------
+OpenShift Architecture and Concepts
+Application Data
+
+    Containers natively ephemeral
+
+        Data not saved when containers restarted or created
+
+    OpenShift provides persistent storage subsystem that automatically connects real-world storage to correct pods
+
+        Allows use of stateful applications
+
+    Wide array of persistent storage types
+
+        Raw devices: iSCSI, FC
+
+        Enterprise storage: NFS
+
+        Cloud-type options: Gluster/Ceph, EBS, pDisk
+----------------------------------------------
+OpenShift Architecture and Concepts
+Routing Layer
+
+    External clients need to access applications running inside OpenShift
+
+    Routing layer is close partner to service layer
+
+        Runs in pods inside OpenShift
+
+        Provides automated load balancing to pods for external clients
+
+        Provides load balancing and auto-routing around unhealthy pods like service layer does
+
+    Routing layer pluggable and extensible if hardware or non-OpenShift software router desired
+------------------------------------------
+OpenShift Architecture and Concepts
+Access - Web UI, CLI, IDE, API
+
+    All users access OpenShift through same standard interfaces
+
+    Web UI, CLI, and IDEs all go through authenticated and RBAC-controlled API
+
+    Users do not need system-level access to OpenShift hosts
+
+        Even for complicated debugging and troubleshooting
+
+    Continuous integration (CI) and continuous deployment (CD) systems integrate with OpenShift through these interfaces
+
+    Because OpenShift is built on top of Red Hat Enterprise Linux, existing systems management and systems monitoring tools can be used
+---------------------------------------------
+OpenShift Architecture and Concepts
+Service
+
+    Offers IP and port pair that redirect to appropriate back ends
+
+    Label selector determines targeted pod set
+
+        Service definition tells OpenShift that pods with label name=example-label are associated and should have traffic distributed among them
+-------------------------------------
+OpenShift Architecture and Concepts
+Labels
+
+    Used to organize, group, or select API objects
+
+        Example: Pods tagged with labels, services use label selectors to identify pods they proxy to
+
+        Makes it possible for services to reference groups of pods
+
+        Can even treat pods with potentially different Docker containers as related entities
+
+    Most objects can include labels in metadata
+
+    Can group arbitrarily related objects with labels
+
+        Example: All of the pods, services, replication controllers, and deployment configurations of a particular application
+
+    Labels are simple key-value pairs:
+
+    labels:
+      key1: value1
+      key2: value2
+
+--------------------------------------------
+OpenShift Architecture and Concepts
+Scheduler
+
+    Determines placement of new pods onto nodes within OpenShift cluster
+
+    Reads pod data and finds node that is good fit
+
+    Is independent, standalone, pluggable solution
+
+    Does not modify pod
+
+        Creates binding that ties pod to node
+----------------------------------------
+OpenShift Architecture and Concepts
+Scheduler Workflow
+
+    OpenShift provides generic scheduler as default scheduling engine
+
+    Selects node to host pod in three-step operation:
+
+        Filter nodes based on specified constraints/requirements
+
+            Runs nodes through list of filter functions called predicates
+
+        Prioritize qualifying nodes
+
+            Pass each node through series of priority functions
+
+            Assign node score between 0 and 10
+
+        Select best-fit node
+
+            Sort nodes based on scores
+
+            Select node with highest score to host pod
+
+            If multiple nodes have same high score, select one at random
+
+	Priority functions are equally weighted by default. More important priorities can receive higher weight.
+Copyright ©2016 Red Hat, Inc. - 1.8R
+-------------------------------------
+OpenShift Architecture and Concepts
+Replication Controller
+
+    Ensures that specified number of pod replicas running at all times
+
+    If pods exit or deleted, replication controller instantiates more
+
+    If more pods running than desired, replication controller deletes as many as necessary
+-----------------------------
+OpenShift Architecture and Concepts
+Replication Controller
+
+    Replication controller’s definition includes:
+
+        Number of replicas desired (adjustable at anytime)
+
+        Pod definition for creating replicated pod
+
+        Selector for identifying managed pods
+
+    Selector is set of labels assigned to all pods managed by replication controller
+
+        Included in pod definition that replication controller instantiates
+
+        Used by replication controller to determine how many pod instances are running, to adjust as needed
+---------------------------------------
+Networking Workflow
+OpenShift Networking
+
+    Container networking based on integrated Open vSwitch
+
+    Platform-wide routing tier
+
+    Ability to plug in third-party software-defined network (SDN) solutions
+
+    Integrated with DNS and existing routing and load balancing
+---------------------------------------------------
+Networking Workflow
+Route
+
+    Exposes service by giving it externally reachable hostname
+
+    Consists of route name, service selector, and (optional) security configuration
+
+    Router can consume defined route and endpoints identified by service
+
+        Provides named connectivity
+
+        Lets external clients reach OpenShift-hosted applications
+--------------------------------------
+Networking Workflow
+Router
+
+    Easy-to-deploy multitier application
+
+    Routing layer required to reach applications from outside OpenShift environment
+
+    Router container can run on any node host in environment
+
+        Administrator creates wildcard DNS entry (CNAME) on DNS server
+
+        CNAME resolves to node host hosting router container
+
+    Router is ingress point for traffic destined for OpenShift-hosted pods
+
+        Router container resolves external requests (https://myapp.cloudapps-guid.ose.opentlc.com) and proxies requests to right pods
+
+	Do not confuse the router and route resources.
+----------------------------------------------------
+Networking Workflow
+Scenario: External client points browser to myApp.cloudapps.ml.opentlc.com:80
+
+    DNS resolves to host running router container
+
+    Using openshift-sdn overlay network:
+
+        Router checks if route exists for request
+
+        Proxies request to internal pod IP:port (10.1.2.3:8080)
+----------------------------------------------------
+Networking Workflow
+Pod Connectivity
+
+    Pods use network of OpenShift node host to connect to other pods and external networks
+
+Scenario: Pod transmits packet to pod in another node host in OpenShift
+
+environment
+
+    Container sends packet to target pod using IP 10.1.2.3:8080
+
+    OpenShift node uses Open vSwitch to route packet to OpenShift node hosting target container
+
+    Receiving node routes packet to target container
+---------------------------------
+Networking Workflow
+Services and Pods
+
+    Services often used to provide permanent IP to group of similar pods
+
+    Internally, when accessed, services load-balance and proxy to an appropriate backing pod
+
+    Backing pods can be added to or removed from service arbitrarily while service remains consistently available
+
+        Enables anything that depends on service to refer to it at consistent internal address
+
+Scenario: Pod transmits packet to service representing one or more pods
+
+    Container sends packet to target service using IP 172.30.0.99:9999
+
+    When service requested, OpenShift node proxies packet to one of the pods represented by service (10.1.2.3:8080)
+-------------------------
+Container Deployment Workflow
+Scenario: New application requested via CLI, web console, or API
+
+    OpenShift API/authentication layer:
+
+        Approves request, considering user’s permissions, resource quotas, and other information
+
+        Creates supporting resources: deployment configuration, replication controllers, services, routes, and persistent storage claims
+
+    OpenShift scheduling layer:
+
+        Designates node host for each pod, considering resources' availability and load and application spread between nodes for application high availability
+
+    OpenShift node:
+
+        Pulls down image to be used from external or integrated registry
+
+        Starts container (pod) on node
+-----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+OpenShift_Architecture_1
+

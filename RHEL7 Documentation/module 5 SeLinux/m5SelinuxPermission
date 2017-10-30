@@ -1,0 +1,284 @@
+SELinux Permissions Labs
+1. Change SELinux Modes
+
+In this lab, you manage SELinux modes, both temporarily and persistently.
+
+    Log in as root on server1.example.com and then display the current SELinux mode.
+
+    [root@server1 ~]# getenforce
+    Enforcing
+
+    Change the default SELinux mode to permissive and reboot.
+
+    [root@server1 ~]# vi /etc/selinux/config
+    [root@server1 ~]# grep '^SELINUX' /etc/selinux/config
+    SELINUX=permissive
+    SELINUXTYPE=targeted
+    [root@server1 ~]# reboot
+
+    When server1.example.com comes back up, log in as root and display the current SELinux mode.
+
+    [root@server1 ~]# getenforce
+    Permissive
+
+    Change the default SELinux mode to enforcing.
+
+    [root@server1 ~]# vi /etc/selinux/config
+    [root@server1 ~]# grep '^SELINUX' /etc/selinux/config
+    SELINUX=enforcing
+    SELINUXTYPE=targeted
+
+    Set the current SELinux mode to enforcing.
+
+    [root@server1 ~]# setenforce 1
+    [root@server1 ~]# getenforce
+    Enforcing
+
+2. Change SELinux Contexts
+
+In this lab, you persistently change the SELinux context of a directory and its contents.
+
+    Log in as root on server1.example.com. Use yum to install the Apache web server.
+
+    [root@server1 ~]# yum install -y httpd
+
+    Configure Apache to use a document root in a non-standard location.
+
+        Create the new document root, /custom.
+
+        [root@server1 ~]# mkdir /custom
+
+        Create index.html with some recognizable content.
+
+        [root@server1 ~]# echo 'This is server1.example.com.' > /custom/index.html
+
+        Configure Apache to use the new location:
+
+            Back up the existing config.
+
+            Replace the two occurrences of /var/www/html with /custom in the Apache configuration file, /etc/httpd/conf/httpd.conf.
+
+            Disable welcome.conf which answers all connections to http by default.
+
+            [root@server1 ~]# cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.bak
+            [root@server1 ~]# mv /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/welcome.disabled
+            [root@server1 ~]# vi /etc/httpd/conf/httpd.conf
+            [root@server1 ~]# grep custom /etc/httpd/conf/httpd.conf
+            DocumentRoot "/custom"
+            <Directory "/custom">
+
+    Start the Apache web service.
+
+    [root@server1 ~]# systemctl restart httpd
+
+    Open the firewall on server1.example.com to add port 80 (firewall configuration will be discussed in a later chapter).
+
+    [root@server1 ~]# firewall-cmd --zone=public --add-port=80/tcp --permanent
+    [root@server1 ~]# firewall-cmd --reload
+
+    Open a web browser on desktop1.example.com and navigate to http://server1.example.com/index.html.
+
+        You should see an error message that says you do not have permission to access the file.
+
+    Define a SELinux file context rule that sets the context type to httpd_sys_content_t for /custom and all the files below it.
+
+    [root@server1 ~]# semanage fcontext -a -t httpd_sys_content_t '/custom(/.*)?'
+
+    Use restorecon to change their contexts.
+
+    [root@server1 ~]# restorecon -Rv /custom
+    restorecon reset /custom context unconfined_u:bject_r:default_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+    restorecon reset /custom/index.html context unconfined_u:bject_r:default_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+    Try to view http://server1.example.com/index.html again.
+
+        You should see the message This is server1.example.com.
+
+3. Change SELinux Booleans
+
+Apache can publish web content hosted in users' home directories, but SELinux prevents this by default. In this exercise, you identify and change the SELinux Boolean that permits Apache to access user home directories.
+	The Apache web server should already be installed and running on server1.example.com.
+
+    Log in as root on server1.example.com.
+
+    Enable the Apache feature that permits users to publish web content from their home directories and then back up and edit the /etc/httpd/conf.d/userdir.conf configuration file.
+
+    [root@server1 ~]# cp /etc/httpd/conf.d/userdir.conf /etc/httpd/conf.d/userdir.conf.bak
+    [root@server1 ~]# vi /etc/httpd/conf.d/userdir.conf
+
+        Comment out the following line:
+
+            UserDir disabled
+
+        Un-comment out the following line:
+
+            UserDir public_html
+
+        Make sure the configuration is correct:
+
+        [root@server1 ~]# grep '^ *UserDir' /etc/httpd/conf.d/userdir.conf
+            UserDir public_html
+
+    Restart the Apache web service to make the changes take effect.
+
+    [root@server1 ~]# systemctl restart httpd
+
+    Create some web content that is published from a user’s home directory.
+
+        Log in as student in another window and create a public_html directory.
+
+        [student@server1 ~]$ mkdir ~/public_html
+
+        Create some content in an index.html file.
+
+        [student@server1 ~]$ echo 'This is student content on server1.example.com.' > ~/public_html/index.html
+
+        Change the permissions on student's home directory so Apache can access the public_html subdirectory.
+
+        [student@server1 ~]$ chmod 711 ~
+
+    Open a web browser on desktop1.example.com and navigate to http://server1.example.com/~student/index.html.
+
+        You should see an error message that says you do not have permission to access the file.
+
+    In your root window, use the getsebool command to see if there are any Booleans that restrict access to home directories.
+
+    [root@server1 ~]# getsebool -a | grep home
+    [... Output omitted ...]
+    httpd_enable_homedirs --> off
+    [... Output omitted ...]
+
+    Use setsebool to enable home directory access persistently.
+
+    [root@server1 ~]# setsebool -P httpd_enable_homedirs on
+
+    Try to view http://server1.example.com/~student/index.html again.
+
+        You should see the message This is student content on server1.example.com.
+
+4. Troubleshoot SELinux
+
+In this lab, you learn how to troubleshoot SELinux security denials.
+	
+
+    The Apache web server should already be installed and running on server1.example.com.
+
+    Be sure you have completed the "Changing SELinux Contexts" practice exercise before beginning this lab.
+
+    Log in as root on server1.example.com.
+
+    Remove the file context rule created earlier and restore the /custom directory structure back to its original SELinux context.
+
+    [root@server1 ~]# semanage fcontext -d -t httpd_sys_content_t '/custom(/.*)?'
+
+    Change the file contexts to their original values.
+
+    [root@server1 ~]# restorecon -Rv /custom
+    restorecon reset /custom context unconfined_u:bject_r:httpd_sys_content_t:s0
+      ->unconfined_u:bject_r:default_t:s0
+    restorecon reset /custom/index.html context unconfined_u:bject_r:httpd_sys_
+      content_t:0->unconfined_u:object_r:default_t:s0
+
+    Open a web browser on desktop1.example.com and navigate to http://server1.example.com/index.html. (Use shift+reload to make sure you get an up-to-date request.)
+
+        You should see an error message that says you do not have permission to access the file.
+
+    View the contents of /var/log/messages. You should see output similar to the following:
+
+    [root@server1 ~]# grep "setroubleshoot:" /var/log/messages
+    [... Output omitted ...]
+    Feb 19 12:0:35 server1.example.com setroubleshoot: SELinux is preventing /usr/sbin/httpd
+    from getattr access on the file . For complete SELinux messages. run
+      sealert -l 82ead554-c3cb-4664-85ff-e6f256437c6c
+    [... Output omitted ...]
+
+    Run the suggested sealert command and see if you can identify the issue and a possible resolution.
+
+    [root@server1 ~]# sealert -l [string from previous command output] | less
+    SELinux is preventing /usr/sbin/httpd from getattr access on the file.
+
+    *****  Plugin catchall_labels (83.8 confidence) suggests   *******************
+
+    If you want to allow httpd to have getattr access on the  file
+    Then you need to change the label on $FIX_TARGET_PATH
+    Do
+    # semanage fcontext -a -t FILE_TYPE '$FIX_TARGET_PATH'
+    where FILE_TYPE is one of the following:NetworkManager_log_t, ...,
+    httpd_sys_content_t, httpd_sys_htaccess_t, httpd_sys_ra_content_t,
+    httpd_sys_rw_content_t, httpd_sys_script_exec_t, httpd_tmp_t, ...
+    Then execute:
+    restorecon -v '$FIX_TARGET_PATH'
+
+    *****  Plugin catchall (17.1 confidence) suggests   **************************
+
+    If you believe that httpd should be allowed getattr access on the  file by
+      default.
+    Then you should report this as a bug.
+    You can generate a local policy module to allow this access.
+    Do
+    allow this access for now by executing:
+    # grep httpd /var/log/audit/audit.log | audit2allow -M mypol
+    # semodule -i mypol.pp
+
+    Additional Information:
+    Source Context                system_u:ystem_r:httpd_t:s0
+    Target Context                unconfined_u:bject_r:default_t:s0
+    Target Objects                 [ file ]
+    Source                        httpd
+    Source Path                   /usr/sbin/httpd
+    Port                          <Unknown>
+    Host                          server1.example.com
+    Source RPM Packages           httpd-2.4.6-14.el7.x86_64
+    Target RPM Packages
+    Policy RPM                    selinux-policy-3.12.1-124.el7.noarch
+    Selinux Enabled               True
+    Policy Type                   targeted
+    Enforcing Mode                Enforcing
+    Host Name                     server1.example.com
+    Platform                      Linux server1.example.com 3.10.0-84.el7.x86_64 #1
+                                  SMP Tue Feb 4 16:8:19 EST 2014 x86_64 x86_64
+    Alert Count                   9
+    First Seen                    2014-02-19 10:3:06 EST
+    Last Seen                     2014-02-19 12:0:32 EST
+    Local ID                      82ead554-c3cb-4664-85ff-e6f256437c6c
+
+    Raw Audit Messages
+    type=AVC msg=audit(1392829232.3:782): avc:  denied  { getattr } for
+      pid=11870 comm="httpd" path="/custom/index.html" dev="vda1" ino=11520682
+      scontext=system_u:ystem_r:httpd_t:s0
+      tcontext=unconfined_u:bject_r:default_t:s0 tclass=file
+
+    type=SYSCALL msg=audit(1392829232.3:782): arch=x86_64 syscall=lstat success=no
+      exit=EACCES a0=7f1854a3b068 a1=7fff493f2ff0 a2=7fff493f2ff0
+      a3=ffffffffffffffff items=0 ppid=11866 pid=11870 auid=4294967295 uid=48
+      gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none)
+      ses=4294967295 comm=httpd exe=/usr/sbin/httpd
+      subj=system_u:ystem_r:httpd_t:s0 key=(null)
+
+    Hash:httpd,httpd_t,default_t,file,getattr
+
+    Read the output from the sealert command and identify which file the Apache web server is having trouble with, and then look for a possible remedy.
+
+        At the top of the output, a solution is recommended.
+
+        # semanage fcontext -a -t FILE_TYPE '$FIX_TARGET_PATH'
+        where FILE_TYPE is one of the following:NetworkManager_log_t, ...,
+          httpd_sys_content_t, httpd_sys_htaccess_t, httpd_sys_ra_content_t,
+          httpd_sys_rw_content_t, httpd_sys_script_exec_t, httpd_tmp_t, ...
+        Then execute:
+        restorecon -v '$FIX_TARGET_PATH'
+
+        Look at the raw AVC message to identify the relevant process and file that is causing the alert.
+
+        Raw Audit Messages
+        type=AVC msg=audit(1392829232.3:782): avc:  denied  { getattr } for
+          pid=11870 comm="httpd" path="/custom/index.html" dev="vda1" ino=11520682
+          scontext=system_u:ystem_r:httpd_t:s0
+          tcontext=unconfined_u:bject_r:default_t:s0 tclass=file
+
+        The process involved in the security denial is the httpd Apache web server and the file is /custom/index.html.
+
+    Earlier, you resolved this issue using semanage and restorecon. You must decide if this SELinux violation is a security breach or if it is a legitimate access that requires SELinux to be adjusted to handle a non-standard directory structure.
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT

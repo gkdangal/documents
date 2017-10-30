@@ -1,0 +1,126 @@
+[root@workstation-6fe7 ~]# ansible -m ping all
+servera.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Warning: Permanently added 'servera.example.com' (ECDSA) to the list of known hosts.\r\nWarning: the ECDSA host key for 'servera.example.com' differs from the key for the IP address '192.168.1.21'\nOffending key for IP in /root/.ssh/known_hosts:6\r\nPermission denied (publickey,gssapi-keyex,gssapi-with-mic,password).\r\n", 
+    "unreachable": true
+}
+serverb.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Warning: Permanently added 'serverb.example.com' (ECDSA) to the list of known hosts.\r\nWarning: the ECDSA host key for 'serverb.example.com' differs from the key for the IP address '192.168.1.22'\nOffending key for IP in /root/.ssh/known_hosts:7\r\nPermission denied (publickey,gssapi-keyex,gssapi-with-mic,password).\r\n", 
+    "unreachable": true
+}
+----------------------------------------
+[root@workstation-6fe7 ~]# vim /etc/ansible/hosts 
+
+[web]
+servera.example.com
+
+[sql]
+serverb.example.com
+
+---------------------
+[root@workstation-6fe7 ~]# ssh-copy-id -i .ssh/open serverq.example.com
+/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+
+/bin/ssh-copy-id: ERROR: ssh: Could not resolve hostname serverq.example.com: Name or service not known
+
+[root@workstation-6fe7 ~]# ssh-copy-id -i .ssh/open servera.example.com
+/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+Warning: the ECDSA host key for 'servera.example.com' differs from the key for the IP address '192.168.1.21'
+Offending key for IP in /root/.ssh/known_hosts:6
+Matching host key in /root/.ssh/known_hosts:10
+root@servera.example.com's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'servera.example.com'"
+and check to make sure that only the key(s) you wanted were added.
+-------------------------------------------
+[root@workstation-6fe7 ~]# ssh-copy-id -i .ssh/open serverb.example.com
+/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+Warning: the ECDSA host key for 'serverb.example.com' differs from the key for the IP address '192.168.1.22'
+Offending key for IP in /root/.ssh/known_hosts:7
+Matching host key in /root/.ssh/known_hosts:11
+root@serverb.example.com's password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'serverb.example.com'"
+and check to make sure that only the key(s) you wanted were added.
+------------------------------
+ssh servera.example.com
+ssh serverb.example.com
+you must be login nwith out password.
+-------------------------------
+now here is the out put of ad-hoc ie raw command
++++++
+[root@workstation-6fe7 ~]# ansible -m ping all
+servera.example.com | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+serverb.example.com | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+[root@workstation-6fe7 ~]#
+----------------------------------------
+1.4. Gather Facts
+# ansible web -m setup
+installing package httpd
+[root@workstation-6fe7 ~]# ansible web -b -m yum -a "name=httpd state=present"
+--------------------
+how to conformed httpd is installed or not at servera
+ssh servera.example.com "rpm -qa | grep httpd-[0-9]*"
+
+[root@workstation-6fe7 ~]# ssh servera.example.com "rpm -qa | grep httpd"
+Warning: the ECDSA host key for 'servera.example.com' differs from the key for the IP address '192.168.1.21'
+Offending key for IP in /root/.ssh/known_hosts:6
+Matching host key in /root/.ssh/known_hosts:10
+httpd-tools-2.4.6-45.el7.x86_64
+httpd-2.4.6-45.el7.x86_64
+[root@workstation-6fe7 ~]# ssh servera.example.com "rpm -qa | grep httpd-[0-9]"
+Warning: the ECDSA host key for 'servera.example.com' differs from the key for the IP address '192.168.1.21'
+Offending key for IP in /root/.ssh/known_hosts:6
+Matching host key in /root/.ssh/known_hosts:10
+httpd-2.4.6-45.el7.x86_64
+[root@workstation-6fe7 ~]# 
+---------------------------------------
+Use ansible-playbook Command Line
+
+----------------
+-------------------------------
+see at 
+https://galaxy.ansible.com/geerlingguy/mysql/
+++++++
+Run this command at your work station
+------------------------------
+ansible-galaxy install geerlingguy.mysql
+
+vim install-database.yml
+#############
+---
+- hosts: sql
+  name: Install the database server from an Ansible Galaxy role
+  roles:
+   - geerlingguy.mysql
+#############
+run playbook and see output.......
+
+ansible-playbook install-database.yml 
+===============
+Last line of output must be like this
+===================
+changed: [serverb.example.com]
+
+PLAY RECAP *********************************************************************
+serverb.example.com        : ok=30   changed=8    unreachable=0    failed=0  
+----------------------------
+
+
+
+
+
+

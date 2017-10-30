@@ -1,0 +1,1179 @@
+Topics
+    Writing YAML Files
+    Modules
+    Playbooks and Ad Hoc Commands
+    Writing a Playbook
+    Playbook Formatting
+    Multiple Plays
+    Playbook Execution
+
+=== Transcript
+
+In this module, you learn the following:
+
+    Playbooks are written in YAML format.
+
+    YAML files are structured using space indentation to represent data hierarchy.
+
+    Use the ansible-doc command to list installed modules, generate documentation for them, and show sample code snippets of their use in playbooks.
+
+    Playbooks can contain one or more plays. Plays map tasks to managed hosts. Tasks perform operations by calling modules.
+
+    Use the ansible-playbook command to verify playbook syntax and execute playbooks.
+----------------------------------
+YAML Overview
+
+    Ansible playbooks written in YAML language
+
+        Need understanding of YAML syntax basics
+
+    YAML designed to represent data structures in easy-to-write, human-readable format
+
+        Examples: lists, associative arrays
+
+    Abandons enclosure syntax used to structure data hierarchy in other languages
+
+        Examples: brackets, braces, open/close tags
+
+    Uses outline indentation to maintain data hierarchy structures
+
+=== Transcript
+
+Ansible playbooks are written in the YAML Ain’t Markup Language, better known as YAML. So it is necessary to understand the basics of YAML syntax.
+
+YAML was designed primarily to represent data structures such as lists and associative arrays in a easy-to-write, human-readable format. This design objective was accomplished in large part by abandoning traditional enclosure syntax, such as brackets, braces, and open/close tags, commonly used by other languages to denote the structure of a data hierarchy. Instead YAML uses outline indentation to maintain data hierarchy structures.
+----------------------------------------
+YAML Overview
+YAML File Syntax
+
+    Optional document markers:
+
+        Start of document: ---
+
+        End of document: ...
+
+    Data structures represented in outline format
+
+    Space characters used for indentation
+
+    Indentation rules:
+
+        Elements at same level in hierarchy must have same indentation
+
+        Child elements must be indented further than parents
+
+        No rules about exact number of spaces to use
+
+    Optional: Insert blank lines for readability
+=== Transcript
+
+YAML files can begin with a three-dash "start of document" marker and terminate with a three-period "end of file" marker. Both markers are optional.
+
+Between the beginning and ending document markers, data structures are represented in an outline format that uses space characters for indentation. There are no requirements about the exact number of spaces to use for indentation. The only rules are that elements at the same level in the data hierarchy must have the same indentation, and that child data elements must be indented further than their parents to indicate the nested relationships.
+
+To improve readability, you have the option to insert blank lines in the file.
+-------------------------------
+
+Your browser does not support the audio tag.
+YAML Overview
+
+    Ansible playbooks written in YAML language
+
+        Need understanding of YAML syntax basics
+
+    YAML designed to represent data structures in easy-to-write, human-readable format
+
+        Examples: lists, associative arrays
+
+    Abandons enclosure syntax used to structure data hierarchy in other languages
+
+        Examples: brackets, braces, open/close tags
+
+    Uses outline indentation to maintain data hierarchy structures
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+YAML Overview
+YAML File Syntax
+
+    Optional document markers:
+
+        Start of document: ---
+
+        End of document: ...
+
+    Data structures represented in outline format
+
+    Space characters used for indentation
+
+    Indentation rules:
+
+        Elements at same level in hierarchy must have same indentation
+
+        Child elements must be indented further than parents
+
+        No rules about exact number of spaces to use
+
+    Optional: Insert blank lines for readability
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+YAML Overview
+Example: YAML File
+
+---
+title: 		My book
+author:
+    first_name:	John
+    last_name:	Doe
+
+publish_date: 	2016-01-01
+
+chapters:
+    - number:	1
+      title:	Chapter 1 Title
+      pages:	10
+
+    - number:	1
+      title:	Chapter 2 Title
+      pages:	10
+
+...
+
+Notes
+
+=== Transcript
+
+This example YAML file shows a simple data hierarchy
+----------------------------
+Using YAML in Playbooks
+
+    Ansible playbooks: YAML files written in list format
+
+        List items are key/value pairs
+
+    Optional:
+
+        Initiate playbook with --- marker
+
+        Terminate playbooks with ... marker
+
+    Lack of markers does not affect playbook execution
+
+    Example:
+
+    --- # My first playbook
+    ...output omitted...
+    ...
+
+
+Notes
+
+=== Transcript
+
+Ansible playbooks are YAML files written in a list format. The items in the list are key/value pairs.
+
+As discussed previously, you can initiate playbooks with a three-dash marker indicating the start of the document, and terminate them with a three-period marker indicating the end of the document. But the markers are optional, and a playbook can execute without them.
+
+The example here shows a simple playbook.
+
+------------
+Using YAML in Playbooks
+Strings
+
+    No requirement to enclose strings in quotation marks
+
+        Even if string contains spaces
+
+    Optional: Enclose string in single or double quotation marks
+
+    Examples:
+
+    this is a string
+
+    'this is another string'
+=== Transcript
+
+In YAML, you do not need to enclose strings in quotation marks, even if the string contains spaces. However, you can choose to enclose strings in either single or double quotation marks if you want. The examples here show different but equally valid options for entering strings.
+-------------------------------------
+Using YAML in Playbooks
+Multiline String Methods
+
+    Use |
+
+        Preserves line returns within string:
+
+        include_newlines: |
+                 Example Company
+                 123 Main Street
+                 Atlanta, GA 30303
+
+    Use >
+
+        Converts line returns to spaces
+
+        Removes leading white spaces in lines
+
+            Use to break long strings at space characters
+
+            Spanning multiple lines promotes better readability
+
+            fold_newlines: >
+                      This is
+                      a very long,
+                      long, long, long
+                      sentence.
+-----------------------
+Using YAML in Ansible Playbooks
+Dictionaries
+
+    Other names for key/value data pair: dictionary, hash, associative array
+
+    To separate keys from values, use : followed by space:
+
+    keys: value
+
+    Dictionaries commonly expressed in indented block format:
+
+    ---
+      name: Automation using Ansible
+      code: DO407
+
+    Optional: Express dictionaries in inline block format
+
+        Enclose multiple key/value pairs between curly brackets
+
+        Separate pairs with , followed by space:
+
+        ---
+          {name: Automation using Ansible, code: DO407}
+
+
+Notes
+
+=== Transcript
+
+A key/value data pair used in YAML is also referred to as a dictionary, hash, or associative array. In key/value pairs, keys are separated from values using a delimiter string of a colon and a space, as shown in the first example.
+
+Dictionaries are commonly expressed in indented block format, as shown in the second example.
+
+Dictionaries can optionally be expressed in inline block format. In this format, multiple key/value pairs are enclosed between curly brackets and separated by a delimiter string of a comma and a space, as shown in the third example.
+---------------------
+
+Dictionary
+Separate pairs with , followed by space:
+
+---
+  {name: Automation using Ansible, code: DO407}
+--------------------------
+Using YAML in Ansible Playbooks
+Lists
+
+    Lists in YAML = arrays in other languages
+
+    To represent list, precede each item with - followed by space:
+
+    ---
+      - red
+      - green
+      - blue
+
+    Optional: Express lists in inline format
+
+        Enclose list items between brackets
+
+        To separate items, use , followed by space:
+
+        ---
+        fruits:
+          [red, green, blue]
+
+
+Notes
+
+=== Transcript
+
+Lists in YAML are similar to arrays in other programming languages. To represent a list of items, you precede each list item with a single dash followed by a space, as shown in the first example here.
+
+Optionally, you can express lists in an inline format, where multiple list items are enclosed between square brackets. In this format, you separate list items using a delimiter string of a comma and a space, as shown in the second example here.
+-----------------------------
+
+Writing YAML Files
+Comments
+
+    Comments aid readability
+
+    Initiate with #
+
+    Insert at end of any blank or nonblank line
+
+    On nonblank line, insert space in front of #
+
+        Separates comment from other contents
+
+    Examples:
+
+    # This is a YAML comment
+
+    some data # This is also a YAML comment
+
+Notes
+
+=== Transcript
+
+Use comments to aid readability. In YAML, comments are initiated by a number sign and can exist at the end of any line, blank or nonblank, as shown in the examples here. If used on a nonblank line, insert a space character in front of the number sign to separate the comment from the line’s other content.
+--------------------------
+
+Using YAML in Ansible Playbooks
+Syntax Verification
+
+    Syntax errors in playbook cause execution to fail
+
+    Execution output may or may not help pinpoint source of syntax error
+
+    Best practice: Verify YAML syntax in playbook prior to execution
+
+    Several ways to do this
+
+Python
+
+    To read playbook YAML file using Python, use command similar to:
+
+    [student@demo ~] python -c 'import yaml, sys; print yaml.load(sys.stdin)' < myyaml.yml
+---
+
+Notes
+
+=== Transcript
+
+YAML syntax errors in a playbook cause the playbook’s execution to fail. The execution output may or may not be helpful in pinpointing the exact source of the syntax error.
+
+Therefore, the recommended practice it to verify a playbook’s YAML syntax prior to execution. There are several ways to do this.
+
+One way to verify YAML syntax in a playbook is to read the playbook YAML file using the Python programming language. Administrators who are familiar with Python can use a command similar to the example shown here.
+------------------------------------------------
+---
+- hosts: webservers
+  vars:
+    http_port: 80
+    max_clients: 200
+  remote_user: root
+  tasks:
+  - name: ensure apache is at the latest version
+    yum:
+      name: httpd
+      state: latest
+  - name: write the apache config file
+    template:
+      src: /srv/httpd.j2
+      dest: /etc/httpd.conf
+    notify:
+    - restart apache
+  - name: ensure apache is running
+    service:
+      name: httpd
+      state: started
+  handlers:
+    - name: restart apache
+      service:
+        name: httpd
+        state: restarted
+=============
+
+Your browser does not support the audio tag.
+Using YAML in Ansible Playbooks
+Python: Valid Syntax
+
+    If no syntax error, Python prints file contents to stdout in JSON format
+
+    Example: Use of Python on file with valid syntax:
+
+    [student@demo ~] cat myyaml.yml
+    ---
+    - first item
+    - second item
+    - third item
+    ...
+    [student@demo ~] python -c 'import yaml, sys; print yaml.load(sys.stdin)' < myyaml.yml
+    ['first item', 'second item', 'third item']
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Writing YAML Files
+Python: Syntax Error
+
+[student@demo ] cat myyaml.yml
+---
+- first item
+- second item
+-third item
+...
+[student@demo ] python -c import yaml, sys; print yaml.load(sys.stdin) < myyaml.yml
+Traceback (most recent call last):
+  File "", line 1, in 
+  File "/usr/lib64/python2.7/site-packages/yaml/init.py", line 71, in load
+    return loader.get_single_data()
+...output omitted...
+yaml.scanner.ScannerError: while scanning a simple key
+  in "", line 4, column 1
+could not found expected :
+  in "", line 5, column 1
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Using YAML in Ansible Playbooks
+YAML Lint
+
+    Online YAML syntax verification tools available
+
+        Useful for admins not familiar with Python
+
+    Example: YAML Lint website: link:["http://yamllint.com/^"]
+
+        Copy and paste playbook YAML contents into form on home page
+
+        Submit form
+
+    Web page:
+
+        Reports syntax verification results
+
+        Displays cleaned-up version of content
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Using YAML in Ansible Playbooks
+YAML Lint Examples
+
+    Example: Submit correct contents:
+
+    ---
+    - first item
+    - second item
+    - third item
+    ...
+
+        Website reports "Valid YAML!"
+
+    Example: Submit incorrect contents:
+
+    ---
+    - first item
+    - second item
+    -third item
+    ...
+
+        YAML reports error message "(<unknown>): could not find expected ':' while scanning a simple key at line 4 column 1 "
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Writing YAML Files
+--syntax-check
+
+    Ansible offers native feature for validating playbook YAML syntax
+
+    Use --syntax-check option with ansible-playbook command to check for syntax errors
+
+    --syntax-check method:
+
+        Conducts more rigorous review
+
+        Ensures data elements specific to playbooks are not missing
+
+        Recommended for verifying playbook YAML syntax
+--------------------------
+Using YAML in Ansible Playbooks
+YAML Lint Examples
+
+    Example: Submit correct contents:
+
+    ---
+    - first item
+    - second item
+    - third item
+    ...
+
+        Website reports "Valid YAML!"
+
+    Example: Submit incorrect contents:
+
+    ---
+    - first item
+    - second item
+    -third item
+    ...
+
+        YAML reports error message "(<unknown>): could not find expected ':' while scanning a simple key at line 4 column 1 "
+-----------------------
+Writing YAML Files
+--syntax-check
+
+    Ansible offers native feature for validating playbook YAML syntax
+
+    Use --syntax-check option with ansible-playbook command to check for syntax errors
+
+    --syntax-check method:
+
+        Conducts more rigorous review
+
+        Ensures data elements specific to playbooks are not missing
+
+        Recommended for verifying playbook YAML syntax
+-----------------------
+Using YAML in Ansible Playbooks
+--syntax-check Example
+
+[student@demo ~] cat myyaml.yml
+---
+- first item
+- second item
+- third item
+...
+
+[student@workstation ~]$ ansible-playbook --syntax-check myyaml.yml
+ERROR! playbook entries must be either a valid play or an include statement
+
+The error appears to have been in '/home/student/myyaml.yml': line 2, column 3, but may be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+---
+- first item
+^ here
+-------------------
+Modules
+
+    Use modules to perform operations on managed hosts
+
+        Ready-to-use tools for specific tasks
+
+        Run from command line or use in playbooks
+
+        Copied to and run from managed host
+
+    Over 200 prepackaged modules
+
+        Let you perform wide range of tasks
+
+        Examples: Cloud, user, package, service management
+
+Notes
+
+=== Transcript
+
+Modules are programs that Ansible uses to perform operations on managed hosts. They are ready-to-use tools designed to perform specific tasks. You can run modules from the ansible command line or use them in playbooks to execute tasks. When run, modules are copied to the managed host and executed there.
+
+Ansible comes packaged with over 200 modules available for use. These prepackaged modules let you perform a wide range of tasks, such as cloud, user, package, and service management.
+-----------------------------------
+
+Modules
+Module Types
+
+Module Type
+	
+
+Description
+
+Core modules
+	
+
+    Included with Ansible
+
+    Written and maintained by Ansible development team
+
+    Most important modules
+
+    Used for common tasks
+
+    Always available
+
+Extras modules
+	
+
+    Currently included with Ansible
+
+    Might be promoted to core or shipped separately in future
+
+    Maintained by community, not Ansible
+
+    Implement features for managing newer technologies such as OpenStack
+
+    Always available
+
+Custom modules
+	
+
+    Developed by users
+
+    Not shipped by Ansible
+
+    Written if module does not exist for task
+
+    Ansible looks for custom modules on control node:
+
+        In directories defined by ANSIBLE_LIBRARY if set
+
+        If not set, in directories defined by library in configuration file
+
+        In ./library directory relative to location of playbook in use
+
+Notes
+
+=== Transcript
+
+There are three types of Ansible modules:
+
+    Core modules are included with Ansible and are written and maintained by the Ansible development team. Core modules are the most important modules and are used for common administration tasks.
+
+    Extras modules are currently included with Ansible but may be promoted to core status or shipped separately in the future. They are generally maintained not by the Ansible team, but by the community. Typically, these modules implement features for managing newer technologies such as OpenStack.
+
+    Custom modules are modules developed by end users and not shipped by Ansible. If a module does not already exist for a task, an administrator can write a module to implement it.
+
+Core and extras modules are always available. Ansible looks for custom modules on the control node in directories defined by the ANSIBLE_LIBRARY environment variable or, if that is not set, by the library parameter in the current Ansible configuration file. Ansible also looks for modules in the ./library directory relative to the location of the playbook being used.
+------------------------------------
+Modules
+Module Categories
+
+    Cloud
+
+    Clustering
+
+    Commands
+
+    Database
+
+    Files
+
+    Inventory
+
+    Messaging
+
+    Monitoring
+
+	
+
+    Network
+
+    Notification
+
+    Packaging
+
+    Source Control
+
+    System
+
+    Utilities
+
+    Web Infrastructure
+
+    Windows
+
+Notes
+
+=== Transcript
+
+For better organization and management, Ansible modules are grouped into the following functional categories:
+
+    Cloud
+
+    Clustering
+
+    Commands
+
+    Database
+
+    Files
+
+    Inventory
+
+    Messaging
+
+    Monitoring
+
+    Network
+
+    Notification
+
+    Packaging
+
+    Source Control
+
+    System
+
+    Utilities
+
+    Web Infrastructure
+
+    Windows
+
+==================================================
+Modules
+Use of Categories: Documentation and Organization
+
+    Module documentation indexed by category on Ansible documentation website
+
+        Helps in searching for module for specific task
+
+    Module storage on Ansible control node organized by categories
+
+        Modules installed under /usr/lib/python2.7/site-packages/ansible/modules
+
+        Core and extra modules housed under separate directories
+
+        Modules within directories organized into subdirectories by category
+
+
+Notes
+
+=== Transcript
+
+On the Ansible documentation website, module documentation is indexed by category. This helps administrators in searching for a module that suits their specific task. On the Ansible control node, the same category list is used to organize module storage.
+
+Modules are installed under the /usr/lib/python2.7/site-packages/ansible/modules directory on the Ansible control node. Core and extra modules are housed under separate directories. Modules within the two directories are organized into subdirectories by category.
+------------------------------------------------------------
+Modules
+Example: Categories (modeule organized by catagory)
+
+[student@controlnode modules]$ pwd
+  /usr/lib/python2.7/site-packages/ansible/modules
+
+  [student@controlnode modules]$ tree -d
+
+  .
+  |-- core
+  |   |-- cloud
+  |   |   |-- amazon
+  |   |   |-- azure
+  |   |   |-- digital_ocean
+  |   |   |-- docker
+  |   |   |-- google
+  |   |   |-- linode
+  |   |   |-- openstack
+  |   |   |-- rackspace
+  |   |   |-- vmware
+  |   |-- commands
+  |   |-- database
+  |   |   |-- mysql
+  |   |   |-- postgresql
+  |   |-- files
+  |   |-- inventory
+  |   |-- network
+  |   |   |-- basics
+  |   |-- packaging
+  |   |   |-- language
+  |   |   |-- os
+  |   |-- source_control
+  |   |-- system
+  |   |-- utilities
+  |   |   |-- helper
+  |   |   |-- logic
+  |   |-- web_infrastructure
+  |   |-- windows
+  |-- extras
+  |   |-- cloud
+  |   |   |-- amazon
+  |   |   |-- centurylink
+  |   |   |-- cloudstack
+  |   |   |-- docker
+  |   |   |-- google
+  |   |   |-- lxc
+  |   |   |-- misc
+  |   |   |-- openstack
+  |   |   |-- profitbricks
+  |   |   |-- rackspace
+  |   |   |-- vmware
+  |   |   |-- webfaction
+  |   |-- clustering
+  |   |-- commands
+  |   |-- database
+  |   |   |-- misc
+  |   |   |-- mysql
+  |   |   |-- postgresql
+  |   |   |-- vertica
+  |   |-- files
+  |   |-- messaging
+  |   |-- monitoring
+  |   |-- network
+  |   |   |-- a10
+  |   |   |-- citrix
+  |   |   |-- f5
+  |   |-- notification
+  |   |-- packaging
+  |   |   |-- language
+  |   |   |-- os
+  |   |-- source_control
+  |   |-- system
+  |   |-- web_infrastructure
+  |   |-- windows
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Modules
+Module Documentation
+
+    Prepackaged modules provide tools for common tasks
+
+    To learn about modules, see the Ansible documentation website
+
+    Use module index to search for modules for functions
+
+        Modules for user and service management found under Systems Modules
+
+        Modules for database administration found under Database Modules
+
+    For each module, website provides:
+
+        Summary of functions
+
+        Instructions on using options to invoke each function
+
+    Documentation also provides examples of module and options
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Modules
+Accessing Documentation Locally
+
+    Documentation available locally on control node
+
+    To see modules available on control node, run ansible-doc with -l option
+
+    Outputs:
+
+        List of module names
+
+        Synopsis of module functions
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+----------------------------
+Modules
+Module Documentation
+
+    Prepackaged modules provide tools for common tasks
+
+    To learn about modules, see the Ansible documentation website
+
+    Use module index to search for modules for functions
+
+        Modules for user and service management found under Systems Modules
+
+        Modules for database administration found under Database Modules
+
+    For each module, website provides:
+
+        Summary of functions
+
+        Instructions on using options to invoke each function
+
+    Documentation also provides examples of module and options
+
+
+Notes
+
+=== Transcript
+
+The large number of modules packaged with Ansible provide you with many tools for common administrative tasks. To familiarize yourself with the modules available, you can consult the Ansible documentation website, http://docs.ansible.com. Use the module index on the website to search for available modules for functions. For example, modules for user and service management can be found under the Systems Modules, while modules for database administration can be found under Database Modules.
+
+For each module, the Ansible documentation website provides a summary of the module’s functions along with instructions on how to use the module’s options to invoke each specific function.
+
+The documentation also provides examples showing the use of each module and its options.
+
+---------------------------
+Modules
+Accessing Documentation Locally
+
+    Documentation available locally on control node
+
+    To see modules available on control node, run ansible-doc with -l option
+
+    Outputs:
+
+        List of module names
+
+        Synopsis of module functions
+
+Notes
+
+=== Transcript
+
+Module documentation is also available locally on the Ansible control node. To see a list of the modules available on a control node, run the ansible-doc command with the -l option. This outputs a list of module names along with summaries of their functions.
+-----------------------
+Modules
+Example: Documentation Output
+
+[student@workstation modules]$ ansible-doc -l
+  a10_server Manage A10 Networks AX/SoftAX/Thunder/vThunder devices
+
+  a10_service_group Manage A10 Networks devices' service groups
+
+  a10_virtual_server Manage A10 Networks devices' virtual servers
+
+  acl Sets and retrieves file ACL information.
+
+  add_host add a host (and alternatively a group) to the ansible-playbook in-memory inventory
+
+  airbrake_deployment Notify airbrake about app deployments
+
+  alternatives Manages alternative programs for common commands
+
+  apache2_module enables/disables a module of the Apache2 webserver
+
+  apk Manages apk packages
+
+  apt Manages apt-packages
+
+  ...output omitted...
+------------------------------
+
+Modules
+Detailed Documentation
+
+    To display documentation on specific module, pass module name to ansible-doc
+
+    Output similar to documentation website
+
+    Provides:
+
+        Synopsis of module function
+
+        Details regarding options
+
+        Examples of each
+=== Transcript
+
+To display detailed documentation on a specific module, pass the module name to ansible-doc. Like the Ansible documentation website, this command provides a synopsis of the module’s function and details regarding its various options. Examples of the module’s uses and options are also included.
+----------------------
+Modules
+Example: Detailed Documentation Output
+
+[student@workstation modules]$ ansible-doc yum
+  > YUM
+
+    Installs, upgrade, removes, and lists packages and groups with the ‘yum’ package manager.
+
+  Options (= is mandatory):
+
+  - conf_file
+          The remote yum configuration file to use for the transaction. [Default: None]
+
+  - disable_gpg_check
+          Whether to disable the GPG checking of signatures of packages being installed.
+  Has an effect only
+          if state is ‘present’ or ‘latest’. (Choices: yes, no) [Default: no]
+
+  ...output omitted...
+
+  EXAMPLES:
+  - name: install the latest version of Apache
+    yum: name=httpd state=latest
+
+  - name: remove the Apache package
+    yum: name=httpd state=absent
+
+  ...output omitted...
+
+
+Notes
+
+=== Transcript
+
+Here is an example of the documentation displayed for the yum module.
+----------------------------------------------------------------
+Modules
+-s Option
+
+    ansible-doc offers --snippet or -s option
+
+    Produces output for use of module in playbook
+
+    Output can serve as starter template
+
+        Include in playbook to implement module for task execution
+
+    Output includes comments describing each option
+
+Notes
+
+=== Transcript
+
+The ansible-doc command also offers a --snippet, or -`s option, which produces output for using the module in a playbook. This output can serve as a starter template that can be included in a playbook to implement the module for task execution. Comments are included in the output to remind you of the use of each option.
+---------------------------------
+
+Modules
+Example: s Option
+
+[student@workstation modules]$ ansible-doc -s yum
+  - name: Manages packages with the `yum' package manager
+    action: yum
+        conf_file              # The remote yum configuration file to use for the transaction.
+        disable_gpg_check      # Whether to disable the GPG checking of signatures of packages being installed. Has an effect only if
+                                 state is `present' or `latest'.
+        disablerepo            # `Repoid' of repositories to disable for the install/update operation. These repos will not persist
+                                 beyond the transaction. When specifying multiple repos, separate them
+                                 with a ",".
+        enablerepo             # `Repoid' of repositories to enable for the install/update operation. These repos will not persist
+                                 beyond the transaction. When specifying multiple repos, separate them
+                                 with a ",".
+        exclude                # Package name(s) to exclude when state=present, or latest
+        list                   # Various (non-idempotent) commands for usage with `/usr/bin/ansible' and `not' playbooks. See
+                                 examples.
+        name=                  # Package name, or package specifier with version, like `name-1.0'. When using state=latest, this can
+                                 be '*' which means run: yum -y update. You can also pass a url or a
+                                 local path to a rpm file. To operate on several packages this can
+                                 accept a comma separated list of packages or (as of 2.0) a list of
+                                 packages.
+        state                  # Whether to install (`present' or `installed', `latest'), or remove (`absent' or `removed') a
+                                 package.
+        update_cache           # Force updating the cache. Has an effect only if state is `present' or `latest'.
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Modules
+Methods to Invoke Modules
+
+    To call modules as part of ad hoc command, use ansible
+
+        -m specifies which module to use
+
+        Example: Use ping to test connectivity to all managed hosts:
+
+        [student@controlnode ~]$ ansible -m ping all
+
+    Can call modules in playbooks as part of task
+
+        Example: Invoke yum module
+
+        Arguments: Package name and desired state:
+
+        tasks:
+          - name: Installs a package
+          yum:
+            name: Postfix
+            state: latest
+
+    To call modules from Python scripts, use Ansible Python API
+
+        Not supported in case of failures
+
+        Can import API into application to leverage Ansible system deployment and configuration
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Playbooks and Ad Hoc Commands
+Ad Hoc Commands
+
+    Use modules to perform operations on managed hosts with ad hoc commands
+
+        Useful for simple operations
+
+        Not suited for complex configuration or orchestration scenarios
+
+    Ad hoc commands invoke one module and one set of arguments at a time
+
+        Multiple operations must be executed over multiple commands
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+-----------------------------------------
+Modules
+Example: s Option
+
+[student@workstation modules]$ ansible-doc -s yum
+  - name: Manages packages with the `yum' package manager
+    action: yum
+        conf_file              # The remote yum configuration file to use for the transaction.
+        disable_gpg_check      # Whether to disable the GPG checking of signatures of packages being installed. Has an effect only if
+                                 state is `present' or `latest'.
+        disablerepo            # `Repoid' of repositories to disable for the install/update operation. These repos will not persist
+                                 beyond the transaction. When specifying multiple repos, separate them
+                                 with a ",".
+        enablerepo             # `Repoid' of repositories to enable for the install/update operation. These repos will not persist
+                                 beyond the transaction. When specifying multiple repos, separate them
+                                 with a ",".
+        exclude                # Package name(s) to exclude when state=present, or latest
+        list                   # Various (non-idempotent) commands for usage with `/usr/bin/ansible' and `not' playbooks. See
+                                 examples.
+        name=                  # Package name, or package specifier with version, like `name-1.0'. When using state=latest, this can
+                                 be '*' which means run: yum -y update. You can also pass a url or a
+                                 local path to a rpm file. To operate on several packages this can
+                                 accept a comma separated list of packages or (as of 2.0) a list of
+                                 packages.
+        state                  # Whether to install (`present' or `installed', `latest'), or remove (`absent' or `removed') a
+                                 package.
+        update_cache           # Force updating the cache. Has an effect only if state is `present' or `latest'.
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Modules
+Methods to Invoke Modules
+
+    To call modules as part of ad hoc command, use ansible
+
+        -m specifies which module to use
+
+        Example: Use ping to test connectivity to all managed hosts:
+
+        [student@controlnode ~]$ ansible -m ping all
+
+    Can call modules in playbooks as part of task
+
+        Example: Invoke yum module
+
+        Arguments: Package name and desired state:
+
+        tasks:
+          - name: Installs a package
+          yum:
+            name: Postfix
+            state: latest
+
+    To call modules from Python scripts, use Ansible Python API
+
+        Not supported in case of failures
+
+        Can import API into application to leverage Ansible system deployment and configuration
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+Your browser does not support the audio tag.
+Playbooks and Ad Hoc Commands
+Ad Hoc Commands
+
+    Use modules to perform operations on managed hosts with ad hoc commands
+
+        Useful for simple operations
+
+        Not suited for complex configuration or orchestration scenarios
+
+    Ad hoc commands invoke one module and one set of arguments at a time
+
+        Multiple operations must be executed over multiple commands
+
+Copyright ©2012-2017 Red Hat, Inc. - 2.8R
+--------------------
+
+Notes
+
+=== Transcript
+
+There are multiple ways to work with Ansible modules, depending on the context and your needs.
+
+You can call modules as part of an ad hoc command, using the ansible command. The -m flag lets you specify the name of the module to use. The first example here uses the ping module to test connectivity to all managed hosts.
+
+You can also call modules in playbooks, as part of a task. The second example here shows how to invoke the yum module with the name of a package and its desired state as arguments.
+
+Finally, you can call modules from Python scripts via the Ansible Python API. Although this method is not supported in case of failures, application developers can import the Ansible API into their application to leverage system deployment and configuration with Ansible.
+---------------------31
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

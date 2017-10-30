@@ -1,0 +1,319 @@
+Service Management and Boot Troubleshooting Labs
+1. Identify the Status of systemd Units
+
+In this lab, you identify installed and running services on the system.
+
+    List all service units on the system.
+
+    [student@server1 ~]$ sudo systemctl list-units --type=service
+
+    List all socket units, active and inactive, on the system.
+
+    [student@server1 ~]$ sudo systemctl list-units --type=socket --all
+
+    Explore the status of the chronyd service. This service is used for network time synchronization (NTP).
+
+        Display the status of the chronyd service. Note the process ID of any active daemons.
+
+        [student@server1 ~]$ sudo systemctl status chronyd
+
+        Confirm that the listed daemons are running.
+
+        [student@server1 ~]$ ps -p PID
+
+    Explore the status of the sshd service. This service is used for secure encrypted communication between systems.
+
+        Determine if the sshd service is enabled to start at system boot.
+
+        [student@server1 ~]$ sudo systemctl is-enabled sshd
+
+        Determine if the sshd service is active without displaying all of the status information.
+
+        [student@server1 ~]$ sudo systemctl is-active sshd
+
+        Display the status of the sshd service.
+
+        [student@server1 ~]$ sudo systemctl status sshd
+
+    List the enabled or disabled states of all service units.
+
+    [student@server1 ~]$ sudo systemctl list-unit-files --type=service
+
+2. Use systemctl to Manage Services
+
+In this lab, you manage a service unit that is already installed on the system.
+
+    Observe the results of systemctl restart and systemctl reload commands.
+
+        Display the status of the sshd service. Note the process ID of the daemon.
+
+        [student@server1 ~]$ sudo systemctl status sshd
+
+        Restart the sshd service and view the status. The process ID of the daemon has changed.
+
+        [student@server1 ~]$ sudo systemctl restart sshd
+        [student@server1 ~]$ sudo systemctl status sshd
+
+        Reload the sshd service and view the status. The process ID of the daemon has not changed and connections have not been interrupted.
+
+        [student@server1 ~]$ sudo systemctl reload sshd
+        [student@server1 ~]$ sudo systemctl status sshd
+
+    Verify that the chronyd service is running.
+
+    [student@server1 ~]$ sudo systemctl status chronyd
+
+    Stop the chronyd service and view the status.
+
+    [student@server1 ~]$ sudo systemctl stop chronyd
+    [student@server1 ~]$ sudo systemctl status chronyd
+
+    Determine if the chronyd service is enabled to start at system boot.
+
+    [student@server1 ~]$ sudo systemctl is-enabled chronyd
+
+    Reboot the system, then view the status of the chronyd service.
+
+    [student@server1 ~]$ sudo systemctl status chronyd
+
+    Disable the chronyd service so that it does not start at system boot, then view the status of the service.
+
+    [student@server1 ~]$ sudo systemctl disable chronyd
+    [student@server1 ~]$ sudo systemctl status chronyd
+
+    Reboot the system, then view the status of the chronyd service.
+
+    [student@server1 ~]$ sudo systemctl status chronyd
+
+The chronyd service is now disabled and no longer running on the system.
+3. Select a Boot Target
+
+In this lab, you configure your server1.example.com system to boot into different targets.
+
+    Reset your server1.example.com system.
+
+    On your server1.example.com system, switch to the multi-user target manually without rebooting.
+
+    [student@server1 ~]$ sudo systemctl isolate multi-user.target
+
+    Log in to a text-based console as root.
+
+    Configure your server1.example.com to automatically boot into the multi-user target after a reboot, then reboot your server1.example.com system to verify.
+
+    [root@server1 ~]# systemctl set-default multi-user.target
+    rm '/etc/systemd/system/default.target'
+    ln -s '/usr/lib/systemd/system/multi-user.target' '/etc/systemd/system/default.target'
+
+    [root@server1 ~]# systemctl reboot
+
+    Reboot your server1.example.com system, then from within the boot loader menu, boot into the rescue target.
+
+    [root@server1 ~]# systemctl reboot
+
+        Interrupt the boot loader when the menu appears by pressing any key.
+
+        Move the selection to the default entry (the first one) using the cursor keys.
+
+        Press E to edit the current entry.
+
+        Move the cursor to the line that starts with linux16.
+
+        Press End to move the cursor to the end of the line, and append the following text:
+
+        systemd.unit=rescue.target
+
+        Press Ctrl+X to boot using the modified configuration.
+
+        When prompted for the root password, enter redhat.
+
+    Set the default systemd target back to the graphical target.
+
+    [root@server1 ~]# systemctl set-default graphical.target
+
+        Press Ctrl+D to continue booting into the (new) default target.
+
+    Configure your server1.example.com system to boot into the multi-user target by default. Do not reboot your server1.example.com system right now, as it will make your graphical console unavailable.
+
+    [root@server1 ~]# systemctl set-default multi-user.target
+    rm '/etc/systemd/system/default.target'
+    ln -s '/usr/lib/systemd/system/multi-user.target' '/etc/systemd/system/default.target'
+
+    Verify that multi-user is now indeed the new default target.
+
+    [root@server1 ~]# systemctl get-default
+    multi-user.target
+
+    Alternatively:
+
+    [root@server1 ~]# ls -l /etc/systemd/system/default.target
+    lrwxrwxrwx. 1 root root 41 Mar 10 08:0 /etc/systemd/systemd/default.target -> /usr/lib/systemd/system/multi-user.target
+
+    	
+
+    In our environment, the graphical console is not available (except via VNC). If you wanted to set the default target back to the graphical target you would use:
+
+    [root@server1 ~]# systemctl set-default graphical.target
+
+4. Reset a Lost root Password
+
+In this lab, you recover a lost root password.
+
+Assume that you do not know the root password for server1.example.com and it must be changed.
+
+    Log in to the GUI of your desktop1.example.com system using the Guacamole interface as root.
+
+    Start Konsole and then run the virt-manager tool.
+
+    In the virt-manager GUI, select the vserver VM, then click Open.
+    	The vserver VM is your server1.example.com host.
+
+    Click the Console button to see the VM’s console.
+
+    Click View → Scale Display → Always to make the entire console visible in the screen.
+
+    Reboot your system, and interrupt the countdown in the boot loader menu.
+
+        Click Send Key → Ctrl+Alt+Del
+
+        When the boot loader menu appears, press any key to interrupt the countdown.
+
+    Edit the default boot loader entry (in memory) to abort the boot process just after all file systems have been mounted, but before control is handed over to systemd, and then boot.
+
+        Use the cursor keys to highlight the default boot loader entry.
+
+        Press E to edit the current entry.
+
+        Using the cursor keys, navigate to the line that starts with linux16.
+
+        Press End to move the cursor to the end of the line.
+
+        Append systemd.unit=rescue.target to the end of the line.
+
+        Press Ctrl+X to boot using the modified config.
+
+    At the switch_root prompt, remount the /sysroot file system read-write, then use chroot to go into a chroot jail at /sysroot.
+
+    switch_root:# mount -oremount,rw /sysroot
+    switch_root:# chroot /sysroot
+
+    Change the root password to something of your own choosing.
+
+    sh-4.2# passwd
+
+    Configure the system to automatically perform a full SELinux relabel after boot. This is necessary since the passwd tool re-created the /etc/shadow file without an SELinux context.
+
+    sh-4.2# touch /.autorelabel
+
+    Type exit twice to continue booting your system as normal. The system will run an SELinux relabel, then reboot again by itself. The re-label may take a while to complete.
+
+    Log in to your server1.example.com machine as root using the new root password.
+
+5. Repair Boot Problems
+
+In this lab, you recover from an error in /etc/fstab.
+
+    Log in to the GUI of your desktop1.example.com system using the Guacamole interface.
+
+    Start Konsole and then run the virt-manager tool.
+
+    Create an entry in /etc/fstab that simulates a failed boot situation, then reboot.
+
+    [root@localhost ~]# echo "/dev/fail /fail xfs defaults 1 1" >> /etc/fstab
+    [root@localhost ~]# reboot
+
+    Take a good look at the console of your server1.example.com machine. It is stuck early in the boot process due to the bad fstab entry.
+
+    Reboot the machine and interrupt the boot loader menu countdown. (If you wait long enough, the system eventually spawns a rescue shell by itself, but that can take a while.) In this case, you will spawn the rescue shell manually.
+    	If you use Ctrl+Alt+Del to reboot and it does not cause the system to reboot, you can either wait for the task to time out or use the VM’s power switch to force a reboot.
+
+        When the boot loader menu appears after the BIOS self-test, press any key to interrupt the countdown.
+
+        Use the cursor keys to highlight the default boot loader entry.
+
+        Press E to edit the current entry.
+
+        Using the cursor keys, navigate to the line that starts with linux16.
+
+        Press End to move the cursor to the end of the line.
+
+        Append systemd.unit=emergency.target to the end of the line.
+
+        Press Ctrl+X to boot using the modified config.
+
+    Log in to the emergency mode. Pay close attention to any errors you receive. Note that it does not hang for a long time before displaying the password prompt. This is one of the benefits of booting in this mode.
+
+        At the Give root password for maintenance prompt enter the root password.
+
+    Inspect which file systems are currently mounted.
+
+    [root@localhost ~]# mount
+    ...
+    /dev/vda1 on / type xfs (ro,relatime,seclabel,attr2,inode64,noquota)
+
+    It appears that the root file system is mounted read-only; mount it read-write.
+
+    [root@localhost ~]# mount -oremount,rw /
+
+    Attempt to mount all the other file systems:
+
+    [root@localhost ~]# mount -a
+    mount:mount point /fail does not exist
+
+    Open /etc/fstab in an editor and fix the issue.
+
+    [root@localhost ~]# vi /etc/fstab
+
+        Remove the invalid line (the one with /fail).
+
+        Save your changes, then exit your editor.
+
+    Verify that your /etc/fstab is now correct by attempting to mount all entries.
+
+    [root@localhost ~]# mount -a
+
+    Exit your emergency shell and reboot the system by typing reboot. Your system should now boot normally.
+
+    [root@localhost ~]# reboot
+
+6. Repair a Boot Loader Problem
+
+In this lab, you repair an issue with the boot loader configuration on one of your machines.
+
+    Access the server1.example.com system using the GUI and log in as root.
+
+    Break grub with the following command, then reboot the VM:
+
+    [student@server1 ~]$ sed -i "s/linux16/os16/" /boot/grub2/grub.cfg
+    [student@server1 ~]$ reboot
+
+        The system should fail to boot right after coming out of grub.
+
+        error:can't find command `os16'.
+        unaligned pointer 0x3fed58bf
+        Aborted. Press any key to exit.
+
+    Reboot the server1.example.com VM using Send Key → Ctrl+Alt+Del, then interrupt the boot loader countdown timer.
+
+    Move the cursor to the default boot entry, then press E to edit that entry.
+
+    Look for text starting with os16 (inserted with the sed command earlier). When you find the line that is blocking the boot process, modify it, then boot with these changes.
+
+        os16 is not a valid grub directive. Change it to linux16.
+
+        Press Ctrl+X to boot your system with the modified configuration.
+
+    Wait for the system to boot, log in as root, and then generate a new grub2 configuration. Do not immediately overwrite the existing configuration, but inspect the new config first.
+
+    [root@server1 ~]# grub2-mkconfig > /tmp/newgrub
+
+        Look at the differences between the broken existing grub and the new proposed configuration. (Ignore the lines about msdos.)
+
+        [root@server1 ~]# diff /boot/grub2/grub.cfg /tmp/newgrub
+
+        Commit the configuration to disk.
+
+        [root@server1 ~]# grub2-mkconfig > /boot/grub2/grub.cfg
+
+    Reboot your machine, and confirm that it boots normally again without user intervention.
+
+    [root@server1 ~]# systemctl reboot

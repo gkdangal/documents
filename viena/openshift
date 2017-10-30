@@ -1,0 +1,121 @@
+ssh -i qwikLABS-L64-12408.pem -l cloud-user node01.internal.aws.testdrive.openshift.com
+---------------------------------------
+[cloud-user@master ~]$ vim  /etc/ansible/hosts
+[cns]
+node01.internal.aws.testdrive.openshift.com
+node02.internal.aws.testdrive.openshift.com
+node03.internal.aws.testdrive.openshift.com
+#addcns_node04.internal.aws.testdrive.openshift.com
+#addcns_node05.internal.aws.testdrive.openshift.com
+#addcns_node06.internal.aws.testdrive.openshift.com
+
+[cns:vars]
+ansible_become=true
+
+[idm]
+idm.internal.aws.testdrive.openshift.com
+
+[idm:vars]
+ansible_become=true
+
+This is the already configured files of Ansible.
+No ansible installation .... skip by instructor
+-_____________________________-
+
+Installation of openshift--
+=> cant not ssh node....
+openshift is already installed...
+----
+[cloud-user@master ~]$ rpm -qa | grep openshift
+openshift-ansible-3.5.120-1.git.0.c60f69a.el7.noarch
+openshift-ansible-roles-3.5.120-1.git.0.c60f69a.el7.noarch
+atomic-openshift-docker-excluder-3.5.5.26-1.git.0.276cbb4.el7.noarch
+openshift-ansible-docs-3.5.120-1.git.0.c60f69a.el7.noarch
+openshift-ansible-filter-plugins-3.5.120-1.git.0.c60f69a.el7.noarch
+openshift-ansible-callback-plugins-3.5.120-1.git.0.c60f69a.el7.noarch
+openshift-ansible-playbooks-3.5.120-1.git.0.c60f69a.el7.noarch
+atomic-openshift-clients-3.5.5.31.24-1.git.0.ff74e0b.el7.x86_64
+openshift-ansible-lookup-plugins-3.5.120-1.git.0.c60f69a.el7.noarch
+atomic-openshift-utils-3.5.120-1.git.0.c60f69a.el7.noarch
+atomic-openshift-excluder-3.5.5.26-1.git.0.276cbb4.el7.noarch
+[cloud-user@master ~]$ 
+
+==============================
+Run the Installer
+
+Launching the advanced installation is as simple as executing the following command:
+
+ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
+
+-----------------------------------------------
+[cloud-user@master ~]$ oc get nodes
+NAME                                          STATUS                     AGE
+infra.internal.aws.testdrive.openshift.com    Ready                      5m
+master.internal.aws.testdrive.openshift.com   Ready,SchedulingDisabled   8m
+node01.internal.aws.testdrive.openshift.com   Ready                      5m
+node02.internal.aws.testdrive.openshift.com   Ready                      5m
+node03.internal.aws.testdrive.openshift.com   Ready                      5m
+[cloud-user@master ~]$
+-----------------------------------------
+GlusterFS is a scale-out network-attached storage file system. It has found applications including cloud computing, streaming media services, and content delivery networks
+----------------------------------------
+[cloud-user@master ~]$ yum list installed cns-deploy
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+Installed Packages
+cns-deploy.x86_64     4.0.0-19.el7rhgs      @rh-gluster-3-for-rhel-7-server-rpms
+[cloud-user@master ~]$ 
+----------------------------------------------
+[cloud-user@master ~]$ ansible cns -m ping
+node03.internal.aws.testdrive.openshift.com | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+node02.internal.aws.testdrive.openshift.com | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+node01.internal.aws.testdrive.openshift.com | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+[cloud-user@master ~]$ 
+--------------------------------------
+[cloud-user@master ~]$ ansible-playbook /opt/lab/support/configure-firewall.yaml
+ 
+PLAY [cns] *********************************************************************
+
+TASK [Gathering Facts] *********************************************************
+Tuesday 03 October 2017  17:11:32 -0400 (0:00:00.063)       0:00:00.063 ******* 
+ok: [node03.internal.aws.testdrive.openshift.com]
+ok: [node02.internal.aws.testdrive.openshift.com]
+ok: [node01.internal.aws.testdrive.openshift.com]
+
+TASK [insert iptables rules required for GlusterFS] ****************************
+Tuesday 03 October 2017  17:11:33 -0400 (0:00:00.665)       0:00:00.728 ******* 
+changed: [node03.internal.aws.testdrive.openshift.com]
+changed: [node01.internal.aws.testdrive.openshift.com]
+changed: [node02.internal.aws.testdrive.openshift.com]
+
+TASK [reload iptables] *********************************************************
+Tuesday 03 October 2017  17:11:33 -0400 (0:00:00.305)       0:00:01.034 ******* 
+changed: [node02.internal.aws.testdrive.openshift.com]
+changed: [node01.internal.aws.testdrive.openshift.com]
+changed: [node03.internal.aws.testdrive.openshift.com]
+
+PLAY RECAP *********************************************************************
+node01.internal.aws.testdrive.openshift.com : ok=3    changed=2    unreachable=0    failed=0   
+node02.internal.aws.testdrive.openshift.com : ok=3    changed=2    unreachable=0    failed=0   
+node03.internal.aws.testdrive.openshift.com : ok=3    changed=2    unreachable=0    failed=0   
+
+Tuesday 03 October 2017  17:11:33 -0400 (0:00:00.358)       0:00:01.392 ******* 
+=============================================================================== 
+Gathering Facts --------------------------------------------------------- 0.67s
+reload iptables --------------------------------------------------------- 0.36s
+insert iptables rules required for GlusterFS ---------------------------- 0.31s
+[cloud-user@master ~]$ 
+------------------------------------------------------------------
+#######################################################3
+
+
+
+

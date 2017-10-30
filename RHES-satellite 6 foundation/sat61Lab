@@ -1,0 +1,1486 @@
+1. The Demo Environment
+1.1. Set Up the Demo Environment in OPENTLC
+
+If you are setting up a demo in the Red Hat Product Demo System, skip to the next section. This section only applies to scheduled OPENTLC Satellite 6 Foundations labs.
+
+    Log in to the Red Hat Product Demo System at https://labs.opentlc.com.
+
+    Go to Services → Catalogs.
+
+    On the left side of the screen, expand All Services/OPENTLC Cloud Infrastructure Labs.
+
+    On the left side of the screen, click Satellite 6 Foundations Lab.
+
+    On the right side of the screen, click Order.
+
+    On the next screen click Submit.
+
+1.2. Set Up the Demo Environment in RHPDS
+
+If you are setting up a lab for Satellite 6 Foundations, skip this section.
+
+    Log in to the Red Hat Product Demo System at https://rhpds.redhat.com.
+
+    Go to Services → Catalogs.
+
+    On the left side of the screen, expand All Services/Cloud Infrastructure Demos.
+
+    On the left side of the screen, click Satellite 6 Demo.
+
+    On the right side of the screen, click Order.
+
+    On the next screen click Submit.
+
+1.3. Accessing The Environment
+
+It takes about 20 minutes for your environment to fully start up before you can access it. During this time, you will receive an email with the information on how to access your environment. Receipt of the email does not mean that the environment is ready.
+
+The demo environment is fairly simple. It consists of two systems:
+	In each of the following hostnames, you must replace the term GUID with the four-character string included in the provisioning email you receive when you deploy the lab environment.
+
+    The first system is the Satellite server with the hostname sat-GUID.rhpds.opentlc.com. This serves a http://sat-GUID.rhpds.opentlc.com/pub folder with various components needed for the installation. In a real environment, either you would bring in most of these components yourself, or you would not need them. For example, you would use real Red Hat product repositories instead of locally hosted RPMs, and so on.
+
+    The second system cli-GUID.rhpds.opentlc.com is a Red Hat Enterprise Linux 6.5 minimal installation that you configure as a managed Satellite client.
+
+You access both systems using an SSH client. Because the root password for the systems is locked out, you must log in using your OPENTLC SSO account—the same login that you used to provision the lab—plus your OPENTLC SSO SSH key.
+
+If you have not registered your SSH public key with OPENTLC SSO yet, log in to https://www.opentlc.com/update and paste your public key there.
+
+For more information on generating SSH keys:
+
+    Windows - http://kb.site5.com/shell-access-ssh/how-to-generate-ssh-keys-and-connect-to-your-account-with-putty/
+
+    Linux/OS X - https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys—2
+
+At this time, make sure you can connect to both systems via SSH using your OPENTLC SSO username (not root) and SSH key. Also make sure that you can use the sudo bash command to get a root shell:
+
+$ sudo bash
+<enter SSO password>
+#
+
+1.4. Access Your Satellite
+	It may take up to 30 minutes for your Satellite Server to start answering connections after you provision your demo environment.
+
+    Open a web browser and go to http://sat-GUID.rhpds.opentlc.com.
+
+    Log in with the following credentials:
+
+        Login: admin
+
+        Password: r3dh4t1!
+
+1.5. Manage Organizations and Locations
+
+Red Hat Satellite 6 allows you to manage multiple organizations and locations.
+
+    In the upper-left corner, hover over Any Context with the cursor and change the organization to Default_Organization.
+
+    Hover over Default_Organization and set the location to Default_Location.
+
+1.6. Manage Red Hat Repositories
+
+Red Hat content is a special citizen within Satellite 6, and its product repositories have their own section within the UI.
+	For the purposes of this demo, only Red Hat Enterprise Linux 6 content was already synchronized for you.
+
+    With the cursor, hover over Content, and then click Red Hat Repositories.
+
+    Expand the Red Hat Enterprise Linux Server drop-down list, and then expand the following:
+
+        Red Hat Enterprise Linux 6 Server (Kickstart)
+
+        Red Hat Enterprise Linux 6 Server (RPMs)
+
+        Red Hat Enterprise Linux 6 Server - RH Common (RPMs)
+        	Under each entry, notice that the box is checked to subscribe the Satellite Server to these repositories. Do not uncheck anything.
+
+    Click the Other tab.
+
+    Expand Red Hat Software Collections for RHEL Server, and then expand Red Hat Software Collections RPMs for Red Hat Enterprise Linux 6 Server. Note that the Satellite Server is subscribed to this repository as well.
+
+1.7. Synchronize Content
+
+You can monitor synchronization status.
+
+    Hover over Content, and then click Sync Status.
+
+    Click Expand All.
+
+Here you can see that the synchronization was already completed for this environment.
+2. Satellite 6 Managed Hosts
+
+Moving forward, be sure to pay attention to which host the labs require you to run steps on.
+2.1. Log In to the Red Hat Enterprise Linux Client
+
+    From your desktop machine (not the Satellite Server), use SSH to connect to your client host at cli-GUID.rhpds.opentlc.com using your OPENTLC SSO login name and private SSH key. You cannot log in as root directly and you must use an SSH key the authenticate.
+
+    Use sudo -i to become root:
+
+    $ sudo -i
+    <enter password>
+    #
+
+2.2. Manage Subscriptions with Satellite
+
+To get your subscription details:
+
+# subscription-manager list --consumed
+
++-------------------------------------------+
+   Consumed Subscriptions
++-------------------------------------------+
+Subscription Name: Red Hat Enterprise Linux Server, Standard (Physical or
+                   Virtual Nodes)
+Provides:          Red Hat Developer Toolset (for RHEL Server)
+                   Oracle Java (for RHEL Server)
+                   Red Hat Software Collections Beta (for RHEL Server)
+                   Red Hat Enterprise Linux Server
+                   Red Hat Beta
+                   Red Hat Software Collections (for RHEL Server)
+SKU:               RH00004
+Contract:          10550844
+Account:           5361051
+Serial:            5027935726467896034
+Pool ID:           4028807e49144ee40149148f1d8b015c
+Active:            True
+Quantity Used:     1
+Service Level:     Standard
+Service Type:      L1-L3
+Status Details:
+Starts:            10/08/2014
+Ends:              10/07/2015
+System Type:       Physical
+
+2.3. Content Hosts
+
+Find the managed host in the Satellite web UI.
+
+    Make sure you are in the Default_Organization@Default_Location context in the upper-left corner.
+
+    Click Hosts → Content Hosts. You should see cli.rhpds.opentlc.com listed.
+
+    Click the client system.
+
+    In the Details tab under Environment select Library.
+
+    In the Content View pulldown select Default Organization View then click Save. + You have moved your client into a new content view with a different list of repositories, more on this later.
+
+    Click the Subscriptions tab. Note that under the Add tab, you can add additional subscriptions via the web UI.
+
+    Look around at the other tabs to familiarize yourself with the information provided.
+
+2.4. Manage the Client’s Repositories
+
+    On the client host, get a list of available repositories:
+
+    # subscription-manager repos
+    2 local certificates have been deleted.
+    +----------------------------------------------------------+
+        Available Repositories in /etc/yum.repos.d/redhat.repo
+    +----------------------------------------------------------+
+    Repo ID:   rhel-6-server-rpms
+    Repo Name: Red Hat Enterprise Linux 6 Server (RPMs)
+    Repo URL:  https://sat.rhpds.opentlc.com/pulp/repos/Default_Organization/Library
+               /content/dist/rhel/server/6/6Server/$basearch/os
+    Enabled:   1
+
+    Repo ID:   rhel-6-server-rh-common-rpms
+    Repo Name: Red Hat Enterprise Linux 6 Server - RH Common (RPMs)
+    Repo URL:  https://sat.rhpds.opentlc.com/pulp/repos/Default_Organization/Library
+               /content/dist/rhel/server/6/6Server/$basearch/rh-common/os
+    Enabled:   1
+
+    Enable the rh-common repository:
+
+    # subscription-manager repos --enable rhel-6-server-rh-common-rpms
+
+    Repo rhel-6-server-rh-common-rpms is enabled for this system.
+
+2.5. Manage the Client’s Packages
+
+    Search for the xterm package to make sure it is available:
+
+    # yum search xterm
+    Loaded plugins: product-id, security
+    ============================== N/S Matched: xterm ==============================
+    xterm.x86_64 : Terminal emulator for the X Window System
+
+      Name and summary matches only, use "search all" for everything.
+
+    As an example, install the xterm package:
+
+    # yum -y install xterm
+
+    Log in to the Satellite UI.
+
+    Click Hosts → Content Hosts.
+
+    Click the client system’s link.
+
+    Click the Packages tab.
+
+    In the Installed Packages section type gcc where the word Filter appears.
+
+    You should only see one installed package named libgcc.
+
+    In the Package Actions section, make sure the dropdown is set to Package Install.
+
+    In the Package/Group Name text box enter gcc then click Perform.
+
+    When the progress bar is complete click the Packages tab again and check to see if the gcc package was installed. + You may have to reload your web browser to see the new package list.
+
+    You should see the gcc installed with a lot of other dependencies such as gcc-c++ and so on.
+
+2.6. Errata
+
+You can apply errata from the Satellite GUI or by using yum update on the client system command line.
+
+    Log in to the Satellite UI.
+
+    Click Hosts → Content Hosts.
+
+    Click the client system’s link.
+
+    Click the Errata tab. You should see applicable errata in the resulting table.
+
+    Click RHEA-2014:0894 take note that the package to be updated, sos, shows up in the Packages section. The version to be applied is sos-2.2-47.el6_5.7.noarch.
+
+    Click the Packages tab.
+
+    In the Installed Packages section enter sos where you see the word Filter.
+
+    Note that the installed package is sos-2.2-47.el6.noarch. This differs from the package that will be applied by the errata.
+
+    Click the Errata tab again.
+
+    Check RHEA-2014:0894 then click Apply Selected.
+
+    Wait for the progress bar to complete.
+
+    Click the Packages tab.
+
+    In the Installed Packages section enter sos where you see the word Filter.
+
+    Note that the installed package is now updated to sos-2.2-47.el6_5.7.noarch.
+
+    Click the Errata tab, notice that RHEA-2014:0894 has disappeared because it has been applied.
+
+    Click the errata RHSA-2014:0861.
+
+    Note that the package to be update is lzo.
+
+    Log into the client system as root and rum the following command:
+
+    # yum -y update lzo
+
+    Reload the web browser. In the Errata tab, you should notice that RHSA-2014:0861 is no longer in the list of Applicable Errata.
+
+2.7. Products
+
+Adding custom software to Satellite 6 involves adding a product. Satellite 6 uses the concept of products, each of which can contain many repositories. One example of a product is a monitoring suite like HP OpenView. OpenView itself may have a few RPMs, but some of its dependencies may lie outside of Red Hat Enterprise Linux. Or, as another example, Dell provides RPMs including drivers and libraries for some of its various hardware. In these cases, multiple yum repositories might be available that you could find useful.
+
+In many cases, organizations may have existing processes to create and populate yum repositories—for example, an automated process that builds an internal RPM and makes it available in a yum repository. Satellite can automatically sync yum repositories.
+
+Here you create a product called Satellite Class. This product contains some Puppet content that you will use later.
+
+    Log in to your Satellite web UI.
+
+    Click Content → Products.
+
+    Click Satellite Class.
+
+    Click the Repositories tab.
+
+    Click the Simple Modules repository.
+
+    Note that the repository consists of two Puppet modules under Content Counts column.
+
+    Click the number 2 and note that the repository contains the motd and ntp puppet modules.
+
+    Click Content → Products.
+
+    Click the Wordpress product then click the Wordpress Puppet Modules repository.
+
+    Note that five Puppet modules are loaded in this repository under Content Counts.
+
+    Click the number 5 to see the 5 different puppet modules.
+
+2.8. View Host Subscriptions in the UI
+
+Satellite 6 uses the concept of Subscriptions to provide access to repositories. If a system is consuming a product subscription, it has access to all of the repositories that product provides.
+
+    Click Hosts → Content Hosts, and then click your client system’s link.
+
+    Click the Subscriptions tab.
+
+    Under List/Remove, confirm that the basic Red Hat Enterprise Linux and additional Satellite class repositories are subscribed.
+
+3. Content Views
+
+Satellite 6 is unique in that it is created with lifecycle management as a first-class citizen. In Satellite 5, you achieve software lifecycle management by applying process to the technology available (channel cloning via defined human/automated process). In Satellite 6, Red Hat built software lifecycle management into the system via lifecycle environments.
+3.1. Access Lifecycle Environments
+
+To access lifecycle environments, click Content → Lifecycle Environments.
+
+Note that the environment path is Library → Development → Production.
+
+Looking at this page, you can see that, out of the box, Red Hat has a defined lifecycle environment path that begins from the library. You can think of the library as similar to Red Hat channels in Satellite 5. All content is initially synchronized into the library. From there, it must be published (to make it available) and then promoted (to push it forward into the next environment). The library is a special environment in this regard.
+
+Although you can have systems attached to the library and use views published into the library, Red Hat does not recommend this practice.
+
+For the purposes of standardized proofs-of-concept (POCs) and the simplicity of this training, here you have only one lifecycle environment path consisting of two environments: development and production.
+3.2. Access Content Views and Definitions
+
+Content views can be a little difficult to understand at first, but customers have been asking for them for a while. With Satellite 5, it was often difficult to create a channel that contained specific software as a subset of the original channel. It was also difficult to deal with parent and child channels as a group when it came to cloning or not cloning.
+
+Content views aim to change all that, by providing intelligent options for filtering RPMs, Puppet modules, and more.
+
+Here you can see a view that initially contains your message of the day (motd) module and the required Red Hat Enteprise Linux products:
+
+    Make sure you are in the Default_Organization@Default_Location context in the upper-left corner of the screen.
+
+    Click Content → Content Views.
+
+    Click RHEL6 SOE → Content → Repositories.
+
+    In the Repository Selection area, note that the following repositories are part of the content view:
+
+        Red Hat Enterprise Linux 6 Server Kickstart x86_64 6Server
+
+        Red Hat Enterprise Linux 6 Server - RH Common RPMs x86_64 6Server.
+
+        Red Hat Enterprise Linux 6 Server RPMs x86_64 6Server
+
+    Click the Puppet Modules tab.
+
+You can see that this view contains the base Red Hat Enterprise Linux content + RH Common and 3 puppet modules.
+
+You can combine this view with others to form a composite view, and use that view for systems in a host group to ensure they are configured correctly: software, services, configuration files, etc. You will work with composite views later.
+3.3. Access Content View Versions and Published Status
+
+    While still in the RHEL6 SOE content view, click the Versions tab.
+
+Here you can see that version 2 of this content view is published to Library and Development.
+
+A published content view essentially makes Red Hat Enterprise Linux 6 Server (the latest bits) available to systems that are attached to the library environment and configured to use this view.
+
+To make this content available for systems in "downstream" or "later" lifecycle environments, such as development or production, you use content view promotion.
+3.4. Content View and Lifecycle Environment Promotion
+
+The concept of promotion of a content view is closely tied to both the software lifecycle (SLC) and lifecycle environments/lifecycle environment paths concepts. In theory, each lifecycle environment comes "chronologically" after the one before it. For example:
+
+Library → Development → Production
+
+Our Red Hat Enterprise Linux 6 standard operating environmment (RHEL6 SOE) has already been promoted into development. Our client system is currently in the default Library environment because we moved it there earlier. We will have to move it to Development environment so that it can use the RHEL6 SOE content view.
+
+Let’s see what promotion looks like:
+
+    In the Version 2 row, click the Promote button.
+
+    If you wanted to promote this view into the production lifecycle environment, you would check the Production box. We will skip this for now.
+
+    Click Cancel.
+
+    Click Hosts → Content Hosts.
+
+    Click the client system.
+
+    Under Environment check the Development checkbox to move this system into the Development environment.
+
+    Wait a few seconds for the Content View dropdown to appear.
+
+    Select RHEL6 SOE then click Save.
+
+    Log into the client system via SSH.
+
+    Get a list of repositories, you will notice that the available repositories have changed as the RHEL6 SOE does not have the same repos.
+
+    # subscription-manager repos
+    2 local certificates have been deleted.
+    +----------------------------------------------------------+
+        Available Repositories in /etc/yum.repos.d/redhat.repo
+    +----------------------------------------------------------+
+    Repo ID:   rhel-6-server-rpms
+    Repo Name: Red Hat Enterprise Linux 6 Server (RPMs)
+    Repo URL:  https://sat.rhpds.opentlc.com/pulp/repos/Default_Organization/Develop
+               ment/RHEL6_SOE/content/dist/rhel/server/6/6Server/$basearch/os
+    Enabled:   1
+
+    Repo ID:   rhel-6-server-rh-common-rpms
+    Repo Name: Red Hat Enterprise Linux 6 Server - RH Common (RPMs)
+    Repo URL:  https://sat.rhpds.opentlc.com/pulp/repos/Default_Organization/Develop
+               ment/RHEL6_SOE/content/dist/rhel/server/6/6Server/$basearch/rh-common
+               /os
+    Enabled:   1
+
+    In the Satellite UI, go to Hosts → Content Hosts and select the client.
+
+    Click the Subscriptions tab.
+
+    The Subscription Details section should have a green and valid status.
+
+    If it is not valid you can wait a while and refresh or force a resubscription by clicking the Run Auto-Attach button.
+
+4. Puppet Client
+4.1. Configure Puppet in the UI
+
+Your training environment is preconfigured with Puppet on your client system. Here you can set up the motd:
+
+    Click Hosts → All Hosts.
+
+    Click your client system link. This displays the Puppet details page about a system. You will learn more about it later. For now, note the following settings:
+
+        Host group: RHEL6 SOE GROUP
+
+        Puppet environment: KT_Default_Organization_Development_RHEL6_SOE_2
+
+4.2. Run Puppet The First Time
+
+    Log into your client system as root.
+
+    Run Puppet in noop (no operation) mode:
+
+    # puppet agent --test --noop --onetime
+
+    The result looks like the following:
+
+    # puppet agent --test --noop --onetime
+    Info: Creating a new SSL key for cli-GUID.rhpds.opentlc.com
+    Info: csr_attributes file loading from /etc/puppet/csr_attributes.yaml
+    Info: Creating a new SSL certificate request for cli-GUID.rhpds.opentlc.com
+    Info: Certificate Request fingerprint (SHA256): ...
+    Exiting; no certificate found and waitforcert is disabled
+
+As you can see here, our client attempted to get its certificate signed, but it was not automatic, and it was not told to wait, so the agent exited.
+
+    In the Satellite 6 web interface use the context switcher to select Any Organization and Any Location which will change the context to Any Context.
+
+    Click Infrastructure → Capsules.
+
+    In the row with the Satellite Server’s host name at the way right click Certificates.
+
+    You should see your client system listed cli-GUID.rhpds.opentlc.com, at the right of it, click the button that says Sign.
+
+    You should see a green pop-up letting you know your signing was successful.
+
+You may have wondered why we had to select Any Context and Any Location when we went through this process, despite working within Default Organization as we did earlier for everything else.
+
+For starters, the Satellite in its default configuration is also acting as a Capsule. Because each Capsule could house content and perform functions for multiple organizations, they essentially live outside of the context of any one specific organization. This is why we find our Satellite under the Capsule list only in Any Context.
+
+Additionally, the initial Puppet registration process for our client system did not involve any information about Organization or anything else. Had we leveraged an activation key or provisioned via kickstart this would be automatic. But, as an artifact of the basic operation of Puppet, we will find this system in the Any Context location, and then move it to the right Organization later.
+4.3. Run Puppet Again
+
+    Log into your client system as root.
+
+    Run Puppet in noop (no operation) mode:
+
+    # puppet agent --test --noop --onetime
+
+You should see something like the following (with some highlighted Warnings and Errors):
+
+Info: Caching certificate for cli-GUID.rhpds.opentlc.com
+Info: Caching certificate for cli-GUID.rhpds.opentlc.com
+Warning: Unable to fetch my node definition, but the agent run will continue:
+Warning: Error 400 on SERVER: Failed to find cli-GUID.rhpds.opentlc.com via exec: Execution of '/etc/puppet/node.rb cli-GUID.rhpds.opentlc.com' returned 1:
+Info: Retrieving plugin
+Error: /File[/var/lib/puppet/lib]: Could not evaluate: Could not retrieve information from environment production source(s) puppet://sat.rhpds.opentlc.com/plugins
+Info: Caching catalog for cli-GUID.rhpds.opentlc.com
+Info: Applying configuration version '1431453114'
+Notice: Finished catalog run in 0.05 seconds
+
+The Puppet agent checked in with the Puppet master. Since our system doesn’t yet belong anywhere and there is no universal default setting, we get the warning "Unable to fetch my node definition" — the master offered up nothing that matched us.
+
+While we created a Host Group earlier, we did not assign this system to it. So, right now, our client system has no Foreman Host Groups associated with it. This means that Puppet has nothing to do. And that’s exactly what it did - the agent received no matching manifest and therefore did nothing.
+
+Let’s make it do something by setting up the MOTD (message of the day).
+5. Host Groups
+5.1. Understand Host Group Basics
+
+Remember that a system belongs to a host group, and that the host group has an environment and a content view associated with it.
+
+    Content View - Determines what content (packages, Puppet modules and their versions) is available
+
+    Environment - The current SLC "point in time" for a system
+
+    Host Group - Based on the environment and available content, what actually gets applied to a system
+
+Within the host group’s configuration, you select the environment and content view and then choose the Puppet classes. Choosing Puppet classes effectively controls the software and configuration on a system.
+
+Here you look inside the motd module:
+
+class motd ($message = 'This is the default message') {
+
+  file { '/etc/motd':
+    content => "$message \n",
+  }
+
+}
+
+This module puts "This is the default message" into /etc/motd. This tool can be very powerful.
+
+Your training environment includes a host group named Base to apply this module.
+
+    Click Configure → Host Groups.
+
+    Click RHEL6 SOE GROUP. Confirm the following settings:
+
+        Lifecycle Environment - Development.
+
+        Puppet Environment - RHEL6_SOE.
+
+        Puppet CA and Puppet Master - sat.rhpds.opentlc.com.
+
+    Click the Puppet Classes tab. Note that the motd and ntp classes are included.
+
+    Click the Locations tab. Note that the Default Location is selected.
+
+    In the Satellite web interface make sure the Any Context context is selected.
+
+    Click Hosts → All Hosts.
+
+    Click the check box next to your client system cli-GUID.rhpds.opentlc.com.
+
+    Click Select Action at the top right and Assign Organization.
+
+    Select Default_Organization in the drop down and choose Fix Organization on Mismatch.
+
+    Click Submit.
+
+You will need to do the same for location:
+
+    Make sure the client is still checked.
+
+    Click Select Action and Assign Location.
+
+    Select Default_Location.
+
+    Choose Fix Location on Mismatch.
+
+    Click Submit.
+
+    Click on the link consisting of the name of your client system.
+
+    Note that the Environment in this view is NOT a Lifecycle Environment that you defined earlier, it is a Puppet environment. Do not confuse the two. This is something that will be clarified in a future release of Satellite. For now, you can ignore this column.
+
+This is the Puppet details page about a system. We’ll talk more about it later. For now:
+
+    Click Edit at the top right.
+
+    For Host Group select RHEL6 SOE GROUP.
+
+    For Lifecycle Environment select Development.
+
+    For Puppet Environment select RHEL6 SOE.
+
+    Click Submit.
+
+Let’s take a moment to talk about what we did. As we discussed, the initial Puppet registration did not involve an organization. So, first, we moved the system into the correct Organization (Default_Organization), and the correct Location (Default_Location).
+
+Then, since the initial Puppet registration didn’t involve specifying a Host Group or etc, we set those up, too.
+
+Now, it’s time to see how our changes affect our client system.
+
+    Log into your client system as root.
+
+    Let’s run Puppet again:
+
+# puppet agent --test --noop --onetime
+
+The result should be something like:
+
+Warning: Local environment: "production" doesn't match server specified node environment "KT_Default_Organization_Development_RHEL6_SOE_2", switching agent to "KT_Default_Organization_Development_RHEL6_SOE_2".
+Info: Retrieving plugin
+Notice: /File[/var/lib/puppet/lib/puppet]/ensure: created
+...
+Notice: /File[/var/lib/puppet/lib/puppet/parser/functions/validate_cmd.rb]/ensure: defined content as '{md5}0319a15d24fd077ebabc2f79969f6ab5'
+Info: Loading facts in /var/lib/puppet/lib/facter/puppet_vardir.rb
+Info: Loading facts in /var/lib/puppet/lib/facter/facter_dot_d.rb
+Info: Loading facts in /var/lib/puppet/lib/facter/pe_version.rb
+Info: Loading facts in /var/lib/puppet/lib/facter/root_home.rb
+Info: Caching catalog for cli-GUID.rhpds.opentlc.com
+Warning: The package type's allow_virtual parameter will be changing its default value from false to true in a future release. If you do not want to allow virtual packages, please explicitly set allow_virtual to false.
+   (at /usr/lib/ruby/site_ruby/1.8/puppet/type.rb:816:in `set_default')
+Info: Applying configuration version '1431459184'
+Notice: /Stage[main]/Motd/File[/etc/motd]/content:
+--- /etc/motd   2014-03-13 19:13:45.611020973 -0400
++++ /tmp/puppet-file20150512-5923-olmnmy-0      2015-05-12 15:33:08.055105087 -0400
+@@ -1,6 +1 @@
+-
+-WARNING this system is for approved usage only.  If you are not authorized by
+-its owners to access this system log off now.  All activities on this system are
+-monitoried.  Usage of this system implies that you understand there is no right
+-to privacy in regard to your activity on this system.
+-
++This is the default message
+
+Notice: /Stage[main]/Motd/File[/etc/motd]/content: current_value {md5}9c53c877136e77e43e06d5bcda901b3c, should be {md5}c01d1bd4d04a962e8364a4fb55e59f05 (noop)
+Notice: Class[Motd]: Would have triggered 'refresh' from 1 events
+Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content:
+--- /etc/ntp.conf       2013-07-15 05:18:47.000000000 -0400
++++ /tmp/puppet-file20150512-5923-a8se3m-0      2015-05-12 15:33:08.743105086 -0400
+@@ -1,53 +1,22 @@
+-# For more information about this file, see the man pages
+-# ntp.conf(5), ntp_acc(5), ntp_auth(5), ntp_clock(5), ntp_misc(5), ntp_mon(5).
++# ntp.conf: Managed by puppet.
++#
++# Keep ntpd from panicking in the event of a large clock skew
++# when a VM guest is suspended and resumed.
++tinker panic 0
+
+-driftfile /var/lib/ntp/drift
+-
+-# Permit time synchronization with our time source, but do not
+-# permit the source to query or modify the service on this system.
++# Permit time synchronization with our time source, but do not'
++# permit the source to query or modify the service on this system.'
+ restrict default kod nomodify notrap nopeer noquery
+ restrict -6 default kod nomodify notrap nopeer noquery
+-
+-# Permit all access over the loopback interface.  This could
+-# be tightened as well, but to do so would effect some of
+-# the administrative functions.
+-restrict 127.0.0.1
++restrict 127.0.0.1
+ restrict -6 ::1
+
+-# Hosts on local network are less restricted.
+-#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap
+
+-# Use public servers from the pool.ntp.org project.
+-# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+-server 0.rhel.pool.ntp.org iburst
+-server 1.rhel.pool.ntp.org iburst
+-server 2.rhel.pool.ntp.org iburst
+-server 3.rhel.pool.ntp.org iburst
+-
+-#broadcast 192.168.1.255 autokey       # broadcast server
+-#broadcastclient                       # broadcast client
+-#broadcast 224.0.1.1 autokey           # multicast server
+-#multicastclient 224.0.1.1             # multicast client
+-#manycastserver 239.255.254.254                # manycast server
+-#manycastclient 239.255.254.254 autokey # manycast client
+-
+-# Enable public key cryptography.
+-#crypto
+-
+-includefile /etc/ntp/crypto/pw
+-
+-# Key file containing the keys and key identifiers used when operating
+-# with symmetric key cryptography.
+-keys /etc/ntp/keys
+-
+-# Specify the key identifiers which are trusted.
+-#trustedkey 4 8 42
++server 0.centos.pool.ntp.org
++server 1.centos.pool.ntp.org
++server 2.centos.pool.ntp.org
+
+-# Specify the key identifier to use with the ntpdc utility.
+-#requestkey 8
+
+-# Specify the key identifier to use with the ntpq utility.
+-#controlkey 8
++# Driftfile.
++driftfile /var/lib/ntp/drift
+
+-# Enable writing of statistics records.
+-#statistics clockstats cryptostats loopstats peerstats
+
+Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content: current_value {md5}6777a310a85c182e90f16ef92f6315e4, should be {md5}af2c4d9dba34bb187ddfbf76bbf74815 (noop)
+Notice: Class[Ntp::Config]: Would have triggered 'refresh' from 1 events
+Info: Class[Ntp::Config]: Scheduling refresh of Class[Ntp::Service]
+Notice: Class[Ntp::Service]: Would have triggered 'refresh' from 1 events
+Info: Class[Ntp::Service]: Scheduling refresh of Service[ntp]
+Notice: /Stage[main]/Ntp::Service/Service[ntp]/ensure: current_value stopped, should be running (noop)
+Info: /Stage[main]/Ntp::Service/Service[ntp]: Unscheduling refresh on Service[ntp]
+Notice: Class[Ntp::Service]: Would have triggered 'refresh' from 1 events
+Notice: Stage[main]: Would have triggered 'refresh' from 3 events
+Notice: Finished catalog run in 1.78 seconds
+
++ Consider what these results reveal. First, the default Puppet agent configuration operates in the production environment. The Puppet master indicates that you are in the KT_My_Organization_Development_RHEL6_SOE_2 environment. This naming is an artifact of how Pulp works behind the scenes.
+
++ The Puppet master then delivers a catalog to run. The results display a notice about /etc/motd and some diff output. Puppet looked at the md5sum of the existing /etc/motd and saw that it did not match what the manifest thinks it should be. Therefore, Puppet knows a change needs to take place.
+
++ Under +This is the default message, Puppet showed the difference between the current /etc/motd and what it should be. It also provided information about some refresh events. These are beyond the scope of this training course.
+
++ You can also see that the ntp configuration is to be changed.
+
+    View the contents of /etc/motd. You should see the OPENTLC warning message:
+
+    # cat /etc/motd
+
+    WARNING this system is for approved usage only.  If you are not authorized by
+    its owners to access this system log off now.  All activities on this system are
+    monitoried.  Usage of this system implies that you understand there is no right
+    to privacy in regard to your activity on this system.
+
+    Because you ran Puppet in --noop mode, it performed no operation. Run it again without --noop. You will see the following results:
+
+    # puppet agent --test --onetime
+
+    Warning: Local environment: "production" doesn't match server specified node environment "KT_Default_Organization_Development_RHEL6_SOE_2", switching agent to "KT_Default_Organization_Development_RHEL6_SOE_2".
+    Info: Retrieving plugin
+    Info: Loading facts in /var/lib/puppet/lib/facter/puppet_vardir.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/facter_dot_d.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/pe_version.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/root_home.rb
+    Info: Caching catalog for cli-GUID.rhpds.opentlc.com
+    Warning: The package type's allow_virtual parameter will be changing its default value from false to true in a future release. If you do not want to allow virtual packages, please explicitly set allow_virtual to false.
+       (at /usr/lib/ruby/site_ruby/1.8/puppet/type.rb:816:in `set_default')
+    Info: Applying configuration version '1431459184'
+    Notice: /Stage[main]/Motd/File[/etc/motd]/content:
+    --- /etc/motd   2014-03-13 19:13:45.611020973 -0400
+    +++ /tmp/puppet-file20150512-6183-105cme3-0     2015-05-12 15:38:06.005105087 -0400
+    @@ -1,6 +1 @@
+    -
+    -WARNING this system is for approved usage only.  If you are not authorized by
+    -its owners to access this system log off now.  All activities on this system are
+    -monitoried.  Usage of this system implies that you understand there is no right
+    -to privacy in regard to your activity on this system.
+    -
+    +This is the default message
+
+    Info: /Stage[main]/Motd/File[/etc/motd]: Filebucketed /etc/motd to puppet with sum 9c53c877136e77e43e06d5bcda901b3c
+    Notice: /Stage[main]/Motd/File[/etc/motd]/content: content changed '{md5}9c53c877136e77e43e06d5bcda901b3c' to '{md5}c01d1bd4d04a962e8364a4fb55e59f05'
+    Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content:
+    --- /etc/ntp.conf       2013-07-15 05:18:47.000000000 -0400
+    +++ /tmp/puppet-file20150512-6183-8spc31-0      2015-05-12 15:38:06.640105087 -0400
+    @@ -1,53 +1,22 @@
+    -# For more information about this file, see the man pages
+    -# ntp.conf(5), ntp_acc(5), ntp_auth(5), ntp_clock(5), ntp_misc(5), ntp_mon(5).
+    +# ntp.conf: Managed by puppet.
+    +#
+    +# Keep ntpd from panicking in the event of a large clock skew
+    +# when a VM guest is suspended and resumed.
+    +tinker panic 0
+
+    -driftfile /var/lib/ntp/drift
+    -
+    -# Permit time synchronization with our time source, but do not
+    -# permit the source to query or modify the service on this system.
+    +# Permit time synchronization with our time source, but do not'
+    +# permit the source to query or modify the service on this system.'
+     restrict default kod nomodify notrap nopeer noquery
+     restrict -6 default kod nomodify notrap nopeer noquery
+    -
+    -# Permit all access over the loopback interface.  This could
+    -# be tightened as well, but to do so would effect some of
+    -# the administrative functions.
+    -restrict 127.0.0.1
+    +restrict 127.0.0.1
+     restrict -6 ::1
+
+    -# Hosts on local network are less restricted.
+    -#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap
+
+    -# Use public servers from the pool.ntp.org project.
+    -# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+    -server 0.rhel.pool.ntp.org iburst
+    -server 1.rhel.pool.ntp.org iburst
+    -server 2.rhel.pool.ntp.org iburst
+    -server 3.rhel.pool.ntp.org iburst
+    -
+    -#broadcast 192.168.1.255 autokey       # broadcast server
+    -#broadcastclient                       # broadcast client
+    -#broadcast 224.0.1.1 autokey           # multicast server
+    -#multicastclient 224.0.1.1             # multicast client
+    -#manycastserver 239.255.254.254                # manycast server
+    -#manycastclient 239.255.254.254 autokey # manycast client
+    -
+    -# Enable public key cryptography.
+    -#crypto
+    -
+    -includefile /etc/ntp/crypto/pw
+    -
+    -# Key file containing the keys and key identifiers used when operating
+    -# with symmetric key cryptography.
+    -keys /etc/ntp/keys
+    -
+    -# Specify the key identifiers which are trusted.
+    -#trustedkey 4 8 42
+    +server 0.centos.pool.ntp.org
+    +server 1.centos.pool.ntp.org
+    +server 2.centos.pool.ntp.org
+
+    -# Specify the key identifier to use with the ntpdc utility.
+    -#requestkey 8
+
+    -# Specify the key identifier to use with the ntpq utility.
+    -#controlkey 8
+    +# Driftfile.
+    +driftfile /var/lib/ntp/drift
+
+    -# Enable writing of statistics records.
+    -#statistics clockstats cryptostats loopstats peerstats
+
+    Info: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]: Filebucketed /etc/ntp.conf to puppet with sum 6777a310a85c182e90f16ef92f6315e4
+    Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content: content changed '{md5}6777a310a85c182e90f16ef92f6315e4' to '{md5}af2c4d9dba34bb187ddfbf76bbf74815'
+    Info: Class[Ntp::Config]: Scheduling refresh of Class[Ntp::Service]
+    Info: Class[Ntp::Service]: Scheduling refresh of Service[ntp]
+    Notice: /Stage[main]/Ntp::Service/Service[ntp]/ensure: ensure changed 'stopped' to 'running'
+    Info: /Stage[main]/Ntp::Service/Service[ntp]: Unscheduling refresh on Service[ntp]
+    Notice: Finished catalog run in 2.12 seconds
+
+    Run the cat command to see the contents of /etc/motd:
+
+    # cat /etc/motd
+
+    This is the default message
+
+    Observe that when you run Puppet without --noop, the configuration change is audited.
+
+5.2. Run Puppet Reports
+
+    Log in to the Satellite web interface.
+
+    Go to Hosts → All hosts.
+
+    Click the client system cli-GUID.rhpds.opentlc.com.
+
+    In the Details section, click Reports. You should see a list of reports.
+
+    Click the report at the top that has a number greater than 0 in the Applied column.
+
+    You will see the information about what happened on your system. If you had not run with --test mode, the system would not have recorded any of the information items. However, even without these items, the report would still contain very valuable information about the status of your system—for example, the fact that Puppet changed the motd file and NTP configuration.
+
+    Click the View Diff link and examine the output for the MOTD and NTP configuration.
+
+    Click Close.
+
+You are starting to see the power of Puppet and its use with Satellite. You can also leverage another powerful feature of Red Hat’s external node classifier (ENC): Foreman (Staypuft).
+6. Smart Variables and Smart Class Parameters
+
+Recall the following code from the motd Puppet module:
+
+class motd ($message = 'This is the default message') {
+
+  file { '/etc/motd':
+    content => "$message \n",
+  }
+
+}
+
+The first line declares the motd class and involves the use of a parameter message, in this case. This is called a parameterized class. Most published Puppet modules of any quality involve parameterized classes, because these classes make the modules useful.
+
+In the case of Foreman (Staypuft) and Satellite 6, smart class parameters are one way you can pass specific parameters into a system. You could not parameterize classes until Puppet 2.6.5+. Foreman has existed for quite some time, and you will also see smart variables in the UI. If you use a module that does have variables inside but does not use parameterized classes, a smart variable would be the only way you can do the override.
+
+Generally speaking, as a best practice Red Hat recommends parameterizing all classes, and, in some cases, having a dedicated class that provides default values. These tasks, however, are outside the scope of this course.
+6.1. Use a Smart Class Parameter to Override $message
+
+    Click Configure → Puppet Classes, and then click motd.
+
+    Click the Smart Class Parameter tab.
+
+    Click the message link on the left.
+
+    Check the Override box.
+
+    Scroll down to the Override Value For Specific Hosts section. Note that Match matches the host group RHEL6 SOE GROUP, and that Value replaces the value of $message with Welcome to OPENTLC.
+
+    Click Submit.
+
+What you have done thus far is configure the message class parameter to have a different value if hostgroup = RHEL6 SOE GROUP. In other words, for any system whose host group is RHEL6 SOE GROUP, the message value is Welcome to OPENTLC.
+	Technically speaking, having anything related to "welcome" in the motd could have legal implications with regards to hackers and intruders, but this is just for testing purposes.
+6.2. View How the Change Impacts the Client System
+
+    Log in to your client system as root.
+
+    Run Puppet again in --noop mode:
+
+    # puppet agent --test --noop --onetime
+
+    You should see something like the following:
+
+    Warning: Local environment: "production" doesn't match server specified node environment "KT_Default_Organization_Development_RHEL6_SOE_2", switching agent to "KT_Default_Organization_Development_RHEL6_SOE_2".
+    Info: Retrieving plugin
+    Info: Loading facts in /var/lib/puppet/lib/facter/puppet_vardir.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/facter_dot_d.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/pe_version.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/root_home.rb
+    Info: Caching catalog for cli-GUID.rhpds.opentlc.com
+    Warning: The package type's allow_virtual parameter will be changing its default value from false to true in a future release. If you do not want to allow virtual packages, please explicitly set allow_virtual to false.
+       (at /usr/lib/ruby/site_ruby/1.8/puppet/type.rb:816:in `set_default')
+    Info: Applying configuration version '1431459184'
+    Notice: /Stage[main]/Motd/File[/etc/motd]/content:
+    --- /etc/motd   2015-05-12 15:38:06.058105087 -0400
+    +++ /tmp/puppet-file20150512-6518-xsk9kr-0      2015-05-12 15:48:34.479954052 -0400
+    @@ -1 +1 @@
+    -This is the default message
+    +Welcome to OPENTLC
+
+    Notice: /Stage[main]/Motd/File[/etc/motd]/content: current_value {md5}c01d1bd4d04a962e8364a4fb55e59f05, should be {md5}3e8d2e839d291050895b8bc5dd27d350 (noop)
+    Notice: Class[Motd]: Would have triggered 'refresh' from 1 events
+    Notice: Stage[main]: Would have triggered 'refresh' from 1 events
+    Notice: Finished catalog run in 1.06 seconds
+
+    Here again, you see that Puppet thinks the content of the /etc/motd file should be different—and that this time, it should have your new welcome message. If you cat the /etc/motd file, you see that the file still has not changed. The reason is that you ran Puppet in --noop mode again.
+
+    This is extremely powerful. By changing one setting in the Satellite 6 interface, you could ultimately affect tens of thousands of systems on their next Puppet run, assuming they were running Puppet automatically and/or the agent service was running.
+
+    Using what you have learned, run Puppet again without --noop to apply your change.
+
+    Examine the system report, and check /etc/motd on the client system to see if it changed.
+
+    Take some time to also look at the various Puppet agent options:
+
+    # puppet agent --help
+
+    You will see an explanation of what --test actually does, along with descriptions for various other options that the agent can take. The --onetime flag causes Puppet not to run as a daemon. This prevents the system from inadvertently pushing changes to Puppet while you are testing.
+
+Now that you have explored how host groups and Puppet work together, you can now attempt to use a slightly more complicated module: the NTP module that you installed earlier.
+6.3. Use a Smart Class Parameter to Add Values
+
+Because the NTP module involves more parameterized classes, you need to provide some sensible values for your host group via a smart class parameter.
+
+    Click Configure → Puppet Classes.
+
+    Move to page two and click the ntp class.
+
+    Click the Smart Class Parameter tab.
+
+    On the left locate and click the servers variable.
+
+    Check the Override box.
+
+To accommodate some legacy Foreman (Staypuft) behavior, you need to make some adjustments here. First, the NTP module requires an array as the input to the servers variable/parameter.
+
+    For Parameter type, select array.
+
+    The default value for this variable looks like:
+
+    ${$ntp::params::servers}
+
+    While this works as a Puppet construct in and of itself, this value is not an array, and Foreman (Staypuft) cannot process it. You have two options here:
+
+        Override the default and make no other changes
+
+        Override the default with garbage and then add an override value for specific hosts in your environment
+
+        If you override the default value, any instance of the NTP class gets that new default, regardless of the host group—unless you additionally create an override. If you have only one set of NTP servers organization-wide, this might make sense. However, if you need multiple NTP server configurations, you might want to additionally use overrides.
+
+        Here you will override the default and make no other changes.
+
+    In the Default Value field, replace all text with:
+
+    - 0.north-america.pool.ntp.org
+
+    This is actually YAML syntax. You could have also used:
+
+    ["0.north-america.pool.ntp.org"]
+
+    Scroll down and click Submit.
+
+6.4. Do a Test Puppet Run
+
+Now you can do a test Puppet run on your client system and see what happens.
+
+    On your client system, see if north-america exists in ntp.conf:
+
+    # grep north-america /etc/ntp.conf
+
+    	You should get nothing back.
+
+    On your client system, do a Puppet test run with noop:
+
+    # puppet agent --test --noop --onetime
+    Warning: Local environment: "production" doesn't match server specified node environment "KT_Default_Organization_Development_RHEL6_SOE_2", switching agent to "KT_Default_Organization_Development_RHEL6_SOE_2".
+    Info: Retrieving plugin
+    Info: Loading facts in /var/lib/puppet/lib/facter/puppet_vardir.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/facter_dot_d.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/pe_version.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/root_home.rb
+    Info: Caching catalog for cli-GUID.rhpds.opentlc.com
+    Warning: The package type's allow_virtual parameter will be changing its default value from false to true in a future release. If you do not want to allow virtual packages, please explicitly set allow_virtual to false.
+       (at /usr/lib/ruby/site_ruby/1.8/puppet/type.rb:816:in `set_default')
+    Info: Applying configuration version '1431459184'
+    Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content:
+    --- /etc/ntp.conf       2015-05-12 15:38:06.895105087 -0400
+    +++ /tmp/puppet-file20150512-7468-13otee4-0     2015-05-12 16:02:54.373490743 -0400
+    @@ -12,9 +12,7 @@
+     restrict -6 ::1
+
+
+    -server 0.centos.pool.ntp.org
+    -server 1.centos.pool.ntp.org
+    -server 2.centos.pool.ntp.org
+    +server 0.north-america.pool.ntp.org
+
+
+     # Driftfile.
+
+    Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content: current_value {md5}af2c4d9dba34bb187ddfbf76bbf74815, should be {md5}d2db7ce6a644d6a76c7a5a8893d8153c (noop)
+    Notice: Class[Ntp::Config]: Would have triggered 'refresh' from 1 events
+    Info: Class[Ntp::Config]: Scheduling refresh of Class[Ntp::Service]
+    Notice: Class[Ntp::Service]: Would have triggered 'refresh' from 1 events
+    Info: Class[Ntp::Service]: Scheduling refresh of Service[ntp]
+    Notice: /Stage[main]/Ntp::Service/Service[ntp]: Would have triggered 'refresh' from 1 events
+    Notice: Class[Ntp::Service]: Would have triggered 'refresh' from 1 events
+    Notice: Stage[main]: Would have triggered 'refresh' from 2 events
+    Notice: Finished catalog run in 1.33 seconds
+
+    First, you see a number of references to /var/lib/puppet/parser. Because this module uses the stdlib module, Puppet is locally installing some function-related items from stdlib. Additionally, since the last run you did was --noop, you still had not applied the change to your motd. Finally, you see some references to NTP.
+
+    Now you can apply this:
+
+    puppet agent --test --onetime
+
+    You will see something like the following:
+
+    Warning: Local environment: "production" doesn't match server specified node environment "KT_Default_Organization_Development_RHEL6_SOE_2", switching agent to "KT_Default_Organization_Development_RHEL6_SOE_2".
+    Info: Retrieving plugin
+    Info: Loading facts in /var/lib/puppet/lib/facter/puppet_vardir.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/facter_dot_d.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/pe_version.rb
+    Info: Loading facts in /var/lib/puppet/lib/facter/root_home.rb
+    Info: Caching catalog for cli-GUID.rhpds.opentlc.com
+    Warning: The package type's allow_virtual parameter will be changing its default value from false to true in a future release. If you do not want to allow virtual packages, please explicitly set allow_virtual to false.
+       (at /usr/lib/ruby/site_ruby/1.8/puppet/type.rb:816:in `set_default')
+    Info: Applying configuration version '1431459184'
+    Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content:
+    --- /etc/ntp.conf       2015-05-12 15:38:06.895105087 -0400
+    +++ /tmp/puppet-file20150512-7703-ks8w1r-0      2015-05-12 16:05:40.274149442 -0400
+    @@ -12,9 +12,7 @@
+     restrict -6 ::1
+
+
+    -server 0.centos.pool.ntp.org
+    -server 1.centos.pool.ntp.org
+    -server 2.centos.pool.ntp.org
+    +server 0.north-america.pool.ntp.org
+
+
+     # Driftfile.
+
+    Info: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]: Filebucketed /etc/ntp.conf to puppet with sum af2c4d9dba34bb187ddfbf76bbf74815
+    Notice: /Stage[main]/Ntp::Config/File[/etc/ntp.conf]/content: content changed '{md5}af2c4d9dba34bb187ddfbf76bbf74815' to '{md5}d2db7ce6a644d6a76c7a5a8893d8153c'
+    Info: Class[Ntp::Config]: Scheduling refresh of Class[Ntp::Service]
+    Info: Class[Ntp::Service]: Scheduling refresh of Service[ntp]
+    Notice: /Stage[main]/Ntp::Service/Service[ntp]: Triggered 'refresh' from 1 events
+    Notice: Finished catalog run in 2.24 seconds
+
+    Check to see if /etc/ntp.conf has your 0.north-america.pool.ntp.org server in it:
+
+    # grep north-america /etc/ntp.conf
+
+    server 0.north-america.pool.ntp.org
+
+Puppet has installed everything you need with the configuration that you want.
+7. Foreman (Staypuft) Provisioning
+7.1. Use Foreman (Staypuft) bootdisk
+
+You can use the bootdisk plug-in for Foreman (Staypuft) to create a boot ISO similar to the Cobbler build ISO in Satellite 5. Foreman (Staypuft) can construct a boot disk for the specific host being provisioned and point it at the Satellite so that Satellite can kickstart it properly.
+7.2. Provision Templates
+
+When you use the Foreman (Staypuft) bootdisk plug-in, the provisioning process essentially contains two parts: the pre-boot execution environment (PXE) process and the actual kickstart. Foreman (Staypuft) refers to these, respectively, as:
+
+    iPXE template
+
+    Provision template
+
+The bootdisk uses the iPXE template to create the initial bit of material that goes into your ISO to cause the booting system to reach out to the Satellite.
+
+You first need to make sure the PXE templates are associated with your operating system:
+
+    Select the Default_Organization@Default_Location context.
+
+    Click Hosts → Provisioning templates.
+
+    Locate Kickstart default iPXE and click it.
+
+    Click the Association tab.
+
+    You should see RHEL Server 6.5 under Selected items.
+
+    Locate Kickstart default PXELinux and click it.
+
+    Click the Association tab.
+
+    You should see RHEL Server 6.5 under Selected items.
+
+    The OS association makes the Kickstart default iPXE template available to systems provisioning against the Red Hat Enterprise Linux Server 6.5 operating system. The template is also available to systems that PXEboot.
+
+    The next step is to make sure you have a kickstart template associated with your operating system.
+
+    Click Hosts → Provisioning Templates.
+
+    Click My Kickstart.
+
+    In the Type tab, the type should be set to provision.
+
+    Click the Association tab. You should see RHEL Server 6.5 under Selected items.
+
+7.3. Check Operating System Configuration
+
+You can treat each operating system major or minor release independently for provisioning and other purposes. Because you are going to be operating in an SOE-type environment, you can simply make changes to Red Hat Enterprise Linux 6.5.
+
+    Click Hosts → Operating Systems.
+
+    Click RHEL Server 6.5.
+
+    Click the Partition Table tab.
+
+    The Kickstart default provided by Foreman (Staypuft) uses autopart, which you can use for now.
+
+    Click the Installation Media tab.
+
+    Make sure that the Default_Organization/Library/Red_Hat_6_Server_Kickstart_x86_64_6Server box is checked
+
+    Click the Templates tab.
+
+    Confirm that the following values are selected:
+
+        iPXE - Kickstart default iPXE
+
+        PXELinux - Kickstart default PXELinux
+
+        provision - My Kickstart
+
+        At this point, you have made sure that everything is associated or published. You also have promoted development media with a Red Hat Enterprise Linux 6.5 operating system that has your specific partitioning, provisioning, and PXE templates.
+
+        Provisioning systems also requires defining the subnet(s) on which systems will be provisioned.
+
+    Define the subnet:
+
+        Click Infrastructure → Subnets.
+
+        Click VM-Net.
+
+        On the Subnet tab, confirm that the configuration is set to the following:
+
+            Name: VM-Net
+
+            Network address: 192.168.0.0
+
+            Network mask: 255.255.0.0
+
+            Gateway address: 192.168.0.2
+
+            Primary DNS server: 192.168.0.1
+
+            Start of IP range: 192.168.100.100
+
+            End of IP range: 192.168.100.110
+
+    On the Domains tab, make sure that the rhpds.opentlc.com box is checked.
+
+    On the Capsules tab, make sure that both DHCP Capsule and TFTP Capsule are set to sat.rhpds.opentlc.com.
+
+    On the Locations tab, make sure Default_Location appears under Selected items on the right.
+
+    On the Organizations tab, make sure Default_Organization appears under Selected items on the right.
+
+7.4. Create a Foreman (Staypuft) Host
+
+To provision a system with Satellite 6, you first need to define that system by creating a host in Foreman (Staypuft). You can then generate a specific boot ISO for that system. Foreman (Staypuft) bootdisk actually uses iPXE, which leverages HTTP (as opposed to TFTP) as its transport protocol. When you define your host, you need to feed it a MAC address so that the Foreman (Staypuft) server knows which system is making the provisioning request. This is very similar to how TFTP/PXE looks for the incoming MAC address to determine what to serve the client.
+
+    Click Hosts → New host.
+
+    On the Host tab, set the following:
+
+        Name: pxeclient
+
+        Organization: Default_Organization
+
+        Location: Default_Location
+
+        Host Group: RHEL6 SOE GROUP
+
+        Lifecycle Environment: Development
+
+        Puppet Environment: RHEL6_SOE
+
+        Puppet CA and master: Make sure your Satellite Server is selected
+
+    On the Network tab, set the following:
+
+        Domain: rhpds.opentlc.com
+
+        MAC address: 52:54:00:ca:92:ee
+
+        Subnet: Select the subnet you saw earlier
+
+        IP address: 192.168.100.100
+
+    On the Operating System tab, set the following:
+
+        Architecture: x86_64
+
+        Operating system: RHEL Server 6.5
+
+        Media: Default_Organization/Red_Hat_6_Server_Kickstart_x86_64
+
+        Partition table: Kickstart default
+
+        Root password: Enter a password that follows the password rules
+
+    Click Submit.
+
+You are almost finished. If you were to provision the system right now, in theory you would end up with a server that was built and configured and attached to Puppet, but not registered. That is because the kickstart template (provision template) you uploaded uses an activation key, but you have not yet created an activation key.
+7.5. Create an Activation Key
+
+As in Satellite 5, in Satellite 6 you can use activation keys for registration to assign a system to the following:
+
+    Repositories and subscriptions
+
+    System groups
+
+    Environments
+
+    Content views
+
+For this lab, an activation key was created for you.
+
+    Make sure the activation key is set up correctly:
+
+        Click Content → Activation Keys.
+
+        Click Satellite-SOE.
+
+        Make sure that the Development environment is selected and that the content view is set to RHEL6 SOE.
+
+        Click the Subscriptions tab.
+
+        On the List/Remove tab, confirm that the following appear:
+
+            Red Hat Enterprise Linux Server, Standard (Physical or Virtual Nodes)
+
+            Satellite Class
+
+        Click Configure → Host Groups.
+
+        Click your RHEL6 SOE GROUP host group.
+
+        Click the Activation Keys tab.
+
+        In the Activation keys box, select Satellite-SOE.
+
+        Click Submit.
+
+        You have now confirmed that the activation key is associated with your host group. If you look at the kickstart you uploaded earlier, you see it contains a line that calls the RHSM snippet:
+
+        <%= snippet 'subscription_manager_registration' %>
+
+    You now have all the templates you need set up to provision a server into the right host group that will both set up Puppet and register the system. Now you can generate your boot disk.
+
+    Boot iPXE/PXE/ISO
+
+    You would complete the following to build from an ISO that Satellite builds for you. In this lab, you generate the ISO so that you know how to use it, but you will use another method to start your VM:
+
+        Log in to the Satellite UI as admin.
+
+        Click Hosts → All Hosts.
+
+        Click your pxeclient.rhpds.opentlc.com system.
+
+        Click Boot Disk on the right, and then select Host pxeclient image.
+
+        Download the .iso file and save it to your workstation.
+        	You would normally use this ISO to boot your VM (or any Satellite client). You will not do anything with this ISO for the purposes of this lab.
+
+    The following procedure boots a VM that runs on the client system in a similar method to a network-based PXEboot:
+
+        Log into your client system.
+
+        Run the following command:
+
+        # virsh start --console pxeclient
+        Domain pxeclient started
+        Connected to domain pxeclient
+        Escape character is ^]
+        [1;256r
+        ..pxe process will run here..
+
+        When you start your VM, it should boot up using a preconfigured kernel and initrd. It will then reach out to the Satellite, get its kickstart, and begin to provision itself. You would not normally use this booting method in a PoC—you are using it here to get around the limitations of the lab environment. The point here is to build a machine from scratch using a kickstart provided from Satellite.
+
+    After the provisioning process is done, the system reboots and you see the following:
+
+            +-------------- Error downloading kickstart file --------------+
+            |                                                              |
+            | Unable to download the kickstart file.  Please modify the    |
+            | kickstart parameter below or press Cancel to proceed as an   |
+            | interactive installation.                                    |
+            |                                                              |
+            | http://192.168.0.254/unattended/provision?static=yes________ |
+            |                                                              |
+            |            +----+                      +--------+            |
+            |            | OK |                      | Cancel |            |
+            |            +----+                      +--------+            |
+            |                                                              |
+            |                                                              |
+            +--------------------------------------------------------------+
+
+    This error appears because your VM is hard-configured to use kickstart, and Foreman (Staypuft) has already built your VM so it no longer offers the kickstart. In a real environment, if you used the ISO or PXEboot, you would not see this error.
+
+    Do the following to fix this issue in the lab:
+
+        On the SSH session that is running the VM console (in cli-GUID.rhpds.opentlc.com), press CTRL + ] to exit the console.
+
+        On the client system, edit your VM’s settings to remove the hard-coded kickstart settings:
+
+        # virsh edit pxeclient
+
+        Search for the lines that start and end with the <kernel>, <initrd>, and <cmdline> tags and delete them.
+
+        Write and exit.
+
+        Restart the VM:
+
+        # virsh destroy pxeclient;virsh start --console pxeclient
+
+    Look at the Puppet reports for the system, you should find that NTP was installed, motd was configured, etc.
+
+8. Example: Wordpress Application
+
+Everything you have done so far has prepared you to deploy a complete application from start to finish. In the remaining labs, you set up content views and promote the correct content so that you can provision a LAMP server to deploy a sample application: Wordpress.
+8.1. Set Up Composite Content Views
+
+Until now, you have worked with a single content view only. Part of the power of Satellite 6 is that you can combine multiple content views together into a composite content view.
+
+    Before you create a composite, look at a content view created specifically for Wordpress:
+
+        Click Content → Content Views.
+
+        Click Wordpress View.
+
+        Click the Content tab and select Repositories.
+
+        Under List/Remove, you should see the Wordpress Packages repository.
+
+        Click the Puppet Modules tab, and you should see the firewall, concat, mysql, and wordpress modules.
+
+    Now that you have seen a view for Wordpress itself, let’s look at a composite content view.
+
+        Click Content → Content Views.
+
+        Click SOE Web.
+
+        Click the Details tab. Take note that Composite? is set to Yes.
+
+        Click the Content Views tab.
+
+        Under List/Remove, note that both RHEL6 SOE and Wordpress View are included.
+
+        This composite view contains both the Red Hat Enterprise Linux 6 SOE and the Wordpress software.
+
+8.2. Create an Activation Key for Wordpress
+
+    Click Content → Activation Keys.
+
+    Click Wordpress. The key should place a system in the development environment under the SOE web content view.
+
+    On the Subscriptions tab, the Wordpress product should be included.
+
+8.3. Explore Nesting With a Host Group for Wordpress
+
+Satellite 6 adds many hierarchical features that were absent in Satellite 5. For example, you can nest host groups, with children inheriting aspects of the parent Host Group.
+
+Here you leverage nested host groups to create your SOE Web host group.
+
+    Click Configure → Host Groups.
+
+    Click RHEL6 SOE GROUP/LAMP Wordpress.
+
+    Note the following settings in the Host Group tab:
+
+        Parent: RHEL6 SOE GROUP
+
+        Name: LAMP Wordpress
+
+        Lifecycle environment: Development
+
+        Content View: SOE_Web
+
+    Note the following settings in the Puppet Classes tab:
+
+        Included Classes: wordpress, motd, ntp
+
+    Note the following settings in the Network tab:
+
+        Domain: rhpds.opentlc.com
+
+        Network Subnet: VM-Net
+
+    Note the following settings in the Operating System tab:
+
+        Architecture: x86_64
+
+        Operating Systems: RHEL Server 6.5
+
+        Media: Default_Organization/Library/Red_Hat_6_Server_Kickstart_x86_64_6Server
+
+        Partition table: Kickstart default
+
+    Note the following settings in the Activation Keys tab:
+
+        Activation keys: Wordpress,Satellite-SOE
+        	The first activation key in a list of comma-separated keys determines the content view and environment for the system. As the Wordpress key sets the SOE Web content view, the Wordpress key must come before Satellite-SOE in the list. Otherwise you will not have the correct repositories available, since the Wordpress product and repositories do not exist in the RHEL6 SOE content view.
+
+    Because you already have a provisioned client, you can just reprovision it using the same Foreman (Staypuft) PXEboot as before:
+
+        Click Hosts → All Hosts.
+
+        Click your existing system pxeclient.rhpds.opentlc.com that you provisioned via Kickstart.
+
+        Click Edit.
+
+        Set the following:
+
+            Host group: RHEL6 SOE GROUP/LAMP Wordpress
+
+            Puppet environment: SOE_Web
+
+        Click Submit.
+
+        On the resulting screen, click Build.
+
+        Click OK.
+
+    Next you edit your VM so that it uses the hardcoded kernel, initrd, and kickstart location that you would normally get from DHCP in a normal PXEboot:
+
+        On your client system, run the following:
+        	Make sure you are not in the VM console.
+
+        # virsh edit pxeclient
+
+        Search for the <os> section and edit it to look like this:
+
+          <os>
+            <type arch='x86_64' machine='rhel6.5.0'>hvm</type>
+            <kernel>/var/lib/libvirt/images/RedHat-6.5-x86_64-vmlinuz</kernel>
+            <initrd>/var/lib/libvirt/images/RedHat-6.5-x86_64-initrd.img</initrd>
+            <cmdline>ks=http://192.168.0.254/unattended/provision?static=yes ksdevice=bootif network kssendmac console=ttyS0 rd_NO_DM raid=noautodetect plymouth.enable=0 libahci.ignore_sss=1 elevator=noop rdblacklist=mptsas rdblacklist=sr_mod rdblacklist=nouveau ramdisk_size=10000</cmdline>
+            <boot dev='hd'/>
+            <boot dev='network'/>
+            <bootmenu enable='yes'/>
+            <smbios mode='sysinfo'/>
+          </os>
+
+        Reboot your provisioned client system:
+
+        # virsh destroy pxeclient;virsh start --console pxeclient
+
+        After the build completes, you will once again see the error that says it cannot download the kickstart. If you are in the console, press CTRL + ] to exit.
+
+        Remove the hard-coded kickstart settings:
+
+        # virsh edit pxeclient
+
+        Search for the lines that start and end with the <kernel>,<initrd>, and <cmdline> tags and delete them.
+
+        Write and exit.
+
+        Restart the VM:
+
+        # virsh destroy pxeclient;virsh start --console pxeclient
+
+The Puppet configuration includes the Wordpress class, which automatically pulls in all the required software. The activation keys ensure that you are subscribed to the relevant products and repositories.
+
+By completing this lab, you have seen how one would configure Satellite 6 to provision an entire system, including third-party software.
+
+After the pxe client system is rebuilt, if everything worked correctly, you should be able to:
+
+# yum install wordpress
+
+ 
+
+
+Build Version: 1.1.1.1 : Last updated 2017-05-15 18:05:20 EDT

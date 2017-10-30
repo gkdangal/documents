@@ -1,0 +1,178 @@
+Demonstrate Deployments & Deployment Strategies Lab
+Scenario
+
+In the scenario for this demonstration lab, a developer needs to execute the following common sequence:
+
+    Deploy an application.
+
+    Scale the application.
+
+    Redeploy the application with a new environment variable.
+
+    View the deployment.
+
+    Change the deployment type.
+
+    Redeploy the application.
+
+1. Demonstrate Authentication to OpenShift Master
+
+    Action: Log in to the OPENTLC shared OpenShift web console using either of these methods:
+
+        Method 1: Go to https://master.na1.openshift.opentlc.com
+
+        Method 2: Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        LocalMachine$ oc login https://master.na1.openshift.opentlc.com --username shacharb-redhat.com
+        Username: shacharb-redhat.com
+        Password: **********
+        Logged into "https://master.na1.openshift.opentlc.com" as "shacharb-redhat.com" using existing credentials.
+
+2. Demonstrate Creating a Project
+
+    Action: Click New Project to create a project for your demonstration:
+    Demo01 New Project Button
+
+        Explain what projects are and how different projects can have different user permissions and quotas attached to them.
+
+    Action: Fill in the Name, Display Name, and Description fields:
+    Deployments Demo01 New Project Details
+    	
+
+    Two other options for completing this task:
+
+        Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        [sborenst@ip-192-168-20-158 ~]$ oc new-project guid-deployments-demo --description="This is the project to host the deployments strategy demonstration" --display-name="Demonstrating Deployment Strategies"
+        Now using project "guid-deployments-demo" on server "https://master.na1.openshift.opentlc.com".
+
+        Run the oc new-project guid-deployments-demo command without the description and display name information.
+
+3. Demonstrate Deploying an Application Using S2I
+
+    Action: After creating your project or after clicking Add to project, enter php in the catalog filter and select php:7.0:
+    Deployments Demo01 Select Deploy Image
+
+    Action: Enter cotd in the Name field.
+
+    Action: Enter https://github.com/StefanoPicozzi/cotd in the Git Repository URL field.
+
+    Action: Click Show advanced routing, build, and deployment options:
+    Deployments Demo01 Create App1
+
+        Explain the following aspects of the Environment Variables and Labels sections:
+
+            How labels are used in OpenShift and how easy it is to label new deployments.
+
+            How environment variables are used in OpenShift and how easy it is to set environment variables such as user names, database names, and others to modify deployment.
+
+    Action: Enter a new environment variable named SELECTOR, with cities as the value:
+    Deployments Demo01 Create App2
+
+    Action: Add labels for all of the resources in the deployment and click Create when you are done:
+
+    Deployments_Demo01_Create_App3
+
+    Action: From the Application created page, click Continue to overview.
+
+        Explain that the application has been deployed to display cities as you defined in the environment variable.
+
+    Action: Open the application route in a new tab and show that the application was deployed and displays cities.
+
+    Action: Scale your application to 3 pods by clicking the Up button (marked by the small green square) twice.
+
+        Explain that you can see OpenShift scaling up the pods.
+        Deployments Demo01 Scale App
+
+4. Demonstrate Redeploying an Application
+
+    Action: Navigate to Applications → Deployments and select your deployment:
+    Deployments Demo01 Deployments Menu
+
+        Explain that this page displays your deployment configuration.
+
+            Point out that the deployment is set to Rolling and explain that OpenShift deploys a new pod replica and removes an old deployment pod replica repeatedly until the new deployment is at the required replica count and the old deployment is at zero.
+
+    Action: Click Deploy to show the Overview page:
+    Deployments Demo01 Redeploy1
+
+        Explain the following aspects of the deployment now in progress using the Rolling deployment strategy:
+
+            Point out that a new pod is created for the new deployment, and after a health-check test, an old deployment pod is destroyed.
+
+            Point out that OpenShift continues to increase the size of the new deployment and decrease the old deployment one pod at a time.
+
+            Mention that using this deployment strategy is good for minimizing application downtime when the new and old deployments can live side by side for a short while.
+            Deployments Demo01 Redeploy2
+            → Step 1	→ Step 2	→ Step n
+
+            Deployments_Demo01_Redeploy2a
+            	
+
+            Deployments_Demo01_Redeploy2b
+            	
+
+            Deployments_Demo01_Redeploy2c
+
+5. Demonstrate Triggering a Deployment by Configuration Change
+
+    Action: Navigate to your deployment page again, this time using the shortcut instead of the Applications menu:
+    Deployments Demo01 Deployment Trigger1
+
+    Action: Select the Environment tab, change the value of the SELECTOR environment variable to cats, and click Save:
+    Deployments Demo01 Deployment Trigger2
+
+    Action: Navigate back to the Overview page to show that a new deployment was triggered.
+
+    Action: Once the deployment is complete, show that the new deployment is displaying cats and not cities.
+
+6. Demonstrate Changing a Deployment Strategy
+
+    Action: Navigate to your deployment page again using the shortcut:
+    Deployments Demo01 Deployment Trigger1
+
+    Action: Open the Actions list on the top right and select Edit YAML to manually edit the deployment configuration.
+
+        Explain that you can also add storage, set resource limits, add an autoscaler, and edit health checks from this page.
+        Deployments Demo01 Deployment Recreate1
+
+    Action: Edit the deployment configuration YAML by removing the Rolling strategy lines and replacing them with the single word Recreate:
+    Original	After Modification
+
+    Deployments_Demo01_Deployment_Recreate2
+    	
+
+    Deployments_Demo01_Deployment_Recreate2a
+
+    Action: Trigger a new deployment and go to the Overview page.
+
+        Explain that in the Recreate deployment strategy all of the existing replicas are scaled to 0 and the new deployment is scaled up to the required number of replicas.
+
+            Mention that there is a short downtime for the application with this strategy, so it is mostly used when two versions of the application cannot coexist even for a short time.
+            → Step 1	→ Step 2	→ Step 3
+
+            Recreate Deployment Triggered
+            	
+
+            Current Deployment Scaled to 0
+            	
+
+            New Deployment Scaled to n
+
+            Deployments_Demo01_Deployment_Recreate_Redeploy2a
+            	
+
+            Deployments_Demo01_Deployment_Recreate_Redeploy2b
+            	
+
+            Deployments_Demo01_Deployment_Recreate_Redeploy2c
+
+7. Additional Demonstrations
+
+You can do the following optional demonstrations:
+
+    Demonstrate AB testing.
+
+    Demonstrate setting autoscaling for a deployment.
+
+    Demonstrate changing the health and readiness checks.

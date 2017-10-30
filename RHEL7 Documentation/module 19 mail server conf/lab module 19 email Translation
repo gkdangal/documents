@@ -1,0 +1,102 @@
+Configure Receive and Send-Only Email Service Lab
+
+In this lab, you configure a server to receive and relay mail and a local mail server as a null client that forwards all messages to a central server for delivery.
+
+    Reset the server1.example.com system.
+
+    Become root on your server1.example.com system.
+
+    [student@server1 ~]$ sudo -i
+
+    Become root on your desktop1.example.com system.
+
+    [student@desktop1 ~]$ sudo -i
+
+    Configure server1.example.com to be a mail relay and to receive mail for the domain example.com.
+
+        Configure postfix to listen on all interfaces.
+
+        [root@server1 ~]# postconf -e "inet_interfaces=all"
+
+        Configure postfix to accept mail for example.com.
+
+        [root@server1 ~]# postconf -e "mydestination=example.com"
+
+        Apply changes to postfix.
+
+        [root@server1 ~]# systemctl restart postfix
+
+        Configure and reload the firewall.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-service=smtp
+        [root@server1 ~]# firewall-cmd --reload
+
+    Adjust the configuration of the Postfix mail server on your desktop1.example.com system to act as a null client that forwards all mail to the corporate mail server on server1.example.com.
+
+        Switch to user root on desktop1.example.com and point the relayhost directive to server1.example.com. The host name of the relay server needs to be enclosed in square brackets to prevent an MX record lookup with the DNS server.
+
+        [root@desktop1 ~]# postconf -e "relayhost=[server1.example.com]"
+
+        Configure the Postfix mail server to only relay mail from the local system.
+
+            Let the Postfix mail server only listen for emails to deliver on the loopback interface. Add the inet_interfaces=loopback-only directive to the /etc/postfix/main.cf configuration file.
+
+            [root@desktop1 ~]# postconf -e "inet_interfaces=loopback-only"
+
+            Change the Postfix configuration so that only messages that originate from the 127.0.0.0/8 IPv4 network and the [::1]/128 IPv6 network are forwarded to the relay host by the null client on desktop1.example.com.
+
+            [root@desktop1 ~]# postconf -e "mynetworks=127.0.0.0/8 [::1]/128"
+
+        Configure the null client so that all outgoing messages have their sender domain rewritten to the company domain example.com.
+
+        [root@desktop1 ~]# postconf -e "myorigin=example.com"
+
+        Prohibit the Postfix mail server from delivering any mail to local accounts.
+
+            Configure the null client to forward all mail to the relay server. The mydestination option needs to be set to an empty value to achieve this.
+
+            [root@desktop1 ~]# postconf -e "mydestination="
+
+            Prevent the local null client from sorting any mail into mailboxes on the desktop1.example.com system.
+
+            [root@desktop1 ~]# postconf -e "local_transport=error: local delivery disabled"
+
+        Restart the local postfix null client on desktop1.example.com.
+
+        [root@desktop1 ~]# systemctl restart postfix
+
+        Open a new terminal on desktop1.example.com and test the null client configuration by sending an email with Subject: desktop1.example.com null client and content null client test to student@example.com with the mail command on desktop1.example.com. The mail command uses /usr/sbin/sendmail, provided by Postfix to transfer email.
+
+        [student@desktop1 ~]$ mail -s "desktop1.example.com null client" student@example.com
+        null client test
+        .
+        EOT
+
+        Verify the mail arrived at the specified recipient by using the mail command-line mail client to server1.example.com.
+
+            Connect to server1.example.com as the user student and run the mail command-line mail client.
+
+            [student@server1 ~]$ mail
+            Heirloom Mail version 12.5 7/5/10.  Type ? for help.
+            "/var/spool/mail/student": 1 message 1 new
+            >N  1 root                  Wed Dec  3 13:33  21/799   "desktop1 null client"
+
+            Type 1 then press ENTER to see the message:
+
+            Message  1:
+            From root@example.com  Wed Dec  3 13:33:12 2014
+            Return-Path: <root@example.com>
+            X-Original-To: student@example.com
+            Delivered-To: student@example.com
+            Date: Wed, 03 Dec 2014 13:33:11 -0500
+            To: student@example.com
+            Subject: desktop1 null client
+            User-Agent: Heirloom mailx 12.5 7/5/10
+            Content-Type: text/plain; charset=us-ascii
+            From: root@example.com (root)
+            Status: R
+
+            null client test
+
+
+

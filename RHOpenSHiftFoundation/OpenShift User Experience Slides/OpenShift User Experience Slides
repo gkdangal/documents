@@ -1,0 +1,390 @@
+Module Topics
+
+    Users and Projects
+
+    Quotas and Limits
+
+    Logging and Metrics
+
+    Templates
+----------------------------------
+Users and Projects
+Project
+
+    Allows groups of users or developers to work together
+
+    Defines ownership of resources, allows project administrators and collaborators to manage resources
+
+    Restricts and tracks use of resources with quotas and limits
+-------------------------------------
+Users and Projects
+Project
+
+    Kubernetes namespace with additional annotations
+
+        Central vehicle for managing resource access for regular users
+
+        Lets community of users organize and manage content in isolation from other communities
+
+    Users:
+
+        Receive access to projects from administrators
+
+        Have access to own projects if allowed to create them
+
+    Each project has own:
+
+        Objects: Pods, services, replication controllers, etc.
+
+        Policies: Rules that specify which users can or cannot perform actions on objects
+
+        Constraints: Quotas for objects that can be limited
+
+        Service accounts: Non-human users that act automatically with access to project objects
+-----------------------------------
+Users and Projects
+Users and User Types
+
+    Interactions with OpenShift always associated with user
+
+        System permissions granted by adding roles to users or groups
+
+    User types:
+Regular Users
+
+    How most interactive OpenShift users are represented
+
+    Created automatically in system upon first login, or via API
+
+    Represented with user object
+
+System Users
+
+    Many created automatically when infrastructure defined
+
+    Let infrastructure interact with API securely
+----------------------------------
+Users and Projects
+Web Console Authentication
+
+    Every user must authenticate to access OpenShift
+
+    Requests lacking valid authentication are authenticated as anonymous user
+
+    Policy determines what user is authorized to do
+
+    Access web console at <master-public-addr>:8443 (default)
+
+    Automatically redirected to login page
+
+    Provide login credentials to obtain token to make API calls
+
+    Use web console to navigate projects
+------------------------------------
+Quotas and Limits
+Resource Quotas
+
+    OpenShift can limit:
+
+        Number of objects created in project
+
+        Amount of compute/memory/storage resources requested across objects in project
+
+        According to specified label, this could be to limit department of developers or environment such as "test"
+
+    Several teams can share single OpenShift cluster
+
+        Each team in own project or projects
+
+        Resource quotas prevent teams from depriving each other of cluster resources
+
+    ResourceQuota object enumerates hard resource usage limits per project
+---------------------------------
+Quotas and Limits
+Compute Resources Managed by Quota Across all Pods in Non-terminal State
+
+Resource Name
+	
+
+Description
+
+cpu
+requests.cpu
+	
+
+Sum of CPU requests cannot exceed this value
+
+memory
+requests.memory
+	
+
+Sum of memory requests cannot exceed this value
+
+limits.cpu
+	
+
+Sum of CPU limits cannot exceed this value
+
+limits.memory
+	
+
+Sum of memory limits cannot exceed this value
+	cpu and requests.cpu are the same value and can be used interchangeably. memory and requests.memory are the same value and can be used interchangeably.
+---------------------------------------------
+Quotas and Limits
+Object Counts Managed by Quota
+
+Resource Name
+	
+
+Description
+
+pods
+	
+
+Total number of pods in non-terminal state that can exist in project (pod is in terminal state if status.phase in (Failed, Succeeded) is true)
+
+replicationcontrollers
+	
+
+Total number of replication controllers that can exist in project
+
+resourcequotas
+	
+
+Total number of resource quotas that can exist in project
+
+services
+	
+
+Total number of services that can exist in project
+
+secrets
+	
+
+Total number of secrets that can exist in project
+
+configmaps
+	
+
+Total number of ConfigMap objects that can exist in project
+
+persistentvolumeclaims
+	
+
+Total number of persistent volume claims that can exist in project
+
+openshift.io/imagestreams
+	
+
+Total number of image streams that can exist in project
+------------------------------------------------
+Quotas and Limits
+Quota Enforcement
+
+    After quota created in project:
+
+        Project restricts ability to create resources that may violate quota constraint
+
+        Usage statistics are calculated every few seconds (configurable)
+
+    If project modification will exceed quota:
+
+        Server denies action
+
+        Returns error message
+
+    Error message includes:
+
+        Quota constraint violated
+
+        Current system usage statistics
+-----------------------------------
+Quotas and Limits
+Viewing a Quota
+
+    To view usage statistics for hard limits defined in project’s quota, use project’s Resources tab in web console
+
+    Graph displays usage and availability of resources in project, based on requests and limits for CPU and memory
+
+    Note specific resource type quotas and usage reports
+
+    Note container and pod requests and limits
+------------------------------------
+Quotas and Limits
+Viewing a Quota
+
+    To view usage statistics for hard limits defined in project’s quota, use project’s Settings tab in web console
+
+    Alternatively, use CLI to view quota details:
+
+        Get list of quotas defined in project; for example, demoproject:
+
+        $ oc get quota -n demoproject
+        NAME                AGE
+        besteffort          11m
+        compute-resources   2m
+        core-object-counts  29m
+
+        Describe quota you are interested in; for example, core-object counts:
+
+        $ oc describe quota core-object-counts -n demoproject
+        Name:			core-object-counts
+        Namespace:		demoproject
+        Resource		Used	Hard
+        --------		----	----
+        configmaps		3	10
+        persistentvolumeclaims	0	4
+        replicationcontrollers	3	20
+        secrets			9	10
+        services		2	10
+------------------------------------------
+Logging and Metrics
+Container Log Aggregation
+
+    Using EFK stack, cluster administrators can aggregate logs for range of OpenShift services and let application developers view them
+
+    EFK stack is useful for viewing logs aggregated from hosts and applications, whether coming from multiple containers or even deleted pods
+------------------------------------------------------
+Logging and Metrics
+Container Log Aggregation
+
+    Three components make up EFK logging stack:
+
+        Elasticsearch: Object store where all logs are stored
+
+        Fluentd: Gathers logs from nodes, feeds them to Elasticsearch
+
+        Kibana: Web UI for Elasticsearch
+
+    After EFK deployed, stack aggregates logs from all nodes and projects into Elasticsearch and provides Kibana UI to view them
+
+    Cluster administrators can view all logs, but developers can view only logs for projects for which they have permission
+---------------------------------------------
+Logging and Metrics
+Fluentd
+
+    Pulls logs from Docker file system and OpenShift services on all node hosts
+
+    Sends them to respective Elasticsearch clusters that store aggregated log data
+
+    Users and platform administrators access their respective Kibana interfaces to see application’s or platform’s aggregated logs
+------------------------------------------------------
+Logging and Metrics
+Metrics Collection
+
+    OpenShift Nodes expose metrics that Heapster collects and stores in back ends
+
+    Metrics used by horizontal pod autoscalers to determine when and how to scale
+
+        Hawkular Metrics is metrics engine that stores data persistently in Cassandra database
+
+        CPU and memory-based metrics viewable from OpenShift web console and available for use by horizontal pod autoscalers (HPAs)
+-----------------------------------------
+Logging and Metrics
+Metrics Collection
+
+    From master server, Heapster retrieves list of all nodes, then contacts each node individually through /stats endpoint
+
+        Heapster scrapes metrics for CPU and memory usage, exports metrics to Hawkular Metrics
+
+    Individual pods in web console show separate sparkline charts for memory and CPU
+
+    Time range displayed is selectable
+
+        Charts automatically update every 30 seconds
+
+    If pod has multiple containers, select a container to display its metrics
+
+    If resource limits is defined for project, can also see donut chart for each pod
+
+        Displays usage against resource limit
+
+        Example: 145 Available of 200 MiB, with donut chart showing 55 MiB Used
+----------------------------------------------
+Logging and Metrics
+Metrics Collection
+
+    cAdvisor on node gathers CPU and memory information for pods and makes it available at /stats endpoint
+
+    Heapster interrogates each node to learn about node and pods running on it
+
+    Heapster sends information to Hawkular Metrics, which stores it in Cassandra database
+
+    OpenShift web user interface calls Hawkular Metrics REST endpoint to make data available in console
+---------------------------------------------
+Templates
+What Is a Template?
+
+    Describes set of objects that can be parameterized and processed to produce list of objects for creation by OpenShift
+
+    Can be processed to create anything you have permission to create within project
+
+        Examples: service, build configuration, deployment configuration
+
+    Can also define set of labels to apply to every object defined in template
+----------------------------------
+Templates
+What Are Templates For?
+
+    Can create instantly deployable applications for developers or customers
+
+    Can use preset variables or randomize values (like passwords)
+---------------------------------
+Templates
+Labels
+
+    Used to manage generated resources
+
+    Apply to every resource generated from template
+
+    Used to organize, group, or select objects and resources
+
+    Resources and pods are "tagged" with labels
+
+    Allow services and replication controllers to:
+
+        Determine pods they relate to
+
+        Reference groups of pods
+
+        Treat pods with different Docker containers as similar entities
+-----------------------------------------------------
+Templates
+Parameters
+
+    Share configuration values between different objects in template
+
+        Examples: Database username, password, and port needed by front-end pods to communicate to back-end database pods
+
+    Values can be static or generated by template
+
+    Templates let you define parameters that take on values
+
+        Value substituted wherever parameter is referenced
+
+        Can define references in any text field in objects list field
+
+    Example:
+
+        Can set generate to expression to specify generated values
+
+        from specifies pattern for generating value using pseudo-regular expression syntax
+
+         parameters:
+           - name: PASSWORD
+             description: "The random user password"
+             generate: expression
+             from: "[a-zA-Z0-9]{12}"
+----------------------------------------------
+Templates
+Creating Template from Existing Objects
+
+    Can export existing objects from project in template form
+
+    Modify exported template by adding parameters and customizations
+
+    To export objects in project in template form:
+
+    $ oc export all --as-template=<template_name>
+---------------------------------------

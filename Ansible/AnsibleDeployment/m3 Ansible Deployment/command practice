@@ -1,0 +1,496 @@
+ping using inventory files here in this inventory files all hosts are listed under specific group
+--------------------------
+[student@workstation-1e6a dep-install]$ ansible all -m ping -i inventory
+servera.lab.example.com | SUCCESS => {
+    "changed": false, 
+    "ping": "pong"
+}
+
+---------------------------------
+And operation on ansible 'hostgroup1:&Hostgroup2'
+------------------
+[student@workstation-1e6a dep-install]$ ansible 'lab:&dev' -i inventory --list-hosts
+  hosts (1):
+    servera.lab.example.com
+[student@workstation-1e6a dep-install]$ 
+=========================================
+for or Operation 
+'hostgroup1:hostgroup2'
+-------------------------------
+[student@workstation-1e6a dep-install]$ ansible 'lab:dev' -i inventory --list-hosts
+------------------------------------------------
+to list all hosts except one specified
+=========================================
+[student@workstation-1e6a dep-install]$ ansible 'lab:!govinda.lab.example.com' -i inventory  --list-hosts
+  hosts (1):
+    servera.lab.example.com
+here govinda hiost is not displaying
+
+[student@workstation-1e6a dep-install]$ ansible 'lab:!servera.example.com' -i inventory  --list-hosts
+  hosts (2):
+    govinda.lab.example.com
+    servera.lab.example.com
+both hosts are displaying because we havaent put lab there.
+
+[student@workstation-1e6a dep-install]$ ansible 'lab:!servera.lab.example.com' -i inventory  --list-hosts
+  hosts (1):
+    govinda.lab.example.com
+[student@workstation-1e6a dep-install]$
+------------------------------------------------
+[student@workstation ~]$ lab install setup
+
+[student@workstation ~]$ yum list installed python
+
+[student@workstation ~]$ sudo yum install -y ansible
+
+[student@workstation ~]$ ssh servera.lab.example.com
+Warning: Permanently added 'servera.lab.example.com,172.25.250.10' (ECDSA) to the list of known hosts.
+
+[student@servera ~]$ exit
+
+[student@workstation ~]$ mkdir /home/student/dep-install
+[student@workstation ~]$ cd /home/student/dep-install
+
+[student@workstation-1e6a ~]$ vim inventory 
+[dev]
+servera.lab.example.co
+
+--------------------
+[student@workstation-1e6a dep-install]$ cd
+[student@workstation-1e6a ~]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  PASS
+ · File contents include required string.......................  PASS
+
+Overall lab grade..............................................  PASS
+--------------------------------------------------
+Manage Ansible Configuration Files
+
+[student@workstation-1e6a ~]$ cd
+[student@workstation-1e6a ~]$ pwd
+/home/student
+[student@workstation-1e6a ~]$ ls -l
+total 0
+drwxrwxr-x. 2 student student 22 Oct 23 10:02 dep-install
+[student@workstation-1e6a ~]$ mkdir dep-manage
+[student@workstation-1e6a ~]$ cd dep-manage/
+[student@workstation-1e6a dep-manage]$ vim ansible.cfg
+[defaults]
+inventory=/home/studnet/dep-manage/inventory
+------------------
+[student@workstation-1e6a dep-manage]$ vim inventory
+[myself]
+localhost
+
+[intranetweb]
+servera.lab.example.com
+
+[everyone:children]
+myself
+intranetweb
+---------------------
+[student@workstation-1e6a dep-manage]$ ansible myself -i inventory --list-hosts
+  hosts (1):
+    localhost
+[student@workstation-1e6a dep-manage]$ 
+--------------------------
+[student@workstation-1e6a dep-manage]$ vim ansible.cfg
+[defaults]
+inventory=/home/studnet/dep-manage/inventory
+[privilege_escalation]
+become=True
+become_method=sudo
+become_user=root
+become_ask_pass=True
+---------------------------------
+[student@workstation-1e6a dep-manage]$ ansible intranetweb -i inventory --list-hosts -v
+Using /home/student/dep-manage/ansible.cfg as config file
+SUDO password: 
+  hosts (1):
+    servera.lab.example.com
+[student@workstation-1e6a dep-manage]$ 
+------------------------
+[student@workstation-1e6a dep-manage]$ ansible intranetweb -i inventory --list-hosts -v
+Using /home/student/dep-manage/ansible.cfg as config file
+SUDO password: 
+  hosts (1):
+    servera.lab.example.com
+[student@workstation-1e6a dep-manage]$ ansible everyone -i inventory --list-hosts -v
+Using /home/student/dep-manage/ansible.cfg as config file
+SUDO password: 
+  hosts (2):
+    localhost
+    servera.lab.example.com
+[student@workstation-1e6a dep-manage]$
+
+-------------------------------
+[student@workstation-1e6a dep-manage]$ cd
+[student@workstation-1e6a ~]$ lab manage grade
+
+Grading the student's work on workstation:
+
+ · Verify myself inventory group...............................  PASS
+ · Verify intranetweb inventory group..........................  PASS
+ · Verify everyone inventory group.............................  PASS
+ · Verify active configuration file............................  PASS
+
+Overall lab grade..............................................  PASS
+
+[student@workstation-1e6a ~]$ 
+-------------------
+Run Ad Hoc Commands
+
+55  ansible intranetweb -i inventory --list-hosts -v
+   56  ansible everyone -i inventory --list-hosts -v
+Changing home directory...
+   57  cd
+   58  lab manage grade
+   59  sudo cat /etc/sudoers.d/devops
+   60  ssh devops@servera.lab.example.com
+   61  ls -l;
+   62  lab adhoc setup
+   63   ls -l
+   64  cd dep-adhoc/
+----------------------------
+   65  ls -l
+
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m command -a 'id'
+localhost | SUCCESS | rc=0 >>
+uid=1000(student) gid=1000(student) groups=1000(student),10(wheel) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+-----------------------------------
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m command -a 'id' -u devops
+localhost | SUCCESS | rc=0 >>
+uid=1002(devops) gid=1002(devops) groups=1002(devops) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+[student@workstation-1e6a dep-adhoc]$ 
+-------------------------------
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m command -a 'cat /etc/moyd' -u devops
+localhost | FAILED | rc=1 >>
+cat: /etc/moyd: No such file or directory
+
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m command -a 'cat /etc/motd' -u devops
+localhost | SUCCESS | rc=0 >>
+
+
+[student@workstation-1e6a dep-adhoc]$ 
+------------------------------------------
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m command -a 'cat /etc/motd' -u devops
+localhost | SUCCESS | rc=0 >>
+--------------------------------
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m copy -a 'content="managed by Ansible\n" dest=/etc/motd' -u devops
+localhost | FAILED! => {
+    "changed": false, 
+    "checksum": "fb22d5ba7a3803bd7a5674c6d0a17e8ab79dc172", 
+    "failed": true, 
+    "msg": "Destination /etc not writable"
+}
+-------------------------------
+without becomeing root user you can not run this command
+
+[student@workstation-1e6a dep-adhoc]$ ansible localhost -m copy -a 'content="managed by Ansible\n" dest=/etc/motd' -u devops --become --become-user=root
+localhost | SUCCESS => {
+    "changed": true, 
+    "checksum": "fb22d5ba7a3803bd7a5674c6d0a17e8ab79dc172", 
+    "dest": "/etc/motd", 
+    "gid": 0, 
+    "group": "root", 
+    "md5sum": "bc082a66faf5420486d21f73b9aebe3d", 
+    "mode": "0644", 
+    "owner": "root", 
+    "secontext": "system_u:object_r:etc_t:s0", 
+    "size": 19, 
+    "src": "/home/devops/.ansible/tmp/ansible-tmp-1508775740.26-230980106711902/source", 
+    "state": "file", 
+    "uid": 0
+}
+-------------------------
+for server a
+------
+[student@workstation-1e6a dep-adhoc]$ ansible servera.lab.example.com -m copy -a 'content="Managed by Ansible\n" dest=/etc/motd' -u devops --become --become-user root
+servera.lab.example.com | SUCCESS => {
+    "changed": true, 
+    "checksum": "4458b979ede3c332f8f2128385df4ba305e58c27", 
+    "dest": "/etc/motd", 
+    "gid": 0, 
+    "group": "root", 
+    "md5sum": "65a4290ee5559756ad04e558b0e0c4e3", 
+    "mode": "0644", 
+    "owner": "root", 
+    "secontext": "system_u:object_r:etc_t:s0", 
+    "size": 19, 
+    "src": "/home/devops/.ansible/tmp/ansible-tmp-1508776040.14-95999362493362/source", 
+    "state": "file", 
+    "uid": 0
+}
+[student@workstation-1e6a dep-adhoc]$ 
+-----------------------
+again repeating same command here change is false
+===========
+[student@workstation-1e6a dep-adhoc]$ ansible servera.lab.example.com -m copy -a 'content="Managed by Ansible\n" dest=/etc/motd' -u devops --become --become-user root
+servera.lab.example.com | SUCCESS => {
+    "changed": false, 
+    "checksum": "4458b979ede3c332f8f2128385df4ba305e58c27", 
+    "dest": "/etc/motd", 
+    "gid": 0, 
+    "group": "root", 
+    "mode": "0644", 
+    "owner": "root", 
+    "path": "/etc/motd", 
+    "secontext": "system_u:object_r:etc_t:s0", 
+    "size": 19, 
+    "state": "file", 
+    "uid": 0
+}
+------------------------------
+for host group everyone
+================
+[student@workstation-1e6a dep-adhoc]$ ansible everyone -m command -a 'cat /etc/motd' -u devops
+servera.lab.example.com | SUCCESS | rc=0 >>
+Managed by Ansible
+
+localhost | SUCCESS | rc=0 >>
+managed by Ansible
+
+[student@workstation-1e6a dep-adhoc]$
+-----------------------
+Dyanamic inventory deployment
+
+[student@workstation-1e6a dep-dynamic]$ cat inventory/inventorya.py
+#!/usr/bin/env python
+
+from subprocess import Popen,PIPE
+import sys
+import json
+
+result = {}
+result['webservers'] = {}
+result['webservers']['hosts'] = []
+result['webservers']['vars'] = {}
+
+pipe = Popen(['getent', 'hosts'], stdout=PIPE, universal_newlines=True)
+
+for line in pipe.stdout.readlines():
+   s = line.split()
+   if s[1].startswith('servera'):
+      result['webservers']['hosts'].append(s[1])
+
+if len(sys.argv) == 2 and sys.argv[1] == '--list':
+    print(json.dumps(result))
+elif len(sys.argv) == 3 and sys.argv[1] == '--host':
+    print(json.dumps({}))
+else:
+    print("Requires an argument, please use --list or --host <host>")
+------------------------
+student@workstation-1e6a dep-dynamic]$ cat inventory/inventoryw.py 
+#!/usr/bin/env python
+
+from subprocess import Popen,PIPE
+import sys
+import json
+
+result = {}
+result['all'] = {}
+
+pipe = Popen(['getent', 'hosts'], stdout=PIPE, universal_newlines=True)
+
+result['all']['hosts'] = []
+for line in pipe.stdout.readlines():
+   s = line.split()
+   if s[1].startswith('workstation'):
+      result['all']['hosts'].append(s[1])
+
+result['all']['vars'] = {}
+
+if len(sys.argv) == 2 and sys.argv[1] == '--list':
+    print(json.dumps(result))
+elif len(sys.argv) == 3 and sys.argv[1] == '--host':
+    print(json.dumps({}))
+else:
+    print("Requires an argument, please use --list or --host <host>")
+[student@workstation-1e6a dep-dynamic]$ 
+
+----------------------------
+[student@workstation-1e6a dep-dynamic]$ cat inventory/hosts 
+[servers:children]
+webservers
+[student@workstation-1e6a dep-dynamic]$
+---------------------
+[student@workstation-1e6a dep-dynamic]$ mv inventory/inventorya.py inventory/ainventory.py
+[student@workstation-1e6a dep-dynamic]$ ansible webservers --list
+  hosts (1):
+    servera.lab.example.com
+[student@workstation-1e6a dep-dynamic]$ lab deploy-dynamic grade
+
+Grading the student's work on workstation:
+
+
+Overall lab grade..............................................  PASS
+
+[student@workstation-1e6a dep-dynamic]$ 
+---------------------
+----------------------
+21  cat inventory 
+  122  cd ../dep-dynamic/
+  123  vim ansible.cfg
+  124  mkdir inventory 
+  125  wget http://materials.example.com/dynamic/inventorya.py -O inventory/inventorya.py
+  126  wget http://materials.example.com/dynamic/inventoryw.py -O inventory/inventoryw.py
+  127   ls -l
+  128  ansible -i inventory/inventorya.py webservers --list-hosts
+  129  chmod 755 inventory/inventorya.py 
+  130  ansible -i inventory/inventorya.py webservers --list-hosts
+  131  cat inventory/inventorya.py 
+  132  cat inventory/inventorya.py
+  133  ls -l inventory/
+  134  wget http://materials.example.com/dynamic/hosts -O inventory/hosts
+  135  cat inventory/inventoryw.py 
+  136  cat inventory/hosts 
+  137  ls -al
+  138  L
+  139  cd 
+  140  lab adhoc grade
+  141  cd dep-dynamic
+  142  chmod 755 inventory/inventoryw.py 
+  143  lab adhoc grade
+  144  inventory/inventorya --list
+  145  lab adhoc grade
+  146  inventory/inventorya.py --list
+  147  inventory/inventoryw.py --list
+  148  cat inventory/hosts 
+  149  ansible webservers --list-hosts
+  150  mv inventory/inventorya.py inventory/ainventory.py
+  151  ansible webservers --list
+  152  lab deploy-dynamic grade
+  153  cd 
+  154  lab deploy-dynamic grade
+  155  lab deploy setup
+  156  yum list installed ansible
+  157  ansible -version
+  158  ansible --version
+  159  ssh servera.lab.example.com
+  160  ssh servera.lab.example.com 'hostname'
+  161  ssh serverb.lab.example.com 'hostname'
+  162  ssh devops@serverb.lab.exaample.com
+  163  ssh devops@serverb.lab.example.com
+  164  mkdir dep-lab
+  165  cd dep-lab/
+  166  vim ansible.cfg
+  167  ls -l
+  168  vim ansible.cfg
+  169  mkdir inventory
+  170  wget http://materials.example.com/dynamic/inventory -O inventory/inventory
+  171  wget http://materials.example.com/dynamic/binventory.py -O inventory/binventory.py
+  172  chmod 755 inventory/binventory.py 
+  173  vim inventory/inventory 
+  174  ansible serverb.lab.example.com -m command -a "id"
+  175  ansible serverb.lab.example.com -m copy -a 'content="This server is managed by Ansible.\n" dest=/etc/motd' --become 
+  176  ansible serverb.lab.example.com -m command -a "cat /etc/motd" 
+  177  lab deploy grade
+  178  history
+[student@workstat
+-------------------------
+-----------------------
+[student@workstation-1e6a dep-lab]$ ansible serverb.lab.example.com -m copy -a 'content="This server is managed by Ansible.\n" dest=/etc/motd' --become 
+serverb.lab.example.com | SUCCESS => {
+    "changed": true, 
+    "checksum": "93d304488245bb2769752b95e0180607effc69ad", 
+    "dest": "/etc/motd", 
+    "gid": 0, 
+    "group": "root", 
+    "md5sum": "af74293c7b2a783c4f87064374e9417a", 
+    "mode": "0644", 
+    "owner": "root", 
+    "secontext": "system_u:object_r:etc_t:s0", 
+    "size": 35, 
+    "src": "/home/devops/.ansible/tmp/ansible-tmp-1508785353.07-217646696062237/source", 
+    "state": "file", 
+    "uid": 0
+}
+[student@workstation-1e6a dep-lab]$ ansible serverb.lab.example.com -m command -a "cat /etc/motd" 
+serverb.lab.example.com | SUCCESS | rc=0 >>
+This server is managed by Ansible.
+
+[student@workstation-1e6a dep-lab]$ lab deploy grade
+
+Grading the student's work on workstation:
+
+ · Verify active configuration file............................  PASS
+ · Verify /etc/motd............................................  PASS
+
+Overall lab grade..............................................  PASS
+
+[student@workstation-1e6a dep-lab]$
+=======================================
+##########################
+############30th October, 2017###################
+ansible web4 -m ping
+    2  ansible all -m ping
+    3  ansible all -a "hostname" -f 1
+    4  ansible all -a "df -h"
+    5  ansible all -a "date"
+    6  date 
+    7  ansible all -b -m yum -a "name=ntp state=present"
+    8  ansible all -b -m service -a "name=ntp state=started enabled=yes"
+    9  ansible all -b -m service -a "name=ntpd state=started enabled=yes"
+   10  ansible all -b -a "service ntpd stop"
+   11  ansible all -b -a "ntpdate -a 0.rhel.pool.ntp.org"
+   12  ansible all -b -a "ntpdate -q 0.rhel.pool.ntp.org"
+   13  ansible all -b -a "service ntpd start"
+   14  ansible all -a "date"
+   15  sudo vim /etc/ansible/hosts 
+   16  ansible -m ping all
+   17  ansible all -m ping
+   18  sudo vim /etc/ansible/hosts 
+   19  ansible all -m ping
+   20  sudo vim /etc/ansible/hosts 
+   21  ansible all -m ping
+   22  ansible web4 -b -m yum -a "name=MySQL-python state=present"
+   23  ansible web4 -b -m yum -a "name=python-setuptools state=present"
+   24  ansible web4 -b -m easy_install -a "name-django state=present"
+   25  ansible easy_install -h
+   26  ansible web4  -m easy_install -a "name-django state=present"
+   27  ansible web4 --become  -m easy_install -a "name-django state=present"
+   28  ansible web4 -b  -m easy_install -a "name-django state=present"
+   29  ansible web4 -a "python -c 'import django; print django.get_version()'"
+   30  ansible web4 -a "python -c 'import django; \ print django.get_version()'"
+   31  ansible app -a "python -c 'import django; \
+print django.get_version()'"
+   32  ansible web -a "python -c 'import django; \
+print django.get_version()'"
+   33  ansible web4 -a "python -c 'import django; \
+print django.get_version()'"
+   34  ansible web4 -b -m easy_install -a "name=django state=present"
+   35  ansible web4 -a "python -c 'import django; print django.get_version()'"
+   36  sudo vim /etc/ansible/hosts 
+   37  ansible web4 -a "python -c 'import django; print django.get_version()'"
+   38  sudo vim /etc/ansible/hosts 
+   39  sudo systemctl status ansible
+   40  rpm -qa | grep ansible
+   41  ansible db -b -m yum -a "name = mariadb-server state=present"
+   42  ansible db -b -m yum -a "name=mariadb-server state=present"
+   43  ansible db -b -m service -a "name=mariadb state=started"
+   44  ansible db -b -m service -a "name=mariadb state=started enabled=yes"
+   45  ansible db -b -m service -a "name=mariadb enabled=yes"
+   46  ansible db -b -m mysql_user "name=govinda host=% password=12345 priv*=*.* : ALL state=present"
+   47  ansible db -b -m mysql_user -a "name=django host=% password=12345 \
+   48  ansible db -b -m mysql_user -a "name=govinda host=% password=12345 priv=*.*:ALL state=present"
+   49  ansible db -b -m mysql-python -a "name=govinda host=% password=12345 priv=*.*:ALL state=present"
+   50  ansible db -b -m yum -a "name=MySQL-python state=present"
+   51  ansible db -b -m mysql-python -a "name=govinda host=% password=12345 priv=*.*:ALL state=present"
+   52  ansible db -b -m mysql_user -a "name=govinda host=% password 12345 priv=*.*:ALL stste=present"
+   53  ansible db -b -m mysql_user -a "name=django host=% password 12345 priv=*.*:ALL state=present"
+   54  ansible db -b -m mysql_user -a "name=django host=% password=12345 priv=*.*:ALL state=present"
+   55  ansible all -b -a "systemctl status ntpd"
+   56  ansible web2 -b -m service -a "name=ntp state=started enabled=yes" 
+   57  ansible web2 -b -m service -a "name=ntpd state=started enabled=yes" 
+   58  ansible web4 -b -m service -a "name=ntpd state=started enabled=yes" 
+   59  ansible all -a "/bin/echo Hello"
+-----------------------------------
+
+
+
+

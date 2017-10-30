@@ -1,0 +1,100 @@
+Firewall Configuration Lab
+1. Limit Network Communication
+
+In this lab, you configure a basic firewall.
+
+    Reset your server1.example.com system.
+
+    On your server1.example.com system, make sure that both the httpd and mod_ssl packages are installed.
+
+        These packages provide the Apache web server you will protect with a firewall, and the necessary extensions for the web server to serve content over SSL.
+
+        [root@server1 ~]# yum -y install httpd mod_ssl
+
+    On your server1.example.com system, create a new file called /var/www/html/index.html, with the following contents:
+
+    I am alive
+
+    [root@server1 ~]# bash -c "echo I am alive > /var/www/html/index.html"
+
+    Start and enable the httpd service on your server1.example.com system.
+
+    [root@server1 ~]# systemctl start httpd
+
+    [root@server1 ~]# systemctl enable httpd
+
+    On your server1.example.com system, make sure that both the iptables and ip6tables services are masked, and that the firewalld service is enabled and running.
+
+    [root@server1 ~]# systemctl mask iptables
+    [root@server1 ~]# systemctl mask ip6tables
+    [root@server1 ~]# systemctl status firewalld
+    firewalld.service - firewalld - dynamic firewall daemon
+       Loaded: loaded (/usr/lib/systemd/system/firewalld.service; disabled)
+       Active: inactive (dead)
+
+        If you see the status as inactive and the service disabled, use the following commands to start and enable it:
+
+        [root@server1 ~]# systemctl start firewalld
+        [root@server1 ~]# systemctl enable firewalld
+
+    Verify that the default firewall zone is set to public.
+
+    [root@server1 ~]# firewall-cmd --get-default-zone
+    public
+
+        If the previous step returned a different zone, issue the following command:
+
+        [root@server1 ~]# firewall-cmd --set-default-zone public
+
+    Verify that there are no unwanted ports open in the permanent configuration for the public zone.
+
+    [root@server1 ~]# firewall-cmd --permanent --zone=public --list-all
+    public (default)
+      interfaces:
+      sources:
+      services: dhcpv6-client ssh
+      ports:
+      masquerade: no
+      forward-ports:
+      icmp-blocks:
+      rich rules:
+
+    Add port 443/TCP to the permanent configuration for the public zone.
+
+    [root@server1 ~]# firewall-cmd --permanent --zone=public --add-port 443/tcp
+
+    Verify your configuration.
+
+    [root@server1 ~]# firewall-cmd --permanent --zone=public --list-all
+    public (default)
+      interfaces:
+      sources:
+      services: dhcpv6-client ssh
+      ports: 443/tcp
+      masquerade: no
+      forward-ports:
+      icmp-blocks:
+      rich rules:
+
+    Apply your changes to the firewall.
+
+    [root@server1 ~]# firewall-cmd --reload
+    success
+
+    	There may be a 30 second pause when you issue the reload command. This is normal.
+
+    Verify your work by attempting to view your web server contents from desktop1.example.com.
+
+        This command should fail:
+
+        [student@desktop1 ~]$ curl -k http://server1.example.com
+        curl: (7) Failed connect to server1.example.com:80; No route to host
+
+        This command should succeed:
+
+        [student@desktop1 ~]$ curl -k https://server1.example.com
+        I am alive
+
+        	If you use Firefox to connect to the web server, it will prompt for verification of the host certificate if it successfully gets past the firewall.
+
+Your server1.example.com machine should now have a running web server that listens on both the cleartext port 80/TCP and the SSL encapsulated port 443/TCP. The firewall configuration on server1.example.com should only allow connections to the SSL encapsulated port. The firewall should allow access to sshd and vnc from all hosts.

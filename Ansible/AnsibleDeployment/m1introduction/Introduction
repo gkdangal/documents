@@ -1,0 +1,557 @@
+    Overview
+
+    Architecture
+
+    Use Cases
+
+    Deployments
+
+    Software That Uses Ansible
+
+    Orchestration Methods
+
+    Connection Plug-ins
+--------------------------
+In this module, you learn the following:
+
+    Ansible is an agentless configuration management tool built on Python.
+
+    Ansible is installed on the control node and keeps its configuration files there.
+
+    Ansible copies modules from the control node to the managed hosts, where it executes them in the order specified in the playbook.
+
+    Ansible is ideal for deploying applications in parallel on Red Hat Enterprise Linux, JBoss, and OpenShift Enterprise, and it can assist with Red Hat Satellite system management.
+
+    Ansible can finish provisioning application servers post-installation, using the ansible-pull script.
+
+    Ansible can orchestrate zero-downtime rollover application upgrades.
+
+    Native SSH is Ansible’s default connection plug-in, but the Paramiko plug-in provides efficient SSH communications with Red Hat Enterprise Linux 5 systems.
+-----------------------------
+Overview
+Playbooks and Modules
+
+    System administrators create playbooks that call modules to perform work
+
+        Replaces custom, individualized scripts
+
+    Playbooks: YAML files executed in top-down, sequential fashion
+
+        Define modules applied to remote systems and arguments passed to them
+
+    Agentless architecture
+
+        Work pushed to remote hosts when Ansible executes
+
+    Comes with hundreds of core modules that:
+
+        Perform system administration work
+
+        Make Ansible immediately useful
+===============================
+nstead of writing custom, individualized scripts, system administrators create high-level playbooks that call modules to perform work. Playbooks are YAML files that are executed in a top-down, sequential fashion. They define which modules are applied to remote systems and the arguments that are passed to them.
+
+Ansible’s architecture is agentless. When Ansible executes, work is pushed to remote hosts. Ansible is immediately useful because it comes with hundreds of core modules that perform useful system administration work.
+---------------------------------------
+Overview
+Ansible Limitations
+
+    Cannot audit changes made by other users on system
+
+        Example: Cannot determine who made change to a file
+
+    Does not perform initial minimal installation of system
+
+        Start with minimal installation via Kickstart or base cloud starter image
+
+        Use Ansible to add packages and for configuration
+
+    Does not monitor configuration drift
+
+        Can remediate it
+
+    Does not track changes made to files on system
+
+        Does not track which user or process made changes
+
+        To track changes, use version control system or Linux Auditing System
+====================================
+There are several things that Ansible cannot do. Ansible cannot audit changes made locally by other users on a system—for example, to determine who made a change to a file.
+
+Ansible can add packages to an installation, but it does not perform the initial minimal installation of the system. A system can start with a minimal installation, either via Kickstart or a base cloud starter image, then use Ansible for further configuration.
+
+Although Ansible can remediate configuration drift, it does not monitor for it.
+
+Ansible does not track the changes made to files on the system, nor does it track the users or processes that made those changes. These types of changes are best tracked with a version control system or the Linux Auditing System.
+-------------------------------
+Architecture
+
+    Two types of machines in Ansible architecture: control node and managed hosts
+
+        Ansible software installed and components maintained on control node
+
+        Managed hosts listed in host inventory
+
+            Text file on control node with managed host names or IP addresses
+
+    System administrators log in to control node and launch Ansible
+
+        Specify playbook
+
+        Specify target host to manage: single system, group of hosts, or wild card
+
+    SSH used as network transport to communicate with managed hosts
+
+        Modules referenced in playbook copied to managed hosts
+
+        Modules execute in order with arguments specified in playbook
+
+    Core modules perform most system administration tasks
+
+        Users can write custom modules
++++++++++++++++++=
+There are two types of machines in the Ansible architecture: the control node and managed hosts. Ansible software is installed on the control node, and all of its components are maintained on it. The managed hosts are listed in a host inventory, a text file on the control node that includes a list of managed host names or IP addresses.
+
+System administrators log in to the control mode and launch Ansible, providing it with a playbook and a target host to manage. Instead of a single system to process, you can specify a group of hosts or a wild card. Ansible uses SSH as a network transport to communicate with the managed hosts. The modules referenced in the playbook are copied to the managed hosts and then executed, in order, with the arguments specified in the playbook. Ansible users can write their own custom modules, but the core modules that come with Ansible can perform most system administration tasks.
+-------------------------------------
+Architecture
+Control Node Components
+
+Component
+	
+
+Description
+
+Ansible configuration
+	
+
+    Defines how Ansible behaves. Settings include:
+
+        Remote user for command execution
+
+        Passwords for executing remote commands with sudo
+
+    To override default values, use environment variables or values defined in configuration files
+
+Host inventory
+	
+
+    Defines configuration groups to which hosts belong
+
+    Defines how Ansible communicates with managed host
+
+    Defines host and group variable values
+
+Core modules
+	
+
+    Programs copied to managed hosts to perform work for Ansible
+
+    Over 400 core modules built in
+
+Custom modules
+	
+
+    Extend functionality
+
+    Typically written in Python
+
+        Alternative: Any interpreted programming language
+
+    Add custom modules to Ansible library
+
+Playbooks
+	
+
+    Files written in YAML syntax
+
+    Define modules, with arguments, to apply to managed nodes
+
+    Declare tasks that need to be performed
+
+Connection plug-ins
+	
+
+    Enable communication with remote hosts and cloud
+
+    Include native SSH (default), paramiko SSH, and local
+
+    Paramiko: Python implementation of OpenSSH for Red Hat Enterprise Linux 6
+
+        Provides ControlPersist performance setting required by Ansible
+
+Plug-ins
+	
+
+    Extend Ansible’s functionality
+
+    Examples: Email notifications and logging
+=== Transcript
+
+This table lists the Ansible components that are maintained on the control node.
+
+Ansible has configuration settings that define how it behaves. These settings include such things as the remote user to use to execute commands, and the passwords to provide when executing remote commands with sudo. Default configuration values can be overridden by environment variables or values defined in configuration files.
+
+The Ansible host inventory defines the configuration to which groups hosts belong. The inventory can define how Ansible communicates with a managed host. It also defines host and group variable values.
+
+Modules are the programs that are copied to the managed hosts to perform the work for Ansible. Ansible comes with over 400 core modules built in.
+
+Users can extend Ansible’s functionality by writing their own modules and adding them to the Ansible library. Modules are typically written in Python but can be written in any interpreted programming language, such as shell, Ruby, or Python.
+
+Ansible playbooks are files written in YAML syntax that define the modules, with arguments, to apply to managed nodes. They declare the tasks that need to be performed.
+
+Connection plug-ins enable communication with remote hosts and cloud. These include native SSH (the default), paramiko SSH, and local. Paramiko is a Python implementation of OpenSSH for Red Hat Enterprise Linux 6 that provides the ControlPersist performance setting that Ansible requires.
+
+Additional plug-ins extend Ansible’s functionality. Examples include email notifications and logging.
+
+-0----------------------------------
+Architecture
+Control Node Role
+
+    System administrators log in and initiate Ansible operations from control node
+
+    Ansible software installed and configuration files maintained on control node
+
+    Other names for control node: Ansible host and control machine
+=== Transcript
+
+System administrators log in and initiate all Ansible operations from the control node. Ansible software is installed on the control node. Ansible configuration files are also maintained on the control node. Other names for the control node include Ansible host and control machine, but this course consistently uses the term control node for the machine that serves this role.
+---------------------------------------
+Architecture
+Control Node Requirements
+
+    Must have Python 2.6 or 2.7 installed
+
+        Includes Linux, OS X, any BSD-based UNIX system
+
+        Windows not currently supported for control node
+
+        On Red Hat Enterprise Linux 6 or 7, ansible package and dependencies must be installed
+=== Transcript
+
+A machine acting as a control node must have Python 2.6 or 2.7 installed. This includes Linux, OS X, and any BSD-based UNIX system. Windows is not supported for the control node at this time. Ansible runs on Red Hat Enterprise Linux 6 or 7, but the ansible package and its dependencies must be installed.
+
+-----------------------------
+Architecture
+Managed Host Requirements
+
+    SSH must be installed and configured
+
+        Allows incoming connections and communication with managed hosts
+
+    Python 2.4 or later
+
+        Lets you use Ansible to manage Red Hat Enterprise Linux 5, 6, and 7 hosts
+
+    python-simplejson package must be installed on Red Hat Enterprise Linux 5 managed hosts
+
+        Not required on Red Hat Enterprise Linux 6 and 7 managed hosts
+
+        Python 2.5 and newer versions provide functionality by default
+
+	Modules can have their own unique software requirements. Playbooks must be written so that prerequisite software is installed before calling a module that uses it.
+=== Transcript
+
+Ansible uses SSH to communicate with managed hosts, so SSH must be installed and configured to allow incoming connections. Python 2.4 or later is also a requirement to run Ansible, so Ansible can be used to manage Red Hat Enterprise Linux 5, 6, and 7 hosts.
+
+The python-simplejson package must also be installed on Red Hat Enterprise Linux 5 managed hosts. It is not required on Red Hat Enterprise Linux 6 and 7 managed hosts, since Python 2.5 and newer versions provide its functionality by default.
+
+Note that modules can have their own, unique software requirements. Playbooks must be written so that prerequisite software is installed before calling a module that uses it.
+====================
+Use Cases
+
+    Configuration management
+
+        Deploy and manipulate remote host’s configuration files
+
+        Use static files or create files on fly using templates
+
+    Multi-node deployment tool
+
+        Use playbooks to define applications installed and configured on remote machines
+
+        Apply playbook to multiple machines, building them in consistent manner
+
+        Orchestrate multi-node applications with Ansible rules
+
+    Remote task execution
+
+        Example: Specify ad hoc commands on command line
+
+            Causes Ansible to execute commands on remote hosts
+=== Transcript
+
+When administrators think of Ansible, the first thing that comes to mind is configuration management. Ansible can deploy and manipulate the configuration files of a remote host. The files can be static or created on the fly, using templates.
+
+Ansible can also be used as a multi-node deployment tool. Playbooks can define the applications that are installed and configured on remote machines. A playbook can be applied to multiple machines, building them all in a consistent manner. Also, multi-node applications can be orchestrated by Ansible’s rules.
+
+Ansible can also perform remote task execution. You can demonstrate this by specifying ad hoc commands on the command line, which causes Ansible to execute the commands on remote hosts.
+----------------------------
+Deployments
+
+    Ansible strength: Simplifies software configuration of servers
+
+    When Ansible accesses managed hosts, it can discover version of Red Hat Enterprise Linux running on remote server
+
+    Ansible determines if host is properly entitled by comparing installed applications and applied software subscriptions
+
+    Ansible playbooks can consistently build development, test, and production servers
+
+        Kickstart can get bare-metal servers running
+
+        Ansible builds them further
+
+        Provision servers to corporate baseline standard or specific role within datacenter
+
+=== Transcript
+
+One of Ansible’s strengths is in how it simplifies the configuration of software on servers.
+
+When Ansible accesses managed hosts, it can discover the version of Red Hat Enterprise Linux running on the remote server. The installed applications and applied software subscriptions can be compared to determine if the host is properly entitled. Ansible playbooks can be used to consistently build development, test, and production servers. Kickstart can get bare-metal servers running and then let Ansible take over and build them further. They can be provisioned to a corporate baseline standard, or they can be built for a specific role within the datacenter.
+
+-----------------
+Deployments
+JBoss
+
+    Ansible can discover JBoss versions and reconcile subscriptions
+
+    Ansible supports managed hosts running Windows
+
+        JBoss products can be deployed consistently, regardless of target machine operating systems
+
+    Ansible can also deploy and manage JBoss applications
+
+        All JBoss configurations are centrally stored on Ansible control node
+=== Transcript
+
+Similarly, Ansible can discover JBoss versions and reconcile subscriptions. Ansible also supports managed hosts running Windows, so JBoss products can be deployed consistently, regardless of the target machines' operating systems. Ansible also can deploy and manage JBoss applications, because all of the JBoss configurations are centrally stored on the Ansible control node.
+-------------------------------------
+Deployments
+Red Hat OpenShift
+
+    Ansible can manage software development life cycle for applications deployed into OpenShift
+
+    OpenShift Enterprise 3.1 provides:
+
+        Ansible software for Red Hat Enterprise Linux
+
+        Playbooks for provisioning and managing applications
+
+Red Hat Satellite
+
+    Ansible can supplement functionality provided by Red Hat Satellite
+
+        Deploy Satellite agents to existing servers in datacenter
+
+        Discover and manage software subscriptions on Red Hat Satellite clients
+
+        Perform post-install configuration of hosts provisioned by Red Hat Satellite
+=== Transcript
+
+You can use Ansible to manage the software development life cycle for applications deployed into OpenShift. In fact, OpenShift Enterprise 3.1 provides Ansible software for Red Hat Enterprise Linux and playbooks that can be used to provision and manage applications.
+
+You can also use Ansible to supplement the functionality provided by Red Hat Satellite. Ansible can deploy Satellite agents to existing servers in a datacenter. Ansible can also discover and manage software subscriptions on Red Hat Satellite clients. Finally, Ansible can perform post-install configuration of hosts provisioned by Red Hat Satellite.
+-----------------------
+Orchestration Methods
+
+    Ansible commonly used to finish provisioning application servers
+
+    Example: Write playbook to perform these steps on newly installed base system:
+
+        Configure software repositories
+
+        Install application
+
+        Tune configuration files
+
+        (Optional) Download content from version control system
+
+        Open required service ports in firewall
+
+        Start relevant services
+
+        Test application and confirm it is functioning
+=== Transcript
+
+Ansible is commonly used to finish provisioning application servers. For example, you can write a playbook to perform the steps shown here on a newly installed base system:
+
+    Configure software repositories.
+
+    Install the application.
+
+    Tune configuration files.
+
+    (Optional) Download content from a version control system.
+
+    Open required service ports in the firewall.
+
+    Start relevant services.
+
+    Test the application and confirm that it is functioning.
+
+----------------------
+Orchestration Methods
+ansible-pull
+
+    ansible-pull script allows system administrator to invert Ansible architecture
+
+    On newly installed server, can use this to:
+
+        Clone Ansible configuration files from Git repository
+
+        Call ansible-playbook command to apply content to host
+=== Transcript
+
+Ansible has a script, called ansible-pull, that allows a system administrator to invert the architecture of Ansible. Using this functionality on a newly installed server, you can clone Ansible configuration files from a Git repository, then call the ansible-playbook command to apply that content to the host.
+----------------------
+Orchestration Methods
+Zero Downtime Rollover Upgrades
+
+    Ansible lets you update applications in parallel
+
+    Example: Develop playbook to execute these steps on application servers:
+
+        Stop system and application monitoring
+
+        Remove server from load balancing
+
+        Stop relevant services
+
+        Deploy and update application
+
+        Start relevant services
+
+        Confirm services are available and add server back to load balancing
+
+        Restart system and application monitoring
+=== Transcript
+
+Ansible also lets you easily update applications in parallel. For example, you can develop a playbook to execute the following steps on application servers:
+
+    Stop system and application monitoring.
+
+    Remove the server from load balancing.
+
+    Stop the relevant services.
+
+    Deploy and update the application.
+
+    Start the relevant services.
+
+    Confirm the services are available and add the server back to load balancing.
+
+    Restart system and application monitoring.
+--------------------------
+Orchestration Methods
+serial Keyword
+
+    Ansible by default tries to apply playbook to all target managed hosts at one time
+
+    To restrict playbook to smaller number of hosts at once, use serial keyword
+
+    After subset of servers deployed and functioning properly, Ansible moves to another batch of servers in target group
+=== Transcript
+
+By default, Ansible tries to apply a playbook to all of the target managed servers at one time. But you can use the serial keyword to limit the playbook to a smaller number of hosts at once. After a subset of servers have been deployed and are functioning properly, Ansible moves on to another batch of servers in the target group.
+---------------
+Connection Plug-ins
+
+    Connection plug-ins: Allow Ansible to communicate with managed hosts and cloud providers
+
+    Preferred connection plug-in for newer versions of Ansible is native SSH plug-in, ssh
+
+        Default connection method used by Ansible
+
+            If OpenSSH on control node supports ControlPersist option
+
+    Ansible supports passwords for SSH authentication
+
+        Most common practice: Use SSH user keys to access managed hosts
+
+=== Transcript
+
+Connection plug-ins allow Ansible to communicate with managed hosts and cloud providers. The preferred connection plug-in for newer versions of Ansible is the native SSH plug-in, ssh. This is the default connection method that Ansible uses when OpenSSH on the control node supports the ControlPersist option. Although Ansible can be configured to use passwords for SSH authentication, the most common practice is to use SSH user keys to get access to managed hosts.
+---------------
+Connection Plug-ins
+local
+
+    local: Another connection plug-in for Linux applications
+
+    Use to manage Ansible control node locally, without SSH
+
+    Common uses:
+
+        When writing playbooks that interface with cloud services or other API
+
+        When Ansible is invoked locally by cron job
+-
+=== Transcript
+
+Another connection plug-in used for Linux applications is local. This plug-in can be used to manage the Ansible control node locally, without needing to use SSH.
+
+This connection method is typically used when writing Ansible playbooks that interface with cloud services or some other API. It can also be used when Ansible is invoked locally by a cron job.
+-------------------
+Connection Plug-ins
+paramiko and ControlPersist
+
+    paramiko: Connection plug-in used on Red Hat Enterprise Linux 6 machines
+
+        Paramiko SSH is Python-based OpenSSH implementation that implements persistent SSH connections
+
+        Connection solution for older systems using versions of OpenSSH that do not implement ControlPersist
+
+    ControlPersist allows for persistent SSH connections
+
+        Improves Ansible performance
+
+        Eliminates SSH connection overhead when multiple SSH commands execute in succession
+The paramiko Ansible connection plug-in is used on Red Hat Enterprise Linux 6 machines.
+
+Paramiko SSH is a Python-based OpenSSH implementation that implements persistent SSH connections. It was a connection solution for older systems using versions of OpenSSH that did not implement the ControlPersist connection setting. The ControlPersist connection setting allows for persistent SSH connections, a feature that improves Ansible performance by eliminating SSH connection overhead when multiple SSH commands are executed in succession.
+-----------------
+Connection Plug-ins
+winrm and docker
+
+    winrm: Allows Microsoft Windows machines to be managed hosts
+
+        pywinrm Python module must be installed on Linux control node to support winrm
+
+    docker: Allows Ansible to treat Docker containers as managed hosts without using SSH
+
+        Introduced in Ansible 2
+=== Transcript
+The winrm Ansible connection plug-in allows Microsoft Windows machines to be managed hosts. The pywinrm Python module must be installed on the Linux control node to support this connection plug-in.
+
+Ansible 2 introduced the docker connection plug-in. This plug-in allows Ansible to treat Docker containers as managed hosts without using SSH.
+-----------------
+Software That Uses Ansible
+OpenShift Enterprise 3.1
+
+    Provides Ansible playbooks and instructions on using them to configure hosts in OpenShift cluster
+
+    OpenShift Enterprise 3.1 Installation and Configuration includes section on advanced installation method
+
+        Describes how to tune Ansible variables so that playbooks can work in customer production environment
+
+        Available at: https://access.redhat.com/documentation/en/openshift-enterprise/3.1/installation-and-configuration/installation-and-configuration
+
+    Ansible included in atomic-openshift-utils package on Red Hat Enterprise Linux 7
+
+    Using Ansible-aware installation method not available when deploying OpenShift environment on Red Hat Enterprise Linux Atomic Host 7
+=== Transcript
+
+OpenShift Enterprise 3.1 provides Ansible playbooks and instructions on how to use them to configure hosts in an OpenShift cluster. OpenShift Enterprise 3.1 Installation and Configuration, available at the web address shown here, includes a section that describes an advanced installation method. This section describes how to tune Ansible variables so that the playbooks can work in a customer’s production environment. Ansible is installed when the atomic-openshift-utils package is installed on Red Hat Enterprise Linux 7. Using the Ansible-aware installation method is not available when deploying an OpenShift environment on Red Hat Enterprise Linux Atomic Host 7.
+-----------------------
+Software That Uses Ansible
+Vagrant
+
+    Used in DevOps environment to manage virtual machines
+
+    Supports Ansible provisioner that allows virtual guests to be provisioned using Ansible playbooks
+
+        When provisioner is selected, Vagrant executes ansible-playbook from Vagrant host building the virtual machine
+=== Transcript
+
+Vagrant is another example of software that uses Ansible. Vagrant is used in a DevOps environment to manage virtual machines. Vagrant supports an Ansible provisioner that allows virtual guests to be provisioned using Ansible playbooks. When this provisioner is selected, Vagrant executes the ansible-playbook command from the Vagrant host that is building the virtual machine.
+
+

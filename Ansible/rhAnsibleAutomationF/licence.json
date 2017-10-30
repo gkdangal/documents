@@ -1,0 +1,15 @@
+{
+    "company_name": "Red Hat, Inc.", 
+    "contact_email": "curriculum+gls@redhat.com", 
+    "contact_name": "Red Hat GLS Curriculum", 
+    "features": {
+        "enterprise_auth": false, 
+        "rebranding": false
+    }, 
+    "hostname": "4de2ffefef9b472f9d6ffe44dd514968", 
+    "instance_count": 10, 
+    "license_date": 1520963026, 
+    "license_key": "a6ee439e570673161f786cf651c3cb514d98eed2026e9bd18b43ba3fb15cb7d3", 
+    "license_type": "enterprise", 
+    "subscription_name": "Enterprise Ansible Tower by Red Hat (10 Managed Nodes)"
+}

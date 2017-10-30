@@ -1,0 +1,192 @@
+practice command for ansible.
+
+tudent@workstation-e106 ~]$ pwd
+/home/student
+[student@workstation-e106 ~]$ 
+
+
+
+
+
+
+
+
+[student@workstation-e106 ~]$ lab install setup
+
+Setting up workstation for lab exercise work:
+
+SUCCESS
+
+[student@workstation-e106 ~]$ yum install python
+Loaded plugins: langpacks, search-disabled-repos
+You need to be root to perform this command.
+[student@workstation-e106 ~]$ sudo yum install python
+Loaded plugins: langpacks, search-disabled-repos
+Package python-2.7.5-34.el7.x86_64 already installed and latest version
+Nothing to do
+[student@workstation-e106 ~]$ 
+
+
+[student@workstation-e106 ~]$ sudo yum install ansible -y
+Loaded plugins: langpacks, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package ansible.noarch 0:2.0.1.0-2.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package          Arch            Version                Repository        Size
+================================================================================
+Installing:
+ ansible          noarch          2.0.1.0-2.el7          ansible          2.8 M
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total download size: 2.8 M
+Installed size: 12 M
+Downloading packages:
+ansible-2.0.1.0-2.el7.noarch.rpm                           | 2.8 MB   00:00     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : ansible-2.0.1.0-2.el7.noarch                                 1/1 
+  Verifying  : ansible-2.0.1.0-2.el7.noarch                                 1/1 
+
+Installed:
+  ansible.noarch 0:2.0.1.0-2.el7                                                
+
+Complete!
+[student@workstation-e106 ~]$ 
+[student@workstation-e106 ~]$  ssh servera.lab.example.com
+Warning: Permanently added 'servera.lab.example.com,172.25.250.10' (ECDSA) to the list of known hosts.
+[student@servera ~]$ exit
+logout
+Connection to servera.lab.example.com closed.
+[student@workstation-e106 ~]$ 
+
+
+
+[student@workstation-e106 ~]$ mkdir /home/student/dep-install 
+[student@workstation-e106 ~]$ cd dep-install/
+[student@workstation-e106 dep-install]$ vim myinventory 
+[student@workstation-e106 dep-install]$ vim myinventory 
+[student@workstation-e106 dep-install]$ 
+
+
+[student@workstation-e106 dep-install]$ ansible dev -i myinventory --list-hosts
+  hosts (1):
+    servera.lab.example.com
+[student@workstation-e106 dep-install]$ 
+[student@workstation-e106 dep-install]$ 
+
+
+[student@workstation-e106 dep-install]$ cd
+[student@workstation-e106 ~]$ lsb install grade
+bash: lsb: command not found...
+[student@workstation-e106 ~]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  FAIL
+
+Overall lab grade..............................................  FAIL
+
+[student@workstation-e106 ~]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  FAIL
+
+Overall lab grade..............................................  FAIL
+
+[student@workstation-e106 ~]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  FAIL
+
+Overall lab grade..............................................  FAIL
+
+[student@workstation-e106 ~]$  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[student@workstation-e106 ~]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  FAIL
+
+Overall lab grade..............................................  FAIL
+
+[student@workstation-e106 ~]$ cd 
+.cache/      .config/     dep-install/ .ssh/        
+[student@workstation-e106 ~]$ cd dep-install/
+[student@workstation-e106 dep-install]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  FAIL
+
+Overall lab grade..............................................  FAIL
+
+[student@workstation-e106 dep-install]$ mv myinventory inventory 
+[student@workstation-e106 dep-install]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  PASS
+ · File contents include required string.......................  PASS
+
+Overall lab grade..............................................  PASS
+
+[student@workstation-e106 dep-install]$ cd
+[student@workstation-e106 ~]$ lab install grade
+
+Grading the student's work on workstation:
+
+ · Verify connection to servera................................  PASS
+ · Verify ansible installation.................................  PASS
+ · Verify inventory file.......................................  PASS
+ · File contents include required string.......................  PASS
+
+Overall lab grade..............................................  PASS
+
+[student@workstation-e106 ~]$ 
+

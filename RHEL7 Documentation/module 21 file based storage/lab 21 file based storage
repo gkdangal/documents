@@ -1,0 +1,497 @@
+Providing File-Based Storage Labs
+1. Export NFS File Systems
+
+In this lab, you use NFS to provide shared storage. The NFS server exports an IP-based NFS share on server1.example.com. The NFS export is mounted on desktop1.example.com.
+
+    Reset the server1.example.com system.
+
+    Become root on your server1.example.com system.
+
+    [student@server1 ~]$ sudo -i
+
+    Become root on your desktop1.example.com system.
+
+    [student@desktop1 ~]$ sudo -i
+
+    Configure an IP-based NFS share on server1.example.com according to the following requirements:
+
+        The NFS server provides newly created shared directory /nfsshare.
+
+        The /nfsshare NFS export provides read and write access for nfsnobody.
+
+    Mount the share on the /mnt/nfsshare mount point on desktop1.example.com permanently.
+
+    Configure an IP-based NFS share on server1.example.com that provides a newly created shared directory /nfsshare for the desktop1.example.com machine with read and write access for nfsnobody.
+
+        Start the NFS service on server1.example.com.
+
+        [root@server1 ~]# systemctl start nfs-server
+
+        Enable the NFS service to start at boot on server1.example.com.
+
+        [root@server1 ~]# systemctl enable nfs-server
+
+        Create the directory /nfsshare to be shared by NFS on the server1.example.com system.
+
+        [root@server1 ~]# mkdir /nfsshare
+
+        Change the ownership on the /nfsshare to user nfsnobody, so the directory is writable by nfsnobody.
+
+        [root@server1 ~]# chown nfsnobody /nfsshare
+
+        Change the /etc/exports configuration file on server1.example.com to share the newly created /nfsshare directory on the desktop1.example.com system with read and write access.
+
+        [root@server1 ~]# echo '/nfsshare desktop1.example.com(rw)' >>/etc/exports
+
+        Use the exportfs -r command to reload the /etc/exports configuration file on server1.example.com.
+
+        [root@server1 ~]# exportfs -r
+
+        Configure firewalld to allow access to the NFS service on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-service=nfs
+
+        Reload the firewalld configuration to allow access to the NFS service instantly on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --reload
+
+    Mount the NFS export from the server1.example.com system on the /mnt/nfsshare mount point on desktop1.example.com permanently.
+
+    Create the mount point /mnt/nfsshare on the desktop1.example.com system.
+
+    [root@desktop1 ~]# mkdir /mnt/nfsshare
+
+        Create the required entry in /etc/fstab to mount the exported NFS share on the newly created /mnt/nfsshare directory on the desktop1.example.com system permanently.
+
+        server1.example.com:/nfsshare /mnt/nfsshare nfs defaults 0 0
+
+        Mount the exported NFS share on the newly created /mnt/nfsshare directory on the desktop1.example.com system and verify the /etc/fstab entry works as expected.
+
+        [root@desktop1 ~]# mount -a
+
+        Verify that the NFS share mounted at /mnt/nfsshare is writable on the desktop1.example.com system.
+
+        [root@desktop1 ~]# touch /mnt/nfsshare/test.txt
+        [root@desktop1 ~]# ls -l /mnt/nfsshare
+        total 0
+        -rw-r--r--. 1 nfsnobody nfsnobody 0 May  8 04:14 test.txt
+
+    Unmount /mnt/nfsshare and remove the entry from /etc/fstab.
+
+2. Protect NFS Exports Lab
+
+In this lab, you use NFS to provide shared storage protected with Kerberos and SELinux. The NFS server exports a Kerberized NFS share on server1.example.com with SELinux labels. The NFS export is mounted on desktop1.example.com with krb5p security and SELinux labels available.
+
+    Reset the server1.example.com system.
+
+    Become root on your server1.example.com system.
+
+    [student@server1 ~]$ sudo -i
+
+    Set up your server system.
+
+    [root@server1 ~]# wget -O - http://instructor.example.com/pub/server1-nfssec.sh | bash
+
+    Become root on your desktop1.example.com system.
+
+    [student@desktop1 ~]$ sudo -i
+
+    Set up your desktop1.example.com system.
+
+    [root@desktop1 ~]# wget -O - http://instructor.example.com/pub/desktop1.nfssec.sh | bash
+
+    Configure the NFS server on server1.example.com to meet the following requirements:
+
+        Share the newly created /securenfs directory on server1.example.com with krb5p security.
+
+        Allow read and write access on the share from the desktop1.example.com system.
+
+        SELinux labels are exported.
+
+        The NFS share is mounted on the /mnt/secureshare desktop1.example.com with krb5p security and exported SELinux labels.
+
+        Preconfigured krb5 keytabs for the server1.example.com and desktop1.example.com systems are available at:
+
+        http://classroom.example.com/pub/keytabs/server1.keytab.
+
+        http://classroom.example.com/pub/keytabs/desktop1.keytab.
+
+    Configure NFS to share the newly created /securenfs directory on server1.example.com with krb5p security. Allow read and write access from the desktop1.example.com system. The SELinux labels on the shared directory are exported.
+
+        Install the keytab provided at http://classroom.example.com/pub/keytabs/server1.keytab on the server1.example.com system.
+
+        [root@server1 ~]# wget -O /etc/krb5.keytab http://classroom.example.com/pub/keytabs/server1.keytab
+
+        Enable NFS version 4.2 on the server1.example.com system to export the SELinux labels.
+
+        To do that, change the RPCNFSDARGS="" line in the /etc/sysconfig/nfs file to:
+
+        RPCNFSDARGS="-V 4.2"
+
+        Start the nfs-secure-server service on the server1.example.com system.
+
+        [root@server1 ~]# systemctl restart nfs-secure-server
+
+        Enable nfs-secure-server to start at system boot on server1.example.com.
+
+        [root@server1 ~]# systemctl enable nfs-secure-server
+
+        Create the directory /securenfs on server1.example.com.
+
+        [root@server1 ~]# mkdir /securenfs
+
+        Add the directory /securenfs to the /etc/exports file to export it with NFS. Enable krb5p security to secure access to the NFS share. Allow read and write access to the exported directory from the desktop1.example.com system.
+
+        [root@server1 ~]# echo '/securenfs desktop1.example.com(sec=krb5p,rw)' >>/etc/exports
+
+        Reload the /etc/exports file on the server1.example.com system.
+
+        [root@server1 ~]# exportfs -r
+
+        Configure firewalld to allow access to the NFS service on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-service=nfs
+
+        Reload the firewalld configuration to allow access to the NFS service instantly on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --reload
+
+    Mount the krb5p-secured NFS share permanently on the /mnt/secureshare mount point so that all exported SELinux labels are present on the desktop1.example.com system.
+
+        Install the keytab provided at http://classroom.example.com/pub/keytabs/desktop1.keytab on the desktop1.example.com system.
+
+        [root@desktop1 ~]# wget -O /etc/krb5.keytab http://classroom.example.com/pub/keytabs/desktop1.keytab
+
+        Start the nfs-secure service on desktop1.example.com to help with negotiating authentication with a Kerberized NFS share.
+
+        [root@desktop1 ~]# systemctl start nfs-secure
+
+        Enable the nfs-secure service to start at system boot on desktop1.example.com.
+
+        [root@desktop1 ~]# systemctl enable nfs-secure
+
+        Create the mount point /mnt/secureshare on the desktop1.example.com system.
+
+        [root@desktop1 ~]# mkdir /mnt/secureshare
+
+        Create the entry in the /etc/fstab file to mount the /securenfs share exported by the server1.example.com system on the /mnt/secureshare mount point on desktop1.example.com so that the SELinux labels from the share are shown on the mount point.
+
+        server1.example.com:/securenfs /mnt/secureshare nfs defaults,v4.2,sec=krb5p 0 0
+
+        Mount the exported NFS share on the newly created /mnt/secureshare directory on the desktop1.example.com system and verify the /etc/fstab entry works as expected.
+
+        [root@desktop1 ~]# mount -a
+
+    Test the setup with the newly created file /securenfs/testfile.txt with the content "Hello World" on the server1.example.com machine. Set the SELinux context to public_content_t on the file /securenfs/testfile.txt on server1.example.com. Change the ownership of the /securenfs/testfile.txt file to ldapuser1:ldapuser1 and the permissions to 644. Verify that the SELinux context and the permissions are present on the mounted share on the desktop1.example.com system. Verify that user ldapuser1 has read and write access on the /mnt/secureshare/testfile.txt file on desktop1.example.com.
+
+        Create a new file /securenfs/testfile.txt with the content "Hello World" on the server1.example.com machine.
+
+        [root@server1 ~]# echo "Hello World" > /securenfs/testfile.txt
+
+        Set the SELinux context to public_content_t on the file /securenfs/testfile.txt on server1.example.com.
+
+        [root@server1 ~]# chcon -t public_content_t /securenfs/testfile.txt
+
+        Change the ownership of the /securenfs/testfile.txt file to ldapuser1:ldapuser1 on server1.example.com.
+
+        [root@server1 ~]# chown ldapuser1:ldapuser1 /securenfs/testfile.txt
+
+        Change the permissions of the /securenfs/testfile.txt file to 644 on the server1.example.com system.
+
+        [root@server1 ~]# chmod 644 /securenfs/testfile.txt
+
+        Verify the SELinux context is exported on the desktop1.example.com system and available on the mounted share.
+
+        [root@desktop1 ~]# ls -Z /mnt/secureshare
+        -rw-r--r--. ldapuser1 ldapuser1 unconfined_u:object_r:public_content_t:s0 testfile.txt
+
+        Log in to the desktop1.example.com system as ldapuser1 with password kerberos by using SSH.
+
+        [root@desktop1 ~]# ssh ldapuser1@desktop1.example.com
+        ...
+        ldapuser1@desktop1.example.com's password: kerberos
+        Creating home directory for ldapuser1
+
+        Verify the file /mnt/secureshare/testfile.txt is writable by the Kerberos-authenticated ldapuser1.
+
+        [ldapuser1@desktop1 ~]$ echo "I can write" >>/mnt/secureshare/testfile.txt
+        [ldapuser1@desktop1 ~]$ cat /mnt/secureshare/testfile.txt
+        Hello World
+        I can write
+
+        Unmount the NFS filesystem and remove the entry from /etc/fstab
+
+        [root@desktop1 ~]# umount /mnt/secureshare
+
+        [root@desktop1 ~]# vi /etc/fstab
+
+3. Provide SMB File Shares
+
+In this lab, you use SMB to provide shared storage. You share a directory with SMB on server1.example.com according to the given requirements, and then mount it on desktop1.example.com.
+
+    Reset the server1.example.com system.
+
+    Become root on your server1.example.com system.
+
+    [student@server1 ~]$ sudo -i
+
+    Become root on your desktop1.example.com system.
+
+    [student@desktop1 ~]$ sudo -i
+
+    Configure a SMB share on the server1.example.com system according to the following requirements:
+
+        Share the newly created directory /smbshare with SMB.
+
+        Members of the auxiliary group marketing have read and write permissions on the share.
+
+        All users that are not member of the marketing group have read permission.
+
+        The Samba server is in the mycompany workgroup and the share name in Samba is smbshare.
+
+        Create the Samba-only user brian, who is part of the marketing team, with the password redhat.
+
+        Create the new Samba-only user rob with the password redhat, who is not part of the marketing team.
+
+    Deploy the required RPM packages to run the SMB service on server1.example.com.
+
+    [root@server1 ~]# yum -y install samba
+
+    Create the auxiliary system group marketing and the /smbshare directory on server1.example.com. The marketing system group owns the /smbshare directory. Adjust the permissions on the /smbshare directory to have the SGID bit set, and write is prohibited by others. The SELinux context type on the /smbshare directory and all newly created files and subdirectories is samba_share_t.
+
+        Create the auxiliary system group marketing on the server1.example.com system.
+
+        [root@server1 ~]# groupadd -r marketing
+
+        Create the /smbshare directory on server1.example.com.
+
+        [root@server1 ~]# mkdir -p /smbshare
+
+        Change the group ownership of the /smbshare directory to marketing on the server1.example.com system.
+
+        [root@server1 ~]# chgrp marketing /smbshare
+
+        Adjust the permissions on the /smbshare directory to have the SGID bit set, and write is prohibited by others.
+
+        [root@server1 ~]# chmod 2775 /smbshare
+
+        Add the directory /smbshare, and all files shown as follows, to the SELinux policy as a directory sharing files with SMB by setting its label to samba_share_t.
+
+        [root@server1 ~]# semanage fcontext -a -t samba_share_t '/smbshare(/.*)?'
+
+        Apply the SELinux rule for the /smbshare directory that was added in the previous step on server1.example.com.
+
+        [root@server1 ~]# restorecon -vvFR /smbshare
+        restorecon reset /smbshare context unconfined_u:object_r:default_t:s0->system_u:object_r:samba_share_t:s0
+
+    Change the /etc/samba/smb.conf configuration file on server1.example.com to reflect the configuration requested.
+
+        Modify or confirm the following:
+
+        [global]
+        ...
+         workgroup = mycompany
+        ...
+         security = user
+         passdb backend = tdbsam
+
+        Add a section at the end of the file as follows.
+
+        [smbshare]
+         path = /smbshare
+         write list = @marketing
+
+    Create the Samba-only user brian, who is part of the marketing team. The user brian has read and write access to the smbshare SMB share. A new Samba user rob is created, who is not part of the marketing team. The user rob has read access to the smbshare SMB share. Both newly added users have the SMB password redhat.
+
+        Install the samba-client RPM package because it contains smbpasswd.
+
+        [root@server1 ~]# yum -y install samba-client
+
+        Create the system user brian as a member of the auxiliary group marketing on server1.example.com.
+
+        [root@server1 ~]# useradd -s /sbin/nologin -G marketing brian
+
+        Add the SMB user brian to Samba. The Samba user is automatically mapped to the local system user brian.
+
+        [root@server1 ~]# smbpasswd -a brian
+        New SMB password:  redhat
+        Retype new SMB password:  redhat
+        Added user brian.
+
+        Create the system user rob on server1.example.com.
+
+        [root@server1 ~]# useradd -s /sbin/nologin rob
+
+        Add the SMB user rob to Samba. The Samba user is automatically mapped to the local system user rob.
+
+        [root@server1 ~]# smbpasswd -a rob
+        New SMB password:  redhat
+        Retype new SMB password:  redhat
+        Added user rob.
+
+    Start and enable the smb and nmb services, and allow access to them through the firewall on server1.example.com.
+
+        Start the smb and nmb services on the server1.example.com system.
+
+        [root@server1 ~]# systemctl start smb nmb
+
+        Enable the smb and nmb services to start at system boot on server1.example.com.
+
+        [root@server1 ~]# systemctl enable smb nmb
+
+        Configure firewalld to allow access to the SMB service on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-service=samba
+        success
+
+        [root@server1 ~]# firewall-cmd --reload
+        success
+
+    Verify the newly created SMB share works as expected on the desktop1.example.com system with the created Samba-only users brian and rob. The user brian has read and write access to the smbshare SMB share. The user rob has read access to the smbshare SMB share.
+
+        Install the cifs-utils package because it provides the mount.cifs command.
+
+        [root@desktop1 ~]# yum -y install cifs-utils
+
+        Create the mount point /mnt/brian on desktop1.example.com.
+
+        [root@desktop1 ~]# mkdir /mnt/brian
+
+        Mount the //server1.example.com/smbshare Samba share temporarily as user brian on the mount point /mnt/brian on the desktop1.example.com system.
+
+        [root@desktop1 ~]# mount -o username=brian //server1.example.com/smbshare /mnt/brian
+        Password for brian@//server1.example.com/smbshare:  redhat
+
+        Verify on desktop1.example.com that user brian has read and write access to the smbshare share provided by server1.example.com because he is a member of the marketing auxiliary group.
+
+        [root@desktop1 ~]# echo "Hello World" >/mnt/brian/brian1.txt
+        [root@desktop1 ~]# cat /mnt/brian/brian1.txt
+        Hello World
+
+        Create the mount point /mnt/rob on desktop1.example.com.
+
+        [root@desktop1 ~]# mkdir /mnt/rob
+
+        Mount the //server1.example.com/smbshare Samba share temporarily as user rob on the mount point /mnt/rob on the desktop1.example.com system.
+
+        [root@desktop1 ~]# mount -o username=rob //server1.example.com/smbshare /mnt/rob
+        Password for rob@//server1.example.com/smbshare:  redhat
+
+        Verify on desktop1.example.com that user rob has no write permission to the smbshare Samba share provided by the server1.example.com system.
+
+        [root@desktop1 ~]# touch /mnt/rob/rob1.txt
+        touch: cannot touch `/mnt/rob/rob1.txt´: Permission denied
+
+    Test if read access for Samba user rob works as expected on the /mnt/rob Samba share on the desktop1.example.com system.
+
+    [root@desktop1 ~]# cat /mnt/rob/brian1.txt
+    Hello World
+
+    Unmount the SMB filesystems
+
+    [root@desktop1 ~]# umount /mnt/rob /mnt/brian
+
+	Do not reset your server1.example.com system. You use it in the next lab.
+4. Perform a multiuser SMB Mount
+
+In this lab, you mount an SMB share provided by server1.example.com on the desktop1.example.com with the multiuser option.
+
+    Do not reset the server1.example.com system.
+
+    Become root on your server1.example.com system.
+
+    [student@server1 ~]$ sudo -i
+
+    Become root on your desktop1.example.com system.
+
+    [student@desktop1 ~]$ sudo -i
+
+    Mount the SMB share //server1.example.com/smbshare permanently on the desktop1.example.com system according to the following requirements:
+
+        The mount point on the desktop1.example.com system is the newly created directory /mnt/multiuser.
+
+        The SMB share is mounted with a newly created credentials file /root/smb-multiuser.txt. The credentials used to mount the SMB share are username brian and password redhat.
+
+        The SMB share is mounted with the multiuser mount option enabled.
+
+        The existing user brian on the desktop1.example.com system has a corresponding SMB account on server1.example.com. Associate the system user brian on the desktop1.example.com system with the SMB user brian on the server1.example.com system to access the /mnt/multiuser mount point. The password for brian is redhat. Verify that user brian has read and write access to the mounted SMB share.
+
+        The existing user rob on the desktop1.example.com system has a corresponding SMB account on server1.example.com. Associate the system user rob on the desktop1.example.com system with the SMB user rob on the server1.example.com system to access the /mnt/multiuser mount point. The password for rob is redhat. Verify that user rob has read but no write access to the mounted SMB share.
+
+    Install the cifs-utils RPM package on the desktop1.example.com system because it contains the cifscreds command required to store and forward authentication credentials to the Samba server with a multiuser mount.
+
+    [root@desktop1 ~]# yum -y install cifs-utils
+
+    Mount the Samba share permanently on the /mnt/multiuser mount point on desktop1.example.com and authenticate with a credentials file. Mount the Samba share with the credentials of user brian.
+
+        Create the mount point /mnt/multiuser on desktop1.example.com.
+
+        [root@desktop1 ~]# mkdir /mnt/multiuser
+
+        Create the credentials file /root/smb-multiuser.txt with the username and password of user brian on the desktop1.example.com system.
+
+        [root@desktop1 ~]# echo 'username=brian' >/root/smb-multiuser.txt
+        [root@desktop1 ~]# echo 'password=redhat' >>/root/smb-multiuser.txt
+
+        Create the entry in /etc/fstab to permanently mount the Samba share with the multiuser option as user brian on the /mnt/multiuser mount point on desktop1.example.com.
+
+        //server1.example.com/smbshare /mnt/multiuser cifs credentials=/root/smb-multiuser.txt,multiuser,sec=ntlmssp 0 0
+
+        Verify the entry in /etc/fstab to permanently mount the Samba share on desktop1.example.com is correct by mounting the share with the fstab entry.
+
+        [root@desktop1 ~]# mount /mnt/multiuser
+
+    Access the SMB multiuser mount /mnt/multiuser as the already existing user brian on desktop1.example.com. Automatically authenticate to Samba as the corresponding Samba user that exists with the same name on server1.example.com and has read and write permission on the SMB share.
+
+        Switch to user brian on the terminal on desktop1.example.com.
+
+        [root@desktop1 ~]# useradd brian
+        [root@desktop1 ~]# su - brian
+
+        Try to write to the /mnt/multiuser mount point with user brian on the desktop1.example.com system.
+
+        [brian@desktop1 ~]$ touch /mnt/multiuser/testfile.txt
+        touch: cannot touch `test.txt´: Permission denied
+
+        Record the Samba credentials for the local user brian with the cifscreds command on desktop1.example.com.
+
+        [brian@desktop1 ~]$ cifscreds add server1.example.com
+        Password:  redhat
+
+        Verify user brian has read and write permission on the mount point /mnt/multiuser on desktop1.example.com.
+
+        [brian@desktop1 ~]$ echo "Multiuser" >/mnt/multiuser/brian2.txt
+        [brian@desktop1 ~]$ cat /mnt/multiuser/brian2.txt
+        Multiuser
+
+        Exit the shell on the desktop1.example.com system.
+
+        [brian@desktop1 ~]$ exit
+        [root@desktop1 ~]#
+
+    Access the SMB multiuser mount /mnt/multiuser as the existing user rob on desktop1.example.com. Automatically authenticate to Samba as the corresponding Samba user rob that exists on server1.example.com with the same name and has read permission on the SMB share.
+
+        Switch to user rob on the terminal. .
+
+        [root@desktop1 ~]# useradd rob
+        [root@desktop1 ~]# su - rob
+
+        Record the Samba credentials for the local user rob with cifscreds on desktop1.example.com.
+
+        [rob@desktop1 ~]$ cifscreds add server1.example.com
+        Password:  redhat
+
+        Verify user rob has read but no write permission on the mount point /mnt/multiuser on desktop1.example.com.
+
+        [rob@desktop1 ~]$ echo "Multiuser" >/mnt/multiuser/rob2.txt
+        -bash: /mnt/multiuser/rob2.txt: Permission denied
+        [rob@desktop1 ~]$ cat /mnt/multiuser/brian2.txt
+        Multiuser
+        [rob@desktop1 ~]$ exit
+
+    Unmount the SMB filesystem.
+
+    [root@desktop1 ~]# umount /mnt/multiuser
+
+
+

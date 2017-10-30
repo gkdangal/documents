@@ -1,0 +1,6 @@
+---
+-hosts: 
+ vars: web server
+ 	https_port: 80
+ 	max_client: 200
+ 	

@@ -1,0 +1,187 @@
+Lab
+1. Install and Update Software with yum
+
+In this lab, you install and remove packages and package groups.
+
+    Log in to your server system as root and search for a specific package.
+
+        Attempt to run the command gnuplot. You should find that it is not installed.
+
+        [root@server1 ~]# gnuplot
+        bash:gnuplot: command not found...
+
+        Search for plotting packages.
+
+        [root@server1 ~]# yum search plot
+        Loaded plugins:langpacks
+        ======================= N/S matched:plot =======================
+        emacs-gnuplot.noarch :Emacs bindings for the gnuplot main application
+        gnuplot.x86_64 :A program for plotting mathematical expressions and data
+        gnuplot-common.x86_64 :The common gnuplot parts
+        python-matplotlib.x86_64 :Python 2D plotting library
+        texlive-pst-plot.noarch :Plot data using PSTricks
+
+          Name and summary matches only, use "search all" for everything.
+
+        Find out more information about the gnuplot package.
+
+        [root@server1 ~]# yum info gnuplot
+        Name       :gnuplot
+        Arch       :x86_64
+        ...
+
+    Install the gnuplot package.
+
+    [root@server1 ~]# yum install -y gnuplot
+    ...
+    Dependencies Resolved
+
+    =============================================================================
+     Package               Arch          Version          Repository       Size
+    =============================================================================
+    Installing:
+     gnuplot               x86_64        4.6.2-3.el7       rhel_dvd        645 k
+    Installing for dependencies:
+     gnuplot-common        x86_64        4.6.2-3.el7       rhel_dvd        595 k
+
+    Transaction Summary
+    =============================================================================
+    Install  1 Package (+1 Dependent package)
+    ...
+
+    Remove packages.
+
+        Attempt to remove the gnuplot package, but say no. How many packages would be removed?
+
+        [root@server1 ~]# yum remove gnuplot
+        ...
+        Removing:
+         gnuplot       x86_64       4.6.2-3.el7       @rhel_dvd       1.5 M
+
+        Transaction Summary
+        =======================================================================
+        Remove  1 Package
+
+        Installed size:1.5 M
+        Is this ok [y/N]:n
+
+        Attempt to remove the gnuplot-common package, but say no. How many packages would be removed?
+
+        [root@server1 ~]# yum remove gnuplot-common
+        ...
+        Removing:
+         gnuplot-common      x86_64      4.6.2-3.el7      @rhel_dvd      1.4 M
+        Removing for dependencies:
+         gnuplot             x86_64      4.6.2-3.el7      @rhel_dvd      1.5 M
+
+        Transaction Summary
+        ========================================================================
+        Remove  1 Package (+1 Dependent package)
+
+        Installed size:2.9 M
+
+        Is this ok [y/N]:n
+
+    Gather information about the "Compatibility Libraries" component group and install it on server1.example.com.
+
+        List all available component groups.
+
+        [root@server1 ~]# yum grouplist
+
+        Find out more information about the Compatibility Libraries component group, including a list of included packages.
+
+        [root@server1 ~]# yum groupinfo "Compatibility Libraries"
+        Loaded plugins:langpacks
+
+        Group:Compatibility Libraries
+         Group-Id:compat-libraries
+         Description:Compatibility libraries for applications built on previous versions of Red Hat Enterprise Linux.
+         Mandatory Packages:
+           +compat-db47
+           +compat-glibc
+           +compat-libcap1
+           +compat-libf2c-34
+           +compat-libgfortran-41
+           +compat-libtiff3
+           +compat-openldap
+           +libpng12
+           +openssl098e
+
+        Install the Compatibility Libraries component group.
+
+        [root@server1 ~]# yum groupinstall "Compatibility Libraries"
+        Loaded plugins:langpacks
+        Resolving Dependencies
+        --> Running transaction check
+        ---> Package compat-db47.x86_64 0:.7.25-27.el7 will be installed
+        --> Processing Dependency:compat-db-headers = 4.7.25-27.el7 for package: compat-db47-4.7.25-27.el7.x86_64
+        ...
+        Dependencies Resolved
+
+        ======================================================================
+         Package                    Arch        Version             Repository
+        ======================================================================
+        Installing for group install "Compatibility Libraries":
+         compat-db47                x86_64      4.7.25-27.el7       rhel_dvd
+         libpng12                   x86_64      1.2.50-6.el7        rhel_dvd
+        ...
+        Installing for dependencies:
+         compat-db-headers          noarch      4.7.25-27.el7       rhel_dvd
+        ...
+
+        Transaction Summary
+        ======================================================================
+        Install  9 Packages (+3 Dependent packages)
+
+        Total download size:5.5 M
+        Installed size:21 M
+        Is this ok [y/d/N]:y
+        ...
+        Installed:
+          compat-db47.x86_64 0:.7.25-27.el7
+          compat-glibc.x86_64 1:.12-4.el7
+        ...
+
+        Dependency Installed:
+          compat-db-headers.noarch 0:.7.25-27.el7
+          compat-glibc-headers.x86_64 1:.12-4.el7
+
+        Complete!
+
+    Explore the history and undo options of yum.
+
+        Display recent yum history.
+
+        [root@server1 ~]# yum history
+        Loaded plugins:langpacks
+        ID     | Login user        | Date and time    | Action(s)  | Altered
+        -----------------------------------------------------------------------
+             3 | root <root>       | 2014-06-05 09:3 | Install    |   12
+             2 | root <root>       | 2014-06-05 09:0 | Install    |    2
+             1 | System <unset>    | 2014-06-02 20:7 | Install    | 1112 EE
+        history list
+
+        Confirm that the last transaction is the group installation. Replace 1 in the following command with the highest number in the ID column of the previous command output.
+
+        [root@server1 ~]# yum history info 1
+        Loaded plugins:langpacks
+        Transaction ID :3
+        Begin time     :Thu Jun  5 09:33:19 2014
+        Begin rpmdb    :1210:7c6b529424621773d5fe147315a53d558f726814
+        End time       :           09:33:40 2014 (21 seconds)
+        End rpmdb      :1222:c283bc776b18b9578b87cdec68853f49b31ca0cc
+        User           :root <root>
+        Return-Code    :Success
+        Command Line   :groupinstall Compatibility Libraries
+        Transaction performed with:
+            Installed     rpm-4.11.1-16.el7.x86_64 installed
+            Installed     yum-3.4.3-117.el7.noarch installed
+        Packages Altered:
+            Dep-Install compat-db-headers-4.7.25-27.el7.noarch    @rhel_dvd
+            Install     compat-db47-4.7.25-27.el7.x86_64          @rhel_dvd
+        ...
+        history info
+
+    Use undo options to remove the last set of packages installed. Replace X with the same number as before.
+
+    [root@server1 ~]# yum history undo 1

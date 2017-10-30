@@ -1,0 +1,126 @@
+About Ansible Foundations Lab
+1. Set Up Lab Environment
+1.1. Provision Lab Environment
+
+Before you can run these labs, you need to provision the lab environment.
+
+    Access the OPENTLC lab portal, which is built on top of Red Hat CloudForms.
+
+    Use your credentials to log in.
+    	
+
+    If you do not remember your username or password, reset your credentials or obtain a username reminder.
+
+    After you log in, navigate to Services → Catalogs → All Services → OPENTLC Cloud Infrastructure Labs.
+
+    On the left side of the screen, locate Ansible Foundations Lab and click Order, which appears on the right.
+
+    On the next screen, on the lower right side, click Submit to order your Ansible Foundations environment.
+
+    Check your email for a message from Red Hat describing how to connect to the environment.
+
+    Wait about 20 minutes to allow the environment to build.
+
+1.2. Review Lab Environment
+
+In this course, the main computer system used for hands-on learning activities is workstation. You also use three other machines for these activities: servera, serverb, and tower. All four of these systems are in the example.com DNS domain.
+
+You use the following credentials in the labs:
+Account	Username	Password
+
+Student account
+	
+
+student
+	
+
+student
+
+Root account
+	
+
+root
+	
+
+redhat
+	You can only log in to the workstation system from outside the lab environment with SSH. You cannot log in directly as student or root. You must use your OPENTLC SSO username and SSH key.
+
+You use the following machines in the labs:
+Classroom Machines	IP Addresses	Purpose
+
+workstation.lab.example.com
+	
+
+192.168.1.1
+	
+
+Workstation used as a control node
+
+tower.lab.example.com
+	
+
+192.168.1.10
+	
+
+Host used as Ansible Tower server
+
+servera.lab.example.com
+	
+
+192.168.1.21
+	
+
+Host managed with Ansible
+
+serverb.lab.example.com
+	
+
+192.168.1.22
+	
+
+Host managed with Ansible
+2. Access Lab Environment
+2.1. Set Up SSH
+
+To access your workstation system via SSH, use your personal OPENTLC SSO username and public SSH key.
+	Unless otherwise noted, you cannot use SSH to connect directly as root.
+
+If you have not already done so, you must provide a public SSH key.
+
+    Go to https://www.opentlc.com/update and log in.
+
+    Paste your public key in the appropriate field.
+
+	For more information on generating an SSH key, see: Setting Up an SSH Key Pair.
+2.2. Access Environment With SSH
+
+    Use SSH to remotely connect to the lab workstation. Use your private SSH key and your OPENTLC SSO username:
+
+    # ssh -i path-to-your-ssh-key your-sso-login@workstation-GUID.rhpds.opentlc.com
+
+    	When entering commands, replace GUID with your personal GUID, which is provided at the top of the lab provisioning email you received from Red Hat.
+    	To avoid problems, always use the FQDN hostname and not the IP or Ravello DNS entry when using SSH to connect to your OPENTLC lab hosts.
+
+2.3. Use Kerberos Authentication Instead of SSH Keys (Advanced)
+
+If you have problems using SSH keys, use Kerberos authentication instead. To do this you must be running on a UNIX/Linux or macOS host.
+	Windows hosts can support Kerberos, but it is beyond the scope of this class to provide instructions for implementing it.
+
+    Make sure you have the following settings in /etc/krb5.conf on your host (not in the lab environment):
+
+    dns_lookup_realm = true
+    dns_lookup_kdc = true
+
+    Use the following command to obtain a Kerberos ticket:
+
+    $ kinit your-sso-login@OPENTLC.COM
+    <enter your OPENTLC SSO password>
+
+    	Capitalize all letters of OPENTLC.COM, as shown.
+
+    Use SSH to remotely connect to your host without specifying the -i flag:
+
+    # ssh your-sso-login@workstation-GUID.rhpds.opentlc.com
+
+
+Build Version: 1.6R : Last updated 2017-10-02 17:00:03 EDT

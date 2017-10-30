@@ -1,0 +1,257 @@
+Providing Remote Block Storage Lab
+1. Provide iSCSI Targets
+
+In this lab, you configure a Red Hat Enterprise Linux server to become an iSCSI target server, including opening firewall access, creating a backing store, and setting target and LUN access parameters.
+
+    Reset your server1.example.com system.
+
+    Log in to your server1.example.com system and become root.
+
+    [student@server1 ~]$ su
+
+    Prepare the server system to become an iSCSI target server by installing the target configuration utility, starting the target service and opening the firewall for the iSCSI server port.
+
+        Install the targetcli RPM.
+
+        [root@server1 ~]# yum -y install targetcli
+
+        Enable and start the target service.
+
+        [root@server1 ~]# systemctl enable target; systemctl start target
+
+        Open the iSCSI server port on the firewall as a permanent change. Reload the configuration for immediate use.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-port=3260/tcp
+        [root@server1 ~]# firewall-cmd --reload
+
+    Create the physical disk structure to use as a backing store device for a target to be created in a later step. Partition a disk, build a volume group, and create a logical volume.
+
+        Create a 1 GB partition using the second physical disk on the server system.
+
+        [root@server1 ~]# fdisk /dev/vdb
+
+        Use fdisk to create a new primary partition with a size of 1 GB. Use the partition tag appropriate for use as a Linux LVM partition ("8e"). Remember to write before exiting. This exercise uses the expected partition name /dev/vdb1.
+
+        Create a logical volume manager volume group named iSCSI_vg using the partition created in the previous step.
+
+        [root@server1 services]# pvcreate /dev/vdb1
+        [root@server1 services]# vgcreate iSCSI_vg /dev/vdb1
+        [root@server1 services]# vgdisplay iSCSI_vg
+
+        Create a 100 MiB logical volume named disk1_lv in the new volume group.
+
+        [root@server1 ~]# lvcreate -n disk1_lv -L 100m iSCSI_vg
+        [root@server1 ~]# lvdisplay iSCSI_vg/disk1_lv
+
+    Go into targetcli's interactive mode to configure the iSCSI target.
+
+    [root@server1 ~]# targetcli
+
+    Configure the existing /dev/iSCSI_vg/disk1_lv logical volume as a block-type backing store. Use the name server1.example.com.disk1 for the backstore, replacing 1 with your system number.
+
+    /> /backstores/block/ create server1.example.com.disk1 /dev/iSCSI_vg/disk1_lv
+
+        Create a unique iSCSI Qualified Name (IQN) for the target. The target will be iqn.2014-06.com.example:server1.example.com.
+
+        /> /iscsi create iqn.2014-06.com.example:server1.example.com
+
+        Creating the IQN name automatically created a default target portal group named tpg1.
+
+    Create an ACL for the client node (initiator). The initiator will be connecting with it’s initiator name set to iqn.2014-06.com.example:desktop1.example.com.
+
+    /> /iscsi/iqn.2014-06.com.example:server1.example.com/tpg1/acls/ create iqn.2014-06.com.example:desktop1.example.com
+
+    Create a LUN under the target, the LUN should use the previously defined backing storage device named server1.example.com.disk1.
+
+    /> /iscsi/iqn.2014-06.com.example:server1.example.com/tpg1/luns create /backstores/block/server1.example.com.disk1
+
+    Configure a portal for the target to listen on 192.168.0.101, port 3260.
+
+    /> /iscsi/iqn.2014-06.com.example:server1.example.com/tpg1/portals create 192.168.0.101
+
+    View, verify, and save the target server configuration.
+
+        View and verify the configuration.
+
+        /> ls
+        o- / ............................................................. [...]
+          o- backstores .................................................. [...]
+          | o- block ...................................... [Storage Objects: 1]
+          | | o- server1.example.com.disk1 .....
+                   .....[/dev/iSCSI_vg/disk1_lv (100.0MiB) write-thru activated]
+          | o- fileio ..................................... [Storage Objects: 0]
+          | o- pscsi ...................................... [Storage Objects: 0]
+          | o- ramdisk .................................... [Storage Objects: 0]
+          o- iscsi ................................................ [Targets: 1]
+          | o- iqn.2014-06.com.example:server1 ....................... [TPGs: 1]
+          |   o- tpg1 ................................... [no-gen-acls, no-auth]
+          |     o- acls .............................................. [ACLs: 1]
+          |     | o- iqn.2014-06.com.example:desktop1 ......... [Mapped LUNs: 1]
+          |     | | o- mapped_lun0 ............ [lun1 block/server1.example.com.disk1 (rw)]
+          |     o- luns .............................................. [LUNs: 1]
+          |     | o- lun0 ...... [block/server1.example.com.disk1 (/dev/iSCSI_vg/disk1_lv)]
+          |     o- portals ........................................ [Portals: 1]
+          |       o- 192.168.0.101:3260 ..................................... [OK]
+          o- loopback ............................................. [Targets: 0]
+
+        Exit and save the configuration to the default /etc/target/saveconfig.json.
+
+        /> exit
+
+	Do not reset your server1.example.com host at this point. You use the outcome of this lab in the next lab.
+	A practical method to test this configuration is to install the iSCSI client tools package and perform a discovery from a separate client system. This is presented in the next lab (Access iSCSI Storage). Although an iSCSI client configuration can be installed on this target server, an administrator must ensure that any iSCSI node records created during test discoveries are deleted prior to target discovery from client systems. These procedures are presented in the iSCSI Initiator Introduction slides earlier in this module.
+2. Access iSCSI Storage
+
+In this lab, you discover targets on an iSCSI target portal, then practice manual and automatic login and logout of an iSCSI target.
+
+    Prepare the client system to become an iSCSI initiator node by installing the initiator utilities, setting the unique iSCSI client name, and starting the iSCSI client service.
+
+    On desktop1.example.com, switch user to root.
+
+        Install the iscsi-initiator-utils RPM, if not already installed.
+
+        [root@desktop1 ~]# yum install -y iscsi-initiator-utils
+
+        Create a unique iSCSI Qualified Name for the client initiator by modifying the InitiatorName setting in /etc/iscsi/initiatorname.iscsi. Use the client system name as the optional string after the colon.
+
+        [root@desktop1 ~]# echo "InitiatorName=iqn.2014-06.com.example:desktop1.example.com" > /etc/iscsi/initiatorname.iscsi
+        [root@desktop1 ~]# cat /etc/iscsi/initiatorname.iscsi
+        InitiatorName=iqn.2014-06.com.example:desktop1.example.com
+
+        Enable and start the iscsi client service.
+
+        [root@desktop1 ~]# systemctl enable iscsi; systemctl start iscsi
+
+    Discover and log in to the configured target from the iSCSI target server.
+
+        Discover the configured iSCSI target(s) provided by the iSCSI target server portal.
+
+        [root@desktop1 ~]# iscsiadm -m discovery -t st -p 192.168.0.101
+        192.168.0.101:3260,1 iqn.2014-06.com.example:server1.example.com
+
+        Log in to the presented iSCSI target.
+
+        [root@desktop1 ~]# iscsiadm -m node -T iqn.2014-06.com.example:server1.example.com -p 192.168.0.101 -l
+
+        Identify the newly available block device created by the iSCSI target login.
+
+        [root@desktop1 ~]# dmesg|tail
+        ...OMITTED...
+        [91737.871506] scsi 2:0:0:0: Attached scsi generic sg1 type 0
+        [91738.097103] sd 2:0:0:0: [sda] 204800 512-byte logical blocks: (104 MB/100 MiB)
+        [91738.104731] sd 2:0:0:0: [sda] Write Protect is off
+        [91738.105960] sd 2:0:0:0: [sda] Mode Sense: 43 00 10 08
+        [91738.108551] sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+        [91738.137092]  sda: unknown partition table
+        [91738.151598] sd 2:0:0:0: [sda] Attached SCSI disk
+        [root@desktop1 ~]# lsblk
+        NAME                       MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+        fd0                          2:0    1    4K  0 disk
+        sda                          8:0    0  100M  0 disk
+        ...OMITTED...
+        [root@desktop1 ~]# tail /var/log/messages
+        ...OMITTED...
+        Dec  3 13:55:31 desktop1 kernel: sda: unknown partition table
+        Dec  3 13:55:31 desktop1 kernel: sd 2:0:0:0: [sda] Attached SCSI disk
+        Dec  3 13:55:31 desktop1 iscsid: Connection1:0 to [target: iqn.2014-06.com.example:server1, portal: 192.168.0.101,3260] through [iface: default] is operational now
+
+    Browse the connection information about the target portal, connection, and parameters used by the connected device. Locate the node record.
+
+        List the targets recognized by the iscsi service.
+
+        [root@desktop1 ~]# iscsiadm -m session -P 3
+        iSCSI Transport Class version 2.0-870
+        version 6.2.0-873-21
+        Target: iqn.2014-06.com.example:server1.example.com
+                Current Portal: 192.168.0.101:3260,1
+                Persistent Portal: 192.168.0.101:3260,1
+                        **********
+                        Interface:
+                        **********Resources
+                        Iface Name: default
+                        Iface Transport: tcp
+                        Iface Initiatorname: iqn.2014-06.com.example:desktop1.example.com
+                        Iface IPaddress: 192.168.0.1
+                        Iface HWaddress: <empty>
+                        Iface Netdev: <empty>
+                        SID: 3
+                        iSCSI Connection State: LOGGED IN
+                        iSCSI Session State: LOGGED_IN
+                        Internal iscsid Session State: NO CHANGE
+                        ************************
+                        Negotiated iSCSI params:
+                        ************************
+                        HeaderDigest: None
+                        DataDigest: None
+                        MaxRecvDataSegmentLength: 262144
+                        MaxXmitDataSegmentLength: 8192
+                        FirstBurstLength: 65536
+                        MaxBurstLength: 262144
+                        ImmediateData: Yes
+                        InitialR2T: Yes
+                        MaxOutstandingR2T: 1
+                        ************************
+                        Attached SCSI devices:
+                        ************************
+                        Host Number: 5  State: running
+                        scsi5 Channel 00 Id 0 Lun: 0
+                        scsi5 Channel 00 Id 0 Lun: 1
+                                Attached scsi disk sdb          State: running
+
+        Change directory to the location of the iSCSI node records for the remainder of this exercise. Locate the persistent node record for the new iSCSI target.
+
+        [root@desktop1 ~]# cd /var/lib/iscsi/nodes
+        [root@desktop1 nodes]$ ls -lR
+
+        View the connection parameters defaults in an iSCSI node record.
+
+        [root@desktop1 nodes]# less iqn.2014-06.com.example:server1/192.168.0.101,3260,1/default
+
+    Connect to and disconnect from the target, using both manual commands and methods that use the node record(s) to connect automatically.
+
+        Disconnect the iSCSI block device by logging out of the iSCSI target. Confirm that the corresponding iSCSI block device has disappeared.
+        	In this exercise, the block device was not formatted or otherwise used. If the device is in use, unmount it properly before continuing.
+
+        [root@desktop1 nodes]# iscsiadm -m node -T iqn.2014-06.com.example:server1.example.com -p 192.168.0.101 -u
+        [root@desktop1 nodes]$ lsblk
+
+        Confirm that the node record for the disconnected iSCSI target still exists.
+
+        [root@desktop1 nodes]# ls -lR
+
+        Restart the iscsi client service. Confirm that the iSCSI block device returns. The iscsi performs logins for all node records found.
+
+        [root@desktop1 nodes]# systemctl restart iscsi
+        [root@desktop1 nodes]# lsblk
+
+        Disconnect the iSCSI block device again by logging out of the iSCSI target. Additionally, delete the node record using the proper command. Confirm that the iSCSI block device has again disappeared.
+
+        [root@desktop1 nodes]# iscsiadm -m node -T iqn.2014-06.com.example:server1.example.com -p 192.168.0.101 -u
+        [root@desktop1 nodes]# iscsiadm -m node -T iqn.2014-06.com.example:server1.example.com -p 192.168.0.101 -o delete
+        [root@desktop1 nodes]# lsblk
+
+        Confirm that the node record for the disconnected iSCSI target no longer exists.
+
+        [root@desktop1 nodes]# ls -lR
+
+        Restart the iscsi client service. Confirm that the iSCSI block device does not return since there is no node record to trigger the target login.
+
+        [root@desktop1 nodes]# systemctl restart iscsi
+        [root@desktop1 nodes]# lsblk
+
+    Rediscover the target and confirm that the discovery step alone creates the node record(s).
+
+        Rediscover the configured iSCSI targets provided by a specific iSCSI target server portal, but do not log in to the target.
+
+        [root@desktop1 nodes]# iscsiadm -m discovery -t st -p 192.168.0.101
+        192.168.0.101:3260,1 iqn.2014-06.com.example:server1.example.com
+
+        Confirm that the node record for the iSCSI target is created by discovery, even before login has occurred.
+
+        [root@desktop1 nodes]# ls -R
+
+        Clean up by deleting the node record again. Confirm that the node record no longer exists. When finished, return to your home directory.
+
+        [root@desktop1 nodes]# iscsiadm -m node -T iqn.2014-06.com.example:server1.example.com -p 192.168.0.101 -o delete
+        [root@desktop1 nodes]# ls -lR
+        [root@desktop1 nodes]# cd ~

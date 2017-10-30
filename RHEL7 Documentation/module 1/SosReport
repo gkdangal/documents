@@ -1,0 +1,70 @@
+2. Create and View an SoS Report
+
+In this lab, you use the sosreport command to generate an SoS report, and then view the contents of that diagnostic archive.
+
+    On server1.example.com, switch to the root user:
+
+    [student@server1 ~]$ su -
+    Password:r3dh@t1!
+
+    Run the sosreport command. This may take many minutes on larger systems.
+
+    [root@server1 ~]# sosreport
+
+    sosreport (version 3.0)
+
+      This command will collect system configuration and
+    diagnostic information from this Red Hat Enterprise Linux
+    system. An archive containing the collected information
+    will be generated in /var/tmp and may be provided to a Red
+    Hat support representative or used for local diagnostic or
+    recording purposes.
+
+      Any information provided to Red Hat will be treated in
+    strict confidence in accordance with the published support
+    policies at:
+
+        https://access.redhat.com/support/
+
+      The generated archive may contain data considered
+    sensitive and its content should be reviewed by the
+    originating organization before being passed to any third party.
+
+      No changes will be made to system configuration.
+
+    Press ENTER to continue, or CTRL-C to quit. ENTER
+
+    Please enter your first initial and last name [server1.example.com.example.com]:yourname
+    Please enter the case number that you are generating this report for:01034421
+
+    Press Enter and provide the requested information. Make up a value for the case number.
+
+    Running 17/74:general...
+    Creating compressed archive...
+
+    Your sosreport has been generated and saved in:
+    /var/tmp/sosreport-yourname.01034421-20140129000049.tar.xz
+
+    The checksum is:b2e78125290a4c791162e68da8534887
+
+    Please send this file to your support representative.
+
+    Change directory to /var/tmp, and unpack the archive.
+
+    [root@server1 ~]# cd /var/tmp
+    [root@server1 tmp]# tar -xvJf sosreport-*.tar.xz
+
+    Change directory to the resulting subdirectory and browse the files found there.
+
+    [root@server1 ~]# cd sosreport-yourname.01034421-20140129000049
+    [root@server1 sosreport-yourname.01034421-20140129000049]# ls -lR
+
+    Open files, list directories, and continue to browse to become familiar with the information included in SoS reports.
+    	When creating a support case, you would attach the original archived and compressed file as diagnostic information.
+
+    When you are finished exploring the SoS report, remove the archive directory and files and return to your home directory.
+
+    [root@server1 sosreport-yourname.01034421-20140129000049]# cd /var/tmp
+    [root@server1 tmp]# rm -rf sosreport*
+    [root@server1 tmp]# exit
+    [student@server1 ~]$

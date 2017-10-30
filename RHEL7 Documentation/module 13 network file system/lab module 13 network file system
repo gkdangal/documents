@@ -1,0 +1,315 @@
+Mounting Network File Systems Labs
+1. Mount and Unmount NFS
+
+In this lab, you manually mount a Kerberos-secured NFS share, access it, and optionally unmount it. Then you create a persistent share mount in /etc/fstab, mount it, and access it. server1.example.com is the NFSv4 host.
+
+S.H.I.E.L.D. (Storage Hardware Incorporating Every Last Document) uses a central server, server1.example.com, to host a number of document share directories. Access to most directories is via LDAP-based users, authenticating using Kerberos; however, a number of shares are using standard Linux file access security. Users need to be able to log in and mount the manual NFS share, and should have the public NFS share available constantly.
+
+Here are the key details you need:
+
+    Username: ldapuser1
+
+    Password: kerberos
+
+    server1.example.com is sharing two directories under /shares: manual and public
+
+    desktop1.example.com mount point: /mnt/public and /mnt/manual
+
+    The public NFS share requires krb5p authentication to access; manual is using sys security.
+
+    The krb5.keytab is available from http://instructor.example.com/pub/keytabs/desktop1.keytab.
+
+    Each share should have read and write access.
+
+        Prepare the environment.
+
+            Reset the server1.example.com system, then log in as root and set up the system.
+
+            [root@server1 ~]# wget -O - http://instructor.example.com/pub/server1-nfs.sh | bash
+
+            	The server1.example.com setup is used for both labs in this module. It only needs to be run once.
+
+            Open a terminal on desktop1.example.com.
+
+        Download and install the krb5.keytab file to enable Kerberos access and security.
+
+        [student@desktop1 ~]$ sudo wget -O /etc/krb5.keytab
+        http://instructor.example.com/pub/keytabs/desktop1.keytab
+
+        Enable and start the nfs-secure service.
+
+        [student@desktop1 ~]$ sudo systemctl enable nfs-secure
+        ln -s '/usr/lib/systemd/system/nfs-secure.service'  ...
+        [student@desktop1 ~]$ sudo systemctl start nfs-secure
+
+        Use mkdir to create both mount points: /mnt/public and /mnt/manual.
+
+        [student@desktop1 ~]$ mkdir -p /mnt/{public,manual}
+
+        Create the persistent mount. This mount will only be accessible to authenticated users.
+
+            Use vim to edit the /etc/fstab file.
+
+            [student@desktop1 ~]$ sudo vim /etc/fstab
+
+            Add this line to the end of the file:
+
+            server1.example.com:/shares/public  /mnt/public  nfs  sec=krb5p,sync  0 0
+
+            Use mount to mount the share and begin using it.
+
+            [student@desktop1 ~]$ sudo mount -a
+
+        Use mount to manually mount /shares/manual on /mnt/manual. Since you already have a kerberized NFSv4 mount from the same server you will need to specify the sec=sys option.
+
+        [student@desktop1 ~]$ sudo mount -o sync,sec=sys server1.example.com:/shares/manual /mnt/manual
+
+        Use ssh to switch to ldapuser1 on localhost and confirm the mounts, and read/write access.
+        	Do not use su, or sudo as you will not get the proper kerberos credentials.
+
+            Use ssh to log in as ldapuser1.
+
+            [student@desktop1 ~]$ ssh ldapuser1@localhost
+
+            If you see something similar to the following, type yes to accept and continue.
+
+            The authenticity of host \'localhost (::1)' can't be established.
+            ECDSA key fingerprint is d9:cc:73:82:3b:8a:74:e4:11:2f:f3:2b:03:a4:46:4d.
+            Are you sure you want to continue connecting (yes/no)? yes
+
+            Enter the password: kerberos.
+
+            ldapuser1@localhost's password: kerberos
+
+            Use cd to switch directories.
+
+            [ldapuser1@desktop1 ~]$ cd /mnt/manual
+
+            Use echo and cat to verify read and write access.
+
+            [ldapuser1@desktop1 manual]$ echo hello > test.txt
+            [ldapuser1@desktop1 manual]$ cat test.txt
+            hello
+
+            Repeat this step to test /mnt/public and then use exit or Ctrl+D to log out of ldapuser1.
+
+            Repeat steps d through f as student to verify you can switch to both share directories and confirm you have read/write access on both directories.
+
+                You should be able to change directory and list /mnt/manual, but get Permission denied on /mnt/public because student cannot authenticate using Kerberos.
+
+                Instead of test.txt, use something like test2.txt, since student is not allowed to write to files owned by ldapuser1.
+
+        When you are finished using the network storage, use the umount command to manually unmount the NFS shares. Do this now and also remove the entry added to /etc/fstab as a part of this lab.
+
+        [student@desktop1 ~]$ sudo umount /mnt/manual
+        [student@desktop1 ~]$ sudo umount /mnt/public
+        [student@desktop1 ~]$ vim /etc/fstab
+
+2. Automount NFS
+
+In this lab, you install a package to support automount. Create a direct-map automount and an indirect-map automount using wildcards. server1.example.com is the NFSv4 host.
+	The server1.example.com setup you performed at the beginning of the previous lab is used for this lab as well. If you have not yet performed the server setup, then run it now. It only needs to be run once for both labs.
+
+S.H.I.E.L.D. (Storage Hardware Incorporating Every Last Document) uses a central server, server1.example.com, to host a number of document share directories. Access to these directories is via LDAP-based users, authenticating using Kerberos with encryption. Users need to be able to log in and have the share directories automount with read and write access, ready for use.
+
+Here are the key details you will need:
+
+    Username: ldapuser1
+
+    Password: kerberos
+
+    server1.example.com is sharing three directories under /shares: docs, work, and public.
+
+    File access is secured using Kerberos with encryption: krb5p.
+
+    desktop1.example.com mount point: /shares for docs and work and a direct map of public to /mnt/public.
+
+    Note that the krb5.keytab was downloaded and should still be installed from the previous lab. This is is still required for this lab to work.
+
+    Each share should have read and write access.
+
+        Open a terminal to desktop1.example.com.
+
+        Make sure /etc/krb5.keytab is in place.
+
+        [student@desktop1 ~]$ ls -al /etc/krb5.keytab
+
+        Make sure the nfs-secure service is enabled and running.
+
+        [student@desktop1 ~]$ sudo systemctl enable nfs-secure
+        ln -s '/usr/lib/systemd/system/nfs-secure.service'  ...
+        [student@desktop1 ~]$ sudo systemctl status nfs-secure
+
+        Use yum to install autofs, needed for automounting directories.
+
+        [student@desktop1 ~]$ sudo yum -y install autofs
+        Loaded plugins: langpacks
+        Resolving Dependencies
+        ...
+        Complete!
+
+        Create the automount configuration files for the direct-map automount.
+
+            Use vim to create and edit the /etc/auto.master.d/direct.autofs file.
+
+            [student@desktop1 ~]$ sudo vim /etc/auto.master.d/direct.autofs
+
+            	The file extension must be .autofs.
+
+            Add the following line:
+
+            /-  /etc/auto.direct
+
+            Use vim to create and edit the auto.direct map file.
+
+            [student@desktop1 ~]$ sudo vim /etc/auto.direct
+
+            Add the following line:
+
+            /mnt/public  -rw,sync,sec=krb5p  server1.example.com:/shares/public
+
+            	The file names above are not important; they were chosen to be meaningful.
+
+        Create the automount configuration files for the indirect-map automounts.
+
+            Use vim to create and edit the /etc/auto.master.d/shares.autofs file.
+
+            [student@desktop1 ~]$ sudo vim /etc/auto.master.d/shares.autofs
+
+            	The file extension must be .autofs.
+
+            Add the following line:
+
+            /shares  /etc/auto.shares
+
+            Use vim to create and edit the auto.shares map file.
+
+            [student@desktop1 ~]$ sudo vim /etc/auto.shares
+
+            Add the following line:
+
+            *  -rw,sync,sec=krb5p  server1.example.com:/shares/&
+
+            	The file names above are not important; they were chosen to be meaningful.
+
+        Use mkdir to create the /mnt/public mount point for the direct-map automount.
+
+        [student@desktop1 ~]$ sudo mkdir -p /mnt/public
+
+        Enable and start the automount service.
+
+        [student@desktop1 ~]$ sudo systemctl enable autofs
+        ln -s '/usr/lib/systemd/system/autofs.service'  ...
+        [student@desktop1 ~]$ sudo systemctl start autofs
+
+        Use ssh to switch to ldapuser1 on localhost and confirm the mounts, and read/write access.
+
+            Use ssh to log in as ldapuser1.
+
+            [student@desktop1 ~]$ ssh ldapuser1@localhost
+
+            If you see something similar to the following, type yes to accept and continue.
+
+            The authenticity of host 'localhost (::1)' can't be established.
+            ECDSA key fingerprint is d9:cc:73:82:3b:8a:74:e4:11:2f:f3:2b:03:a4:46:4d.
+            Are you sure you want to continue connecting (yes/no)? yes
+
+            Enter the password: kerberos.
+
+            ldapuser1@localhost's password: kerberos
+
+            Use cd to switch directories.
+
+            [ldapuser1@desktop1 ~]$ cd /shares/docs
+
+            Use echo and cat to verify read and write access.
+
+            [ldapuser1@desktop1 docs]$ echo hello > test.txt
+            [ldapuser1@desktop1 docs]$ cat test.txt
+            hello
+
+            Repeat steps d and e to test /shares/work and /mnt/public and then use exit or Ctrl+D to log out of ldapuser1.
+
+        Disable and stop autofs on desktop1.example.com.
+
+        [student@desktop1 ~]$ sudo systemctl disable autofs
+
+        [student@desktop1 ~]$ sudo systemctl stop autofs
+
+3. Mount an SMB File System
+
+In this lab, you create a mount entry in /etc/fstab and mount it. You have a home directory on server1.example.com that is used to store work-related documents. The directory is shared via Samba to support all of the company desktop operating systems. The server1.example.com administrator has confirmed that the share name is student and that the uid/gid are the same as your desktop1.example.com instance; the share password is student.
+
+    Reset the server1.example.com system, then log in as root and set up the system.
+
+    [root@server1 ~]# wget -O - http://instructor.example.com/pub/server1-samba.sh | bash
+
+    Log in to desktop1.example.com and open a terminal.
+
+    Use yum to install cifs-utils.
+
+    [student@desktop1 ~]$ sudo yum -y install cifs-utils
+    Loaded plugins: langpacks
+    Resolving Dependencies
+    ...
+    Complete!
+
+        This package provides support for mounting CIFS file systems and is used by the mount command.
+
+    Use mkdir to create the work directory mount point.
+
+    [student@desktop1 ~]$ mkdir ~/work
+
+    Create the credentials file:
+
+        Use mkdir to create the secure directory.
+
+        [student@desktop1 ~]$ sudo mkdir /secure
+
+        Use vim to create the credentials file student.smb and populate it.
+
+        [student@desktop1 ~]$ sudo vim /secure/student.smb
+
+        Add the following lines:
+
+        username=student
+        password=student
+        domain=MYGROUP
+
+        Use chmod to protect the secure directory and the student.smb credentials file.
+
+        [student@desktop1 ~]$ sudo chmod 770 /secure
+        [student@desktop1 ~]$ sudo chmod 600 /secure/student.smb
+
+    Update /etc/fstab and mount:
+
+        Use vim to add the mount settings to the end of /etc/fstab.
+
+        [student@desktop1 ~]$ sudo vim /etc/fstab
+        ...
+        //server1.example.com/student  /home/student/work  cifs  credentials=/secure/student.smb  0 0
+
+        Use mount to verify the settings and mount the file system.
+
+        [student@desktop1 ~]$ sudo mount -a
+
+            This command should report no errors. If it does, check your settings in /etc/fstab.
+
+    Check your access:
+
+        Use cat to output the samba.txt file.
+
+        [student@desktop1 ~]$ cat ~/work/samba.txt
+        Success
+
+        Use echo to write to the work mount point.
+
+        [student@desktop1 ~]$ echo testing > ~/work/test.txt
+
+    Clean up after running the lab by deleting the line added in /etc/fstab and unmounting the samba share.
+
+    [student@desktop1 ~]$ sudo vim /etc/fstab
+    [student@desktop1 ~]$ sudo umount /home/student/work
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT

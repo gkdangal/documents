@@ -1,0 +1,314 @@
+Providing Apache HTTPD Web Service Labs
+1. Configure a Web Server
+
+In this lab, you configure a basic httpd web server to serve out a static page from the default location, as well as the Apache httpd manual.
+
+You were asked to configure a basic web server on your server1.example.com machine. This web server should serve out the text "Hello Class!" when the URL http://server1.example.com/ is requested.
+
+To aid your end users in submitting bug reports, the default error page should include a mailto: reference to the email address webmaster@server1.example.com.
+
+Because your organization is planning on further customizing the behavior of this web server, the full Apache httpd manual should be available under http://server1.example.com/manual/.
+
+    Reset your server1.example.com machine.
+
+    Install the httpd and httpd-manual packages.
+
+    [root@server1 ~]# yum -y install httpd httpd-manual
+
+    Set the ServerAdmin directive for the main site configuration to point to webmaster@server1.example.com.
+
+        Open /etc/httpd/conf/httpd.conf in a text editor with root privileges.
+
+        Change the line that starts with ServerAdmin to the following:
+
+        ServerAdmin webmaster@server1.example.com
+
+    Create the default content page.
+
+        Create the /var/www/html/index.html file with a text editor as user root
+
+        Add the following content:
+
+        Hello Class!
+
+    Start and enable the httpd service.
+
+    [root@server1 ~]# systemctl start httpd.service
+    [root@server1 ~]# systemctl enable httpd.service
+
+    Open all the relevant ports for http on the firewall on server1.example.com.
+
+    [root@server1 ~]# firewall-cmd --permanent --add-service=http
+    [root@server1 ~]# firewall-cmd --reload
+
+    Test if you can access the new static page, as well as the Apache httpd manual, from your server1.example.com machine.
+
+        From desktop1.example.com use curl to access the default web page.
+
+        [student@desktop1 ~]$ curl -s http://server1.example.com
+        Hello Class!
+
+        From desktop1.example.com use curl to access the manual web page.
+
+        [student@desktop1 ~]$ curl -Is http://server1.example.com/manual/ | head
+        HTTP/1.1 200 OK
+        Date: Thu, 04 Dec 2014 19:02:06 GMT
+        Server: Apache/2.4.6 (Red Hat)
+        Last-Modified: Thu, 20 Mar 2014 11:17:16 GMT
+        ETag: "22b1-4f507e9630700"
+        Accept-Ranges: bytes
+        Content-Length: 8881
+        Content-Type: text/html; charset=UTF-8
+
+        	Alternatively, you can open a web browser on desktop1.example.com to open these URLs.
+
+2. Configure a Virtual Host
+
+In this lab, you configure a new web server to serve out content for multiple virtual hosts.
+
+Over the past few years, your company spun up many web servers for new projects. Unfortunately, there was no structure or coordination between the various projects.
+
+In an effort to clean up the mess, you were asked to consolidate these various web servers into one, serving out the different domains using name-based virtual hosting.
+
+For now, you only need to set up a default virtual host that serves out a placeholder site from /srv/default/www/, and a virtual host for www1.example.com that serves out content from /srv/www1.example.com/www.
+
+DNS CNAME records for the relevant domains were already converted to point at your server1.example.com machine.
+
+    Reset your server1.example.com machine.
+
+    Install the httpd package.
+
+    [root@server1 ~]# yum install httpd
+
+    Create the directories.
+
+    [root@server1 ~]# mkdir -p /srv/{default,www1.example.com}/www
+
+        Create the placeholder site index.html:
+
+        [root@server1 ~]# echo 'Coming Soon!' > /srv/default/www/index.html
+
+        Create the index.html for the www1.example.com site:
+
+        [root@server1 ~]# echo "www1" > /srv/www1.example.com/www/index.html
+
+        Add a valid httpd content context for the new directory.
+
+        [root@server1 ~]# semanage fcontext -a -t httpd_sys_content_t '/srv(/.*)?'
+
+        Reset the context on the files you just created to match the policy and check to make sure httpd_sys_content_t is set on the directories.
+
+        [root@server1 ~]# restorecon -Rv /srv/
+        [root@server1 ~]# ls -Z /srv/
+        drwxr-xr-x. root root unconfined_u:object_r:httpd_sys_content_t:s0 default
+        drwxr-xr-x. root root unconfined_u:object_r:httpd_sys_content_t:s0 www1.example.com
+
+    Create a new virtual host definition for the _default_:80 virtual host. This virtual host should serve out content from /srv/default/www/, and log to logs/default-vhost.log using the combined format.
+
+        Create a new file called /etc/httpd/conf.d/00-default-vhost.conf. Give it the following content:
+
+        <VirtualHost _default_:80>
+          DocumentRoot /srv/default/www
+          CustomLog "logs/default-vhost.log" combined
+        </VirtualHost>
+
+        In a default configuration, httpd blocks access to all directories, so you need to open up the content directory for your default vhost. Add the following block to /etc/httpd/conf.d/00-default-vhost.conf.
+
+        <Directory /srv/default/www>
+          Require all granted
+        </Directory>
+
+    Create a new virtual host definition for a www1.example.com virtual host in /etc/httpd/conf.d/01-www1.example.com-vhost.conf with the following contents:
+
+    <VirtualHost *:80>
+      ServerName www1.example.com
+      ServerAlias www1
+      DocumentRoot /srv/www1.example.com/www
+      CustomLog "logs/www1.example.com.log" combined
+    </VirtualHost>
+
+    <Directory /srv/www1.example.com/www>
+      Require all granted
+    </Directory>
+
+        This new virtual host does the following:
+
+            Responds to requests for both www1.example.com and www1
+
+            Serves out content from /srv/www1.example.com/www
+
+            Stores logs in logs/www1.example.com.log
+
+    Start and enable the httpd service.
+
+    [root@server1 ~]# systemctl start httpd.service
+    [root@server1 ~]# systemctl enable httpd.service
+
+    Open up the firewall on server1.example.com to allow traffic to the httpd service.
+
+    [root@server1 ~]# firewall-cmd --permanent --add-service=http
+    [root@server1 ~]# firewall-cmd --reload
+
+    From your desktop1.example.com system, use curl to visit the following URLs; the first two should respond with the "www1" text, while the last two should respond with "Coming Soon!".
+
+        http://www1.example.com:
+
+        [student@desktop1 ~]$ curl -s http://www1.example.com
+        www1
+
+        http://www1:
+
+        [student@desktop1 ~]$ curl -s http://www1
+        www1
+
+        http://server1.example.com:
+
+        [student@desktop1 ~]$ curl -s http://server1.example.com
+        Coming Soon!
+
+        http://192.168.0.101
+
+        [student@desktop1 ~]$ curl -s http://192.168.0.101
+        Coming Soon!
+
+        	You can also use a web browser on desktop1.example.com to access these URLs.
+
+3. Configure a TLS-enabled Virtual Host
+
+In this lab, you configure a TLS-encrypted virtual host.
+
+Your company has decided to start selling Jim Whitehurst action figures online. Since most Red Hat fans enjoy privacy and security, the website needs to be protected with TLS.
+
+You were asked to configure a web server on your server1.example.com machine to host this site. This web server needs to host the virtual host: https://www1.example.com. The non-encrypted version of this site should send browsers an automatic redirect to the encrypted version.
+
+Certificates and private keys for this site are already available:
+
+    Certificates: http://classroom.example.com/pub/tls/certs/www1.crt
+
+    Private keys: http://classroom.example.com/pub/tls/private/www1.key
+
+    Public part of signing CA: http://classroom.example.com/pub/example-ca.crt
+
+Content for the site should be served out of /srv/www1/www. Because your web designers are currently on a two-week lunch break, you must provide temporary content that uniquely identifies each host yourself.
+
+Custom log files are not required for now.
+
+    Reset your server1.example.com system.
+
+    Install both the httpd and mod_ssl packages.
+
+    [root@server1 ~]# yum install httpd mod_ssl
+
+    Create the content directories, with identifying content and appropriate SELinux contexts.
+
+        Create the content directory.
+
+        [root@server1 ~]# mkdir -p /srv/www1/www
+
+        In the content directory, create an index.html file with distinct content.
+
+        [root@server1 ~]# echo "www1" > /srv/www1/www/index.html
+
+        Add a valid httpd content context for the new directory.
+
+        [root@server1 ~]# semanage fcontext -a -t httpd_sys_content_t '/srv(/.*)?'
+
+        Reset the SELinux context on your new directories.
+
+        [root@server1 ~]# restorecon -Rv /srv/
+
+    Download all the needed certificates and private keys to their correct locations with their correct permissions.
+
+        Download the CA certificate used to sign your certificates.
+
+        [root@server1 ~]# cd /etc/pki/tls/certs
+        [root@server1 certs]# wget http://classroom.example.com/pub/example-ca.crt
+
+        While still in the certs directory, download the certificates for your virtual host.
+
+        [root@server1 certs]# wget http://classroom.example.com/pub/tls/certs/www1.crt
+
+        Switch to the private directory and download the private key. Do not forget to set the permissions on the private key to 0600.
+
+        [root@server1 certs]# cd /etc/pki/tls/private
+        [root@server1 private]# wget http://classroom.example.com/pub/tls/private/www1.key
+        [root@server1 private]# chmod 0600 w*1.key
+
+    Configure the TLS name-based virtual host for your www1.example.com domain in a new file called /etc/httpd/conf.d/www1.conf. You can use the existing /etc/httpd/conf.d/ssl.conf as a template, but if you do this, remember to strip out all the content outside of the <VirtualHost> block.
+    	Remember to add an automatic redirect from the non-TLS-based http site to the TLS-encrypted https site.
+
+        Create /etc/httpd/conf.d/www1.conf with the following content:
+
+        <VirtualHost *:443>
+          ServerName www1.example.com
+          SSLEngine On
+          SSLProtocol all -SSLv2 -SSLv3
+          SSLCipherSuite HIGH:MEDIUM:!aNull:!MD5
+          SSLHonorCipherOrder on
+          SSLCertificateFile /etc/pki/tls/certs/www1.crt
+          SSLCertificateKeyFile /etc/pki/tls/private/www1.key
+          SSLCertificateChainFile /etc/pki/tls/certs/example-ca.crt
+          DocumentRoot /srv/www1/www
+        </VirtualHost>
+
+        Add a <Directory> block for /srv/www1/www to /etc/httpd/conf.d/www1.conf like the following:
+
+        <Directory /srv/www1/www>
+          Require all granted
+        </Directory>
+
+        To accomplish the automatic redirect from http to https, add the following block to /etc/httpd/conf.d/www1.conf:
+
+        <VirtualHost *:80>
+          ServerName www1.example.com
+          RewriteEngine on
+          RewriteRule ^(/.*)$ https://%{HTTP_HOST}$1 [redirect=301]
+        </VirtualHost>
+
+    Start and enable the httpd.service, and open the relevant firewall ports.
+
+        Start and enable httpd.service.
+
+        [root@server1 ~]# systemctl start httpd.service
+        [root@server1 ~]# systemctl enable httpd.service
+
+        Open both the http and https ports on the firewall.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-service=http --add-service=https
+        [root@server1 ~]# firewall-cmd --reload
+
+    Test your new configuration from your server1.example.com system. As part of this process, you must import http://classroom.example.com/pub/example-ca.crt into the list of trusted CA certificates for your browser.
+
+    Perform all of the following steps on your server1.example.com system.
+
+        Download the example-ca.crt certificate to your home directory.
+
+        [student@desktop1 ~]$ wget http://classroom.example.com/pub/example-ca.crt
+
+        Test access from the command line:
+
+        [student@desktop1 ~]$ curl -Ls --cacert example-ca.crt http://www1.example.com
+        www1
+
+        Launch Firefox and do one of the following, depending on your version of Firefox:
+
+            Open the Edit > Preferences dialog. Navigate to the Advanced > Certificates tab.
+
+            Click Tools > Options, click Advanced and then click the Certificates tab.
+
+        Click View Certificates, and then click Import.
+
+        Navigate to the file you just downloaded and click Open.
+
+        In the resulting dialog, check Trust this CA to identify websites and click OK.
+
+        Close all open dialogs.
+
+        Point your browser at http://www1.example.com. Both should redirect to the https counterpart automatically, without a certificate warning.
+        	When troubleshooting a web server using Firefox, it can be useful to empty the cache from within the Preferences dialog. From the Advanced > Network tab, click Clear Now. If you do not clear the cache between server restarts, Firefox might show old, outdated information.
+
+Bonus Question: Without further configuration, a visit to http://server1.example.com also results in a redirect to https. Why is this, and how could you prevent this from happening?
+
+Answer: This happens because there is an explicit catch-all virtual host defined for *:80, resulting in the first virtual host for *:80 being used as a default virtual host. Because this is the virtual host for your webapp1 domain, the redirect rule is included.
+
+You can solve this by defining either a <VirtualHost _default_:80> block, or by defining a <VirtualHost *:80> block in a location where it is parsed before any other virtual hosts; for example, before the includes in /etc/httpd/conf/httpd.conf or as a separate file in /etc/httpd/conf.d/00-default.conf.

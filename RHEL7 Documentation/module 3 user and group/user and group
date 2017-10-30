@@ -1,0 +1,1171 @@
+Users
+What Is a User?
+
+    Every process (running program) runs as particular user
+
+    Every file is owned by particular user
+
+    File and directory access are restricted by user
+
+    User associated with running process determines files and directories that process can access
+===========================================================
+Users
+User/UID Mapping
+
+    Output of id, ls -l, and ps display username
+
+    OS tracks users by UID, not name
+
+    Names/UID mapping stored in /etc/passwd
+
+    Map uses flat-file with seven colon-separated fields per user:
+
+    username:password:UID:GID:GECOS:/home/dir:shell
+------------------------------------------------------------
+username->Mapping of a UID to a name for the benefit of human users.
+
+password-> Historically, passwords were kept here in encrypted format. Today they are stored in a separate file called /etc/shadow.
+
+UID-> User ID, the number that identifies the user at the most fundamental level.
+
+GID-The user’s primary group ID number. Groups are discussed next.
+
+GECOS-> Arbitrary text field, usually includes the user’s real name.
+
+/home/dir->The location of the user’s personal data and configuration files.
+
+shell-> A program that runs as the user logs in. For a regular user, this is normally the program that provides the user’s command line prompt.
+----------------------------------------------------------------------
+
+Group
+Groups
+What Is a Group?
+
+    Groups have name and number (GID)
+
+    Local groups defined in /etc/group
+
+Primary Groups
+
+    Every user has one primary group
+
+        Defined by GID in /etc/passwd
+
+    Primary group owns files created by user
+
+    Primary group of new user is new group with same name as user
+
+        User is only member of this User Private Group (UPG)
+----------------------------------------------------------------------
+Superuser Access
+
+    In Linux, root is roughly equivalent to local administrator in Microsoft Windows
+
+    Red Hat recommends not logging in directly as root
+
+        Log in as non-root user and use mechanisms such as su, sudo, and PolicyKit to temporarily gain root privileges
+
+        If logged in as root, entire desktop environment unnecessarily runs with admin privileges
+
+        PolicyKit is closest Linux equivalent to Windows UAC
+
+    In Windows, admins used to log in directly to perform system admin duties
+
+        Recently, admin account is disabled by default
+
+        User Account Control (UAC) limits admin privileges
+-------------------------------------------------------------------
+Superuser Access
+Switching Users
+
+    To switch to a different user, use su [-] <username>
+
+    [student@desktop1 ~]$ su -
+    Password:r3dh@t1!
+    [root@desktop1 ~]#
+
+        root implied if username not specified
+
+            Regular users are prompted for username’s password
+
+            root not prompted for username’s password
+
+        To start clean login shell environment, use - option
+
+        To start shell with current environment settings, omit - option
+
+    To run arbitrary program as another user, use -c option
+
+        Similar to Windows runas utility
+------------------------------------------------------------------
+Superuser Access
+Running Commands as root
+
+    Linux has coarse-grained permissions model
+
+        root can do everything
+
+        Standard users can do nothing systems related
+
+    su temporarily grants standard users root privileges and responsibilities
+
+        Users must know root password
+
+    sudo allows users to run commands as root or another user, based on settings in /etc/sudoers
+
+        Users must enter their own password
+
+        Allows administrator to provide fine-grained permissions without exposing root password
+----------------------------------------------------------------------------
+
+Superuser Access
+
+    Example: Configure sudo to allow user student to run usermod as root
+
+    [student@server1 ~]$ sudo usermod -L username
+    [sudo] password for student:password
+
+    All commands executed with sudo are logged in /var/log/secure
+
+    [student@server1 ~]$ sudo tail /var/log/secure
+    ...
+    Feb 19 15:3:36 localhost sudo: student : TTY=pts/0 ; PWD=/home/student ; USER=root ; COMMAND=/sbin/usermod -L student
+    Feb 19 15:3:36 localhost usermod[16325]: lock user 'student' password
+    Feb 19 15:3:47 localhost sudo: student : TTY=pts/0 ; PWD=/home/student ; USER=root ; COMMAND=/bin/tail /var/log/secure
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Superuser Access
+Using sudo From wheel Group
+
+    Users in wheel group can use sudo to run commands as any user, including root
+
+    Users are prompted for their own password
+
+        Change from Red Hat Enterprise Linux 6 and earlier
+
+        To enable similar behavior on earlier versions, use visudo to edit configuration file and uncomment wheel line
+
+        [root@desktop1 ~]# cat /etc/sudoers
+        ...Output omitted...
+        ## Allows people in group wheel to run all commands
+        %wheel        ALL=(ALL)       ALL
+
+        ## Same thing without a password
+        # %wheel  ALL=(ALL)       NOPASSWD:ALL
+        ...Output omitted...
+
+        Version 6 did not grant wheel special privileges by default
+
+            Sites using version 6 may be surprised when version 7 grants wheel full sudo privileges
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Superuser Access
+PolicyKit
+
+    Most system administration applications with a GUI use PolicyKit to authenticate and manage root access
+
+    PolicyKit may also prompt wheel group members using a GUI for their own password to get root privileges
+
+        Similar to way sudo grants privileges at shell prompt
+
+    PolicyKit grants privileges based on its own configuration settings, separate from sudo
+
+	
+
+For more info, see:
+
+    su(1), sudo(8), pkexec(1), and polkit(8) man pages
+
+    info libc, GNU C Library Reference Manual, Section 29.2: The Persona of a Process (requires glibc-devel package)
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+---------------------------------------------
+Superuser Access
+
+    Example: Configure sudo to allow user student to run usermod as root
+
+    [student@server1 ~]$ sudo usermod -L username
+    [sudo] password for student:password
+
+    All commands executed with sudo are logged in /var/log/secure
+
+    [student@server1 ~]$ sudo tail /var/log/secure
+    ...
+    Feb 19 15:3:36 localhost sudo: student : TTY=pts/0 ; PWD=/home/student ; USER=root ; COMMAND=/sbin/usermod -L student
+    Feb 19 15:3:36 localhost usermod[16325]: lock user 'student' password
+    Feb 19 15:3:47 localhost sudo: student : TTY=pts/0 ; PWD=/home/student ; USER=root ; COMMAND=/bin/tail /var/log/secure
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Superuser Access
+Using sudo From wheel Group
+
+    Users in wheel group can use sudo to run commands as any user, including root
+
+    Users are prompted for their own password
+
+        Change from Red Hat Enterprise Linux 6 and earlier
+
+        To enable similar behavior on earlier versions, use visudo to edit configuration file and uncomment wheel line
+
+        [root@desktop1 ~]# cat /etc/sudoers
+        ...Output omitted...
+        ## Allows people in group wheel to run all commands
+        %wheel        ALL=(ALL)       ALL
+
+        ## Same thing without a password
+        # %wheel  ALL=(ALL)       NOPASSWD:ALL
+        ...Output omitted...
+
+        Version 6 did not grant wheel special privileges by default
+
+            Sites using version 6 may be surprised when version 7 grants wheel full sudo privileges
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Superuser Access
+PolicyKit
+
+    Most system administration applications with a GUI use PolicyKit to authenticate and manage root access
+
+    PolicyKit may also prompt wheel group members using a GUI for their own password to get root privileges
+
+        Similar to way sudo grants privileges at shell prompt
+
+    PolicyKit grants privileges based on its own configuration settings, separate from sudo
+
+	
+
+For more info, see:
+
+    su(1), sudo(8), pkexec(1), and polkit(8) man pages
+
+    info libc, GNU C Library Reference Manual, Section 29.2: The Persona of a Process (requires glibc-devel package)
+
+ -----------------------------------------------------
+PolicyKit
+
+    Most system administration applications with a GUI use PolicyKit to authenticate and manage root access
+
+    PolicyKit may also prompt wheel group members using a GUI for their own password to get root privileges
+
+        Similar to way sudo grants privileges at shell prompt
+
+    PolicyKit grants privileges based on its own configuration settings, separate from sudo
+------------------------------------------
+Local User Accounts
+Creating Users With useradd
+
+    Without options, useradd username sets reasonable defaults for all fields in /etc/passwd
+
+        Does not set a password
+
+        User cannot log in until password is set
+
+    useradd --help displays basic options that can override defaults
+
+        Most options can also be used with usermod
+
+    Some defaults are read from /etc/login.defs
+
+        Example: Range of valid UID numbers and default password aging rules
+
+        Values in /etc/login.defs are used only when creating new users
+------------------------------------------------------------
+Local User Accounts
+Modifying Users With usermod
+
+    usermod --help displays basic options for modifying an account
+
+-----------------
+-c, --comment COMMENT->
+Adds a value, such as a full name, to the GECOS field
+
+-g, --gid GROUP=>
+Specifies the primary group for the user account
+-G, --groups GROUPS =>
+Specifies a list of supplementary groups for the user account
+-a, --append => 
+-a, --append
+Used with -G to append the user to the supplemental groups mentioned without removing the user from other groups
+
+-d, --home HOME_DIR=>
+Specifies a new home directory for the user account
+
+-m, --move-home
+Moves a user home directory to a new location. Must be used with -d
+
+-s, --shell SHELL =>
+Specifies a new login shell for the user account
+
+-L, --lock =>
+Locks a user account
+
+-U, --unlock => 
+Unlocks a user account
+
+----------------------------------------------
+Local User Accounts
+Deleting Users With userdel
+
+    userdel username removes user from /etc/passwd
+
+        Leaves home directory intact by default
+
+    userdel -r username removes user and user’s home directory
+
+        Without -r, system ends up with files owned by an unassigned user ID number
+
+        Also occurs when deleted user had files outside home directory
+
+        Can lead to information leakage and security issues
+
+    Unless UID is explicitly specified with -u UID, useradd assigns first free UID number available in range 1000 or above to new users
+
+        New users may receive UID that was previously assigned to user that was removed from system
+
+        New users gain ownership of old user’s remaining files
+--------------------------------------------------------------
+Local User Accounts
+Problem
+
+    Bob now owns all files that Prince once owned
+
+    [root@server1~]# useradd Prince
+    [root@server1~]# ls -l /home
+    drwx------. 3 prince  prince    74 Feb  4 15:2 Prince
+    [root@server1~]# userdel Prince
+    [root@server1~]# ls -l /home
+    drwx------. 3    1000    1000   74 Feb  4 15:2 Prince
+    [root@server1~]# useradd Bob
+    [root@server1~]# ls -l /home
+    drwx------. 3 bob     bob       74 Feb  4 15:3 Bob
+    drwx------. 3 bob     bob       74 Feb  4 15:2 Prince
+
+Solutions
+
+    Remove all unowned files when user that created them is deleted
+
+    Manually assign unowned files to different user
+
+        root can find unowned files and directories by running:
+
+        find / -nouser -o -nogroup 2> /dev/null
+
+
+---------------------------------------------------------
+
+Local User Accounts
+Displaying User Information
+
+    Use id to display user information, including UID and group memberships
+
+    Use id username to display user information for username, including UID number and group memberships
+
+Setting Passwords
+
+    Use passwd username to set user’s initial password or change user’s existing password
+
+        root can set password to any value
+
+        If password does not meet minimum recommended criteria, message displays with prompt to retype password
+
+        [root@server1~]# passwd student
+        Changing password for user student.
+        New password:redhat123
+        BAD PASSWORD:The password fails the dictionary check - it is based on a dictionary word
+        Retype new password:redhat123
+    passwd:all authentication tokens updated successfully.
+
+Regular user passwords must be at least 8 characters
+
+    Not based on dictionary word, username, or previous password
+-----------------------------------------------------------------------
+Local User Accounts
+UID Ranges
+
+    UID 0: Always assigned to superuser account, root
+
+    UID 1-200: System users assigned statically to system processes by Red Hat
+
+    UID 201-999: System users assigned dynamically to system processes that do not own files on file system
+
+        Typically assigned from available pool when software that needs them is installed
+
+        Programs run as "unprivileged" system users to limit access to resources required to function
+
+    UID 1000+: Available for assignment to regular users
+
+	
+
+    Prior to Red Hat Enterprise Linux 7, UID 1-499 were used for system users and UID 500+ for regular users. Default ranges used by useradd and groupadd can be changed in the /etc/login.defs file.
+
+    For more info on managing local user accounts, see these man pages: useradd(8), usermod(8), and userdel(8).
+----------------------------------------------------
+Local Group Accounts
+Supplementary Groups
+
+    Group must exist before user can be added to it
+
+    To create groups, use groupadd
+
+        Use groupadd groupname without options to create groupname with next available GID from range specified in /etc/login.defs
+
+        Use -g GID to specify GID (5000 in example)
+
+        [student@server1 ~]$ sudo groupadd -g 5000 ateam
+
+        	Because of the automatic creation of user private groups (GID 1000+), Red Hat recommends setting aside a range of GID numbers for supplementary groups. A higher range avoids collisions with system groups (GID 0-999).
+
+        Use -r to create system group using GID from range listed in /etc/login.defs
+
+        [student@server1 ~]$ sudo groupadd -r appusers
+--------------------------------------------------------
+
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+Local Group Accounts
+Managing Supplementary Groups With usermod
+
+    To change user’s primary group, use usermod
+
+    [student@server1 ~]$ sudo usermod -g student student
+
+    To add user to supplementary group, use usermod -aG groupname username
+
+    [student@server1 ~]$ sudo usermod -aG wheel elvis
+
+    To function in append mode, use -a option
+
+        Without -a, user is removed from all supplementary groups
+
+	For more info, see these man pages: group(5), groupadd(8), groupdel(8), and usermod(8).
+Copyright ©2016 Red Hat, Inc. - 1.7.7R
+Your browser does not support the audio tag.
+User Passwords
+Shadow Passwords and Password Policy
+
+    In the past, encrypted passwords were stored in world-readable /etc/passwd
+
+        Thought to be secure until dictionary attacks
+
+        Encrypted passwords (password hashes) were moved to more secure /etc/shadow
+
+        Allowed password aging and expiration features
+
+    Three pieces of information are stored in password hash, delimited by $
+
+        Example hash: $1$gCjLa2/Z$6Pu0EK0AzfCjxjv2hoLOB/
+
+        1: Hashing algorithm (1 indicates MD5 hash, 6 indicates SHA-512)
+
+        gCjLa2/Z: Salt used to encrypt hash, chosen at random
+
+        6Pu0EK0AzfCjxjv2hoLOB/: Encrypted hash
+        	The salt and the unencrypted password are combined and encrypted to create the password hash. The use of a salt prevents two users with the same password from having identical entries in /etc/shadow.
+
+---------------------------------------------------
+Local Group Accounts
+Modifying Groups With groupmod
+
+    To change a group name to GID mapping, use groupmod
+
+        To specify new name, use -n option
+
+        [student@server1 ~]$ sudo groupmod -n javaapp appusers
+
+        To specify new GID, use -g
+
+        [student@server1 ~]$ sudo groupmod -g 6000 ateam
+
+    To delete group, use groupdel
+
+    [student@server1 ~]$ sudo groupdel javaapp
+
+        Group cannot be removed if it is primary group of user
+
+        Check all file systems to ensure that no files remain that were owned by deleted group
+
+-------------------------------------------------------
+Local Group Accounts
+Managing Supplementary Groups With usermod
+
+    To change user’s primary group, use usermod
+
+    [student@server1 ~]$ sudo usermod -g student student
+
+    To add user to supplementary group, use usermod -aG groupname username
+
+    [student@server1 ~]$ sudo usermod -aG wheel elvis
+
+    To function in append mode, use -a option
+
+        Without -a, user is removed from all supplementary groups
+
+------------------------------------------------------------
+
+User Passwords
+Shadow Passwords and Password Policy
+
+    In the past, encrypted passwords were stored in world-readable /etc/passwd
+
+        Thought to be secure until dictionary attacks
+
+        Encrypted passwords (password hashes) were moved to more secure /etc/shadow
+
+        Allowed password aging and expiration features
+
+    Three pieces of information are stored in password hash, delimited by $
+
+        Example hash: $1$gCjLa2/Z$6Pu0EK0AzfCjxjv2hoLOB/
+
+        1: Hashing algorithm (1 indicates MD5 hash, 6 indicates SHA-512)
+
+        gCjLa2/Z: Salt used to encrypt hash, chosen at random
+
+        6Pu0EK0AzfCjxjv2hoLOB/: Encrypted hash
+        	The salt and the unencrypted password are combined and encrypted to create the password hash. The use of a salt prevents two users with the same password from having identical entries in /etc/shadow.
+----------------------------------------------------------------
+User Passwords
+Logging In With an Encrypted Password
+
+    When user types password and logs in, system:
+
+        Looks up entry in /etc/shadow
+
+        Combines salt with unencrypted password
+
+        Encrypts them using hashing algorithm specified
+
+    Result:
+
+        If result matches encrypted hash, user entered correct password
+
+        If result does not match, login attempt fails
+
+    This login method allows system to determine if user entered correct password without storing password in usable form
+------------------------------------------------------
+User Passwords
+Hashing Algorithms
+
+    Support for two password hashing algorithms:
+
+        SHA-256 (algorithm 5)
+
+        SHA-512 (algorithm 6)
+
+    Salt string and encrypted hash are longer
+
+    Default algorithm used for password hashes can be changed by root
+
+        Run authconfig --passalgo with argument md5, sha256, or sha512
+
+    Default is SHA-512
+----------------------------------------------------
+User Passwords
+
+Format of /etc/shadow Entries
+
+    Nine colon-separated fields:
+
+    name:password:lastchange:minage:maxage:warning:inactive:expire:blank
+
+name
+Must be valid account name
+
+password	
+Password field that starts with exclamation mark means password is locked
+lastchange
+Date of last password change, represented as number of days since 1970.01.01
+minage
+Minimum number of days before password can be changed (0 means no minimum age requirement)
+
+maxage
+Maximum number of days before password must be changed
+
+warning	
+Alert that password is about to expire, represented in days (0 means no warning given)
+
+inactive
+Number of days account remains active after password expires
+
+    User can change password during this period
+
+    After specified number of days, account is locked and becomes inactive
+
+expire
+Account expiration date, represented as number of days since 1970.01.01
+
+blank
+Reserved for future use
+----------------------------------------------------------------
+==========================================================
+User Passwords
+Password Aging
+
+    To implement password-aging policy, use chage
+    shadow file fields solutions
+
+    [root@server1~]# chage -m 0 -M 90 -W 7 -I 14 username
+
+        To force password update on next login, use chage -d 0 username
+
+        To list current settings, use chage -l username
+
+        To expire account on specific day, use chage -E YYYY-MM-DD
+
+    To calculate a future date, use date:
+
+    [student@server1 ~]$ date -d "+45 days"
+    Sat Mar 22 11:7:06 EDT 2014
+
+-----------------------------------------------------------
+User Passwords
+Restricting Access
+
+    To set account expiration date, use chage
+
+        After that date, user cannot log in
+
+    To lock account, use usermod -L
+
+    [student@server1 ~]$ sudo usermod -L elvis
+    [student@server1 ~]$ su - elvis
+    Password:elvis
+    su: Authentication failure
+
+    To lock and expire account with single usermod command:
+
+    [student@server1 ~]$ sudo usermod -L -e 1 elvis
+
+    Lock account to prevent access when employee leaves company
+
+        If employee returns, unlock account with usermod -U USERNAME
+
+        If account was expired, change expiration date
+----------------------------------------------------------
+User Passwords
+nologin Shell
+
+    User needs account with password to authenticate to system, but does not need interactive shell
+
+        Example: Mail server requires account to store mail and password to authenticate mail client
+
+    Solution: Set user’s login shell to /sbin/nologin
+
+        If user tries to log in to system directly, nologin shell closes connection
+
+        [root@server1~]# usermod -s /sbin/nologin student
+        [root@server1~]# su - student
+        Last login:Tue Feb  4 18:40:30 EST 2014 on pts/0
+        This account is currently not available.
+
+    nologin shell prevents interactive use of system, but does not prevent all access
+
+        User may be able to authenticate and upload or retrieve files through web applications, file transfer programs, mail readers, and so on
+-----------------------------------------------
+Identity Management Services
+Centralized Identity Management
+
+    Modern computer infrastructures consist of many machines running multiple services
+
+    Difficult to keep local user accounts and services in sync
+
+    Solution:
+
+        Do not store account information on local systems
+
+        Retrieve it from a centralized store
+
+            Centralized user and authentication information allows for SSO(single sign on=> once authentication for all server)
+
+            User authenticates once and obtains ticket or cookie that automatically authenticates to other services
+
+---------------------------------------------------
+
+Identity Management Services
+
+    Centralized identity management system must provide at least two services:
+
+        Account information
+
+            Information such as a username, home directory, UID and GID, group memberships, etc.
+
+            Popular solutions include LDAP and NIS
+
+        Authentication information
+
+            Means for system to validate user:
+
+                Provide cryptographic password hash to client system
+
+                Send encrypted password to server and receive response
+
+            LDAP server provides both authentication and account information
+
+            Kerberos provides only SSO authentication
+
+                Typically used with LDAP
+
+                Used in both IPA Server and Active Directory
+
+    In Red Hat Enterprise Linux 7:
+
+        /etc/passwd provides local user information
+
+        /etc/shadow provides authentication information (hashed password)
+-------------------------------------------------------------
+Identity Management Services
+Attaching System to Centralized LDAP and Kerberos Servers
+
+    At a minimum, update the following files:
+/etc/ldap.conf
+	
+
+Information about central LDAP server and its settings
+
+/etc/krb5.conf
+	
+
+Information about central Kerberos infrastructure
+
+/etc/sssd/sssd.conf
+	
+
+Configuration information for sssd, the daemon responsible for retrieving and caching user and authentication information
+
+/etc/nsswitch.conf
+	
+
+Tells system which user information and authentication services should be used
+
+/etc/pam.d/*
+	
+
+Configures how authentication should be handled for services
+
+/etc/openldap/cacerts
+	
+
+Stores root CAs that validate SSL certificates used to identify LDAP servers
+	The sssd daemon must be enabled and started before the system can use
+----------------------------------------------------
+Identity Management Services
+authconfig
+
+    Suite of tools to automate configuration
+
+        Ships with Red Hat Enterprise Linux 7
+
+    Consists of three related tools that perform same actions:
+
+        authconfig: Command line tool
+
+            Can use to automate configurations across systems
+
+            Commands tend to be long with multiple options
+
+            Installed with authconfig package
+
+        authconfig-tui: Interactive version of authconfig
+
+            Menu-driven text interface
+
+            Can use over SSH connection
+
+            Installed with authconfig package
+
+        authconfig-gtk: Graphical interface
+
+            Can launch as system-config-authentication
+
+            Installed with authconfig-gtk package
+-------------------------------------------------------------------
+Identity Management Services
+LDAP Parameters
+
+    To connect to central LDAP server, authconfig needs these settings:
+
+        LDAP server hostname
+
+        Base DN part of LDAP tree where system should look for users
+
+            Typically looks like dc=example,dc=com or ou=People,o=PonyCorp
+
+            Provided by LDAP server administrator
+
+        Root CA certificate that can validate certificates offered by LDAP server
+
+            Required if using SSL/TLS to encrypt communications with LDAP server
+
+    System needs extra packages to provide LDAP client functionality
+
+-----------------------------------------------------------
+
+Identity Management Services
+Kerberos Parameters
+
+    To use centralized Kerberos system for user authentication, authconfig needs these settings:
+
+        Kerberos realm name
+
+            Domain of machines using common set of Kerberos servers and users for authentication
+
+        One or more KDC
+
+            Kerberos server hostnames
+
+        Admin server hostnames
+
+            Machine that clients talk to when they want to change password or perform other user modifications
+
+            Typically same as primary KDC, but can be different machine
+
+    Administrator can specify if DNS should be used to look up realm for specific hostname and to automatically find KDCs and admin servers
+
+    To help debug Kerberos issues and work with Kerberos tickets from command line, install krb5-workstation package
+--------------------------------------------------------
+Identity Management Services
+Using authconfig-gtk
+
+    Install the necessary packages:
+
+    [student@demo ~]$ sudo yum -y install authconfig-gtk sssd krb5-workstation
+
+    Launch authconfig-gtk from command line or Applications → Sundry → Authentication and enter root password.
+
+    On Identity & Authentication tab, select LDAP from User Account Database drop-down and fill in LDAP Search Base DN and LDAP Server.
+
+    If LDAP server supports TLS, select Use TLS to encrypt connections and then Download CA Certificate.
+
+    From Authentication Method drop-down, select Kerberos password. Fill in Realm, KDCs, and Admin Servers.
+
+    If central home directories are not available, click Advanced Options tab and select Create home directories on the first login.
+
+    Click Apply to save and activate changes. This writes all relevant configuration files and restarts sssd.
+------------------------------------------------------------
+Identity Management Services
+Testing a Configuration
+
+    To test LDAP and Kerberos, log in to system, using SSH, with credentials of network user
+
+    Use getent to retrieve information about network user:
+
+    getent passwd <USERNAME>
+
+    Default sssd configuration does not enumerate network users when username is not specified with getent
+---------------------------------------------
+Identity Management Services
+Testing a Configuration
+
+    To test LDAP and Kerberos, log in to system, using SSH, with credentials of network user
+
+    Use getent to retrieve information about network user:
+
+    getent passwd <USERNAME>
+
+    Default sssd configuration does not enumerate network users when username is not specified with getent
+------------------------------------------------
+Identity Management Services
+Attaching a System to an IPA Server
+
+    Use IPA Server to configure LDAP and Kerberos
+
+    IPA Server provides LDAP and Kerberos combined with command line and web tools
+
+    IPA Server can centralize the following and more:
+
+        sudo rules
+
+        SSH public keys
+
+        SSH host keys
+
+        TLS certificates
+
+        Automounter maps
+--------------------------
+Identity Management Services
+Using ipa-client-install
+
+    ipa-client-install is part of ipa-client package
+
+        Pulls in all dependencies (such as sssd)
+
+        Retrieves most required information from DNS
+
+        Creates host entries on IPA server
+
+        Allows IPA server administrator to set access policies for host, create service principals and more
+
+    Without arguments, ipa-client-install tries to retrieve DNS information about IPA server configured for its DNS domain
+
+    If retrieval fails, it prompts administrator for:
+
+        Domain name of IPA server
+
+        Realm to use
+
+        Username and password of account allowed to create new machine entries on IPA server
+
+            Can use default IPA server admin account or another account created for this purpose
+-------------------------------------------------------
+Identity Management Services
+DNS-Driven Configuration
+
+[student@desktop ~]$ sudo ipa-client-install
+Discovery was successful!
+Hostname:desktop.domain0.example.com
+Realm:DOMAIN0.EXAMPLE.COM
+DNS Domain:server.domain0.example.com
+IPA Server:server.domain0.example.com
+BaseDN:dc=server,dc=domain0,dc=example,dc=com
+
+Continue to configure the system with these values? [no]:yes
+User authorized to enroll computers:admin
+Synchronizing time with KDC...
+Password for admin@DOMAIN0.EXAMPLE.COM:redhat123
+Successfully retrieved CA cert
+    Subject:    CN=Certificate Authority,O=DOMAIN0.EXAMPLE.COM
+    Issuer:     CN=Certificate Authority,O=DOMAIN0.EXAMPLE.COM
+    Valid From: Thu Feb 27 13:31:04 2014 UTC
+    Valid Until:Mon Feb 27 13:31:04 2034 UTC
+
+Enrolled in IPA realm DOMAIN0.EXAMPLE.COM
+Created /etc/ipa/default.conf
+New SSSD config will be created
+Configured /etc/sssd/sssd.conf
+Configured /etc/krb5.conf for IPA realm DOMAIN0.EXAMPLE.COM
+Adding SSH public key from /etc/ssh/ssh_host_rsa_key.pub
+Adding SSH public key from /etc/ssh/ssh_host_ecdsa_key.pub
+SSSD enabled
+Configured /etc/openldap/ldap.conf
+Configured /etc/ssh/ssh_config
+Configured /etc/ssh/sshd_config
+Client configuration complete.
+---------------------------------
+Identity Management Services
+Joining a System to Active Directory
+
+    Can install samba-winbind package and use authconfig to configure winbind
+
+    Can install sssd and realmd packages and use sssd and realm commands
+
+        realm can also be used to join Kerberos realms or IPA server domains, but final configuration is different
+
+            Users have @domain appended to their usernames
+
+            ipa-client-install is preferred way to join IPA domains
+
+=====================
+no practical for Lab LDAP
+=========================
+--------------------------------------------------------------
+Identity Management Services
+Example: Joining an Active Directory Domain
+
+    Install realmd package:
+
+    [student@demo ~]$ yum -y install realmd
+
+    Discover settings for domain.example.com:
+
+    [student@demo ~]$ sudo realm discover domain.example.com
+
+    Join Active Directory domain to install required packages and configure sssd, pam, /etc/nsswitch.conf, etc.
+
+    [student@demo ~]$ sudo realm join domain.example.com
+
+        Enter password for Administrator account when prompted
+
+        To use a different account, use --user
+
+    Active Directory accounts are usable on local system, but logins using Active Directory are disabled.
+
+        To enable logins:
+
+        [student@demo ~]$ sudo realm permit --realm domain.example.com --all
+
+        To allow only certain users to log in, replace --all with list of users:
+
+        [student@demo ~]$ sudo realm permit --realm domain.example.com DOMAIN\\Itchy DOMAIN\\Scratchy
+
+------------------------------------------------------------
+Identity Management Services
+Active Directory Logins
+
+    By default, domain users must use a fully qualified name to log in
+
+        Example: ipauser@ipa.example.com for IPA users
+
+        Example: DOMAIN\Picard for Active Directory users
+
+    To disable fully qualified names, do one of the following in correct domain block in /etc/sssd/sssd.conf:
+
+        Change use_fully_qualified_names to False
+
+        Remove use_fully_qualified_names setting entirely and restart sssd
+
+	For more information, see these man pages: authconfig(8), authconfig-tui(8), authconfig-gtk(8), sssd(8),sssd-ipa(8), sssd.conf(5), sssd-ad, and realm(8).
+------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

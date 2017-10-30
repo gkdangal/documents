@@ -1,0 +1,133 @@
+File System Terms
+
+    Static: Content that remains unchanged until explicitly edited or reconfigured
+
+    Dynamic or variable: Content that is modified or appended by active processes
+
+    Persistent: Content, particularly configuration settings, that remains after a reboot
+
+    Runtime: Process- and system-specific content and attributes that are cleared during a reboot
+------------------------------------------------------------
+/usr=>
+
+Installed software, shared libraries, include files, and static read-only program data. Important subdirectories include:
+
+    /usr/bin: User commands
+
+    /usr/sbin: System administration commands
+
+    /usr/local: Locally customized software
+----------------------------------------------
+/etc =>
+
+Configuration files specific to system.
+-------------------------------------------
+/var => dynamically changed files.
+
+Variable data specific to system that should persist between boots. Under /var are files that dynamically change.
+
+Examples: Databases, cache directories, log files, printer-spooled documents, and website content.
+=======================================
+Symbolic link Directory
+
+Symbolic Link Directories
+
+    Older directories in / now have the same content as their counterparts in /usr:
+
+        /bin = /usr/bin
+
+        /sbin == /usr/sbin
+
+        /lib == /usr/lib
+
+        /lib64 == /usr/lib64
+
+    Formerly these were distinct directories with different files
+
+    Directories in / are symbolic links to matching directories in /usr
+
+-====================================================================
+copy command
+cp
+cp -p
+cp -r for directory compy
+
+rename and move files and folder.
+mv
+remove files and folder
+rm
+rm -f
+rm -rf
+-i promting oposite of f
+-f not promting
+make directory
+mkdir
+mkdir -p
+-p is parent option
+----------------------------------------------------------------------
+Hard Links
+
+    Hard link: Directory entry that references a file
+
+        Every file has one hard link by default
+
+    To save space, create hard link instead of copying file
+
+    If created in same directory as existing hard link, hard link must have different file name
+
+        Or create hard link in different directory
+
+    All hard links pointing to file have same:
+
+        Permissions
+
+        Link count
+
+        User/group ownerships
+
+        Time stamps
+
+        Content
+Example: Create hard link newfile-link2.txt for file newfile.txt in same directory
+
+[root@server1 ~]# ln newfile.txt /tmp/newfile-hlink2.txt
+[root@server1 ~]# ls -l newfile.txt /tmp/newfile-hlink2.txt
+-rw-rw-r--. 2 root root 12 Mar 11 19:9 newfile.txt
+-rw-rw-r--. 2 root root 12 Mar 11 19:9 newfile-hlink2.txt
+==========================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

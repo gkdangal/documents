@@ -1,0 +1,146 @@
+Network Port Security Labs
+1. Write Custom Rules
+
+In this lab, you configure your server1.example.com system to allow connections to a (new) http service, but only from desktop1.example.com, and with a rate-limited log message.
+
+Your company is running a trial that includes starting a web server on server1.example.com, but for the duration of the trial, only desktop1.example.com should be able to connect. Since this could potentially generate many log entries, this logging should be limited to a maximum of three messages per second, and all log md be prefixed with the message `"NEW HTTP "`essages shoul.
+
+It was decided that you, the IT Rock Star, need to implement this using firewalld rich rules.
+
+    Reset your server1.example.com system.
+
+    Install, start, and enable httpd.
+
+    [root@server1 ~]# yum -y install httpd
+    [root@server1 ~]# systemctl start httpd.service
+    [root@server1 ~]# systemctl enable httpd.service
+
+    Configure a firewall rule in the default zone that allows traffic to http only from your desktop1.example.com system. This traffic should be logged, but with a maximum of three new connections per second.
+
+        Permanently create the new firewall rule.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address=192.168.0.1/32 service name="http" log level=notice prefix="NEW HTTP " limit value="3/s" accept'
+
+        Activate the changes to your firewall.
+
+        [root@server1 ~]# firewall-cmd --reload
+
+        On your server1.example.com system, use tail -f to view the additions to /var/log/messages in real time.
+
+        [root@server1 ~]# tail -f /var/log/messages
+
+        From your desktop1.example.com system, use curl to connect to the httpd service running on server1.example.com.
+
+        [student@desktop1 ~]$ curl http://server1.example.com
+
+        Inspect the output of your running tail command on server1.example.com. You should see a message for the new connection like this:
+
+        May  9 08:04:11 server1 kernel: NEW HTTP IN=eth0 OUT= MAC=... SRC=192.168.0.1 DST=192.168.0.101 LEN=60....
+
+2. Forward a Port
+
+In this lab, you configure port forwarding between two hosts.
+
+Your company is running a trial for a new bastion host. As part of this trial, your desktop1.example.com should be able to connect to the SSH daemon on your server1.example.com system on port 443/tcp. Because this is purely a trial, you do not want to bind sshd to that port directly, and only your desktop1.example.com should be able to connect using port 443/tcp.
+
+You need to implement these changes using firewalld rich rules.
+
+    Reset your server1.example.com system.
+
+    Configure the firewall on server1.example.com to forward port 443/tcp to 22/tcp, but only for your desktop1.example.com machine. The IP address of your desktop1.example.com machine is 192.168.0.1.
+
+    Permanently add the port forwarding firewall rule on server1.example.com.
+
+    [root@server1 ~]# firewall-cmd --permanent --add-rich-rule 'rule family=ipv4 source address=192.168.0.1/32 forward-port port=443 protocol=tcp to-port=22'
+
+    Reload the firewall configuration to activate your changes.
+
+    [root@server1 ~]# firewall-cmd --reload
+
+    Test if sshd is now available on port 443/tcp from your desktop1.example.com system.
+
+    [student@desktop1 ~]$ ssh -p 443 server1.example.com
+    The authenticity of host '[server1.example.com]:443 ([192.168.0.101]:443)' can't be established.
+    ECDSA key fingerprint is XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX:XX.
+    Are you sure you want to continue connecting (yes/no)? yes
+    student@server1.example.com's password: student
+
+3. Manage SELinux Port Labeling
+
+In this lab, you configure your server1.example.com system to allow http access on a non-standard port.
+
+Your organization is deploying a new custom web application. Unfortunately for you, the web application is running on a non-standard port; in this case, 82/TCP.
+
+One of your developers has already configured the application on your server1.example.com, but the web server does not start successfully. Your mission is to get the httpd.service service on server1.example.com to start successfully and to serve content to your desktop1.example.com system over port 82/TCP.
+
+    Reset your server1.example.com system.
+
+    Log in to your server1.example.com system and break the web server.
+
+    [root@server1 ~]# sed -i "s/Listen 80/Listen 82/" /etc/httpd/conf/httpd.conf
+    [root@server1 ~]# echo "Hello" > /var/www/html/index.html
+
+    Start by restarting the httpd.service.
+
+    [root@server1 ~]# systemctl restart httpd.service
+    Job for httpd.service failed. See 'systemctl status httpd.service' and
+    'journalctl -xn' for details
+
+        View the output from systemctl status -l httpd.service.
+
+        [root@server1 ~]# systemctl status -l httpd.service
+        ...
+          Permission denied: AH00072: make_sock: could not bind to address 0.0.0.0:82
+        ...
+
+        Check if SELinux is blocking httpd from binding to port 82/TCP.
+
+        [root@server1 ~]# sealert -a /var/log/audit/audit.log
+
+    Configure SELinux to allow httpd to bind to port 82/TCP, then restart the httpd.service service.
+
+        Use semanage to find an appropriate port type for port 82/TCP.
+
+        [root@server1 ~]# semanage port -l | grep http
+
+        http_port_t seems promising, since it is what the normal http port (80/TCP) is also assigned to.
+
+        Assign port 82/TCP the http_port_t type.
+
+        [root@server1 ~]# semanage port -a -t http_port_t -p tcp 82
+
+        Restart the httpd.service service.
+
+        [root@server1 ~]# systemctl restart httpd.service
+
+    Check if you can now access the web server running on port 82/TCP.
+
+    [root@server1 ~]# curl http://server1.example.com:82
+    Hello
+
+    Check if you can access the new web service from your desktop1.example.com system.
+
+    [root@desktop1 ~]# curl http://server1.example.com:82
+    curl: (7) Failed to connect to server1.example.com:82; No route to host
+
+        This error means you still cannot connect from desktop1.example.com.
+
+        Take a minute to think about probable causes for this failure.
+
+    On your server1.example.com system, open port 82/TCP on your firewall.
+
+        Open port 82/TCP in the permanent configuration for the default zone on the firewall on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --permanent --add-port=82/tcp
+
+        Activate your firewall changes on server1.example.com.
+
+        [root@server1 ~]# firewall-cmd --reload
+
+    Check if you can now access the new web service from your desktop1.example.com system.
+
+    [root@desktop1 ~]# curl http://server1.example.com:82
+    Hello
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT

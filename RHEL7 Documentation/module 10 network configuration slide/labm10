@@ -1,0 +1,335 @@
+Network Configuration Labs
+1. Examine the Network Configuration
+
+In this lab, you examine the network configuration of the current system to identify the current network interfaces and basic network addresses.
+
+    Display the current IP address and netmask for all interfaces.
+
+    [student@server1 ~]$ ip addr
+    1:lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
+        link/loopback 00:0:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+           valid_lft forever preferred_lft forever
+        inet6 ::1/128 scope host
+           valid_lft forever preferred_lft forever
+    2:eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+        link/ether 52:4:00:00:00:0b brd ff:ff:ff:ff:ff:ff
+        inet 192.168.0.11/24 brd 192.168.0.255 scope global dynamic eth0
+           valid_lft 12704sec preferred_lft 12704sec
+        inet6 fe80::5054:ff:fe00:b/64 scope link
+           valid_lft forever preferred_lft forever
+
+    Display the statistics for the eth0 interface.
+
+    [student@server1 ~]$ ip -s link show eth0
+    2:eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+        link/ether 52:4:00:00:00:0b brd ff:ff:ff:ff:ff:ff
+        RX:bytes  packets  errors  dropped overrun mcast
+        418398     4588     0       0       0       0
+        TX:bytes  packets  errors  dropped carrier collsns
+        360733     1730     0       0       0       0
+
+    Display the routing information.
+
+    [student@server1 ~]$ ip route
+    default via 192.168.0.254 dev eth0  proto static  metric 1024
+    192.168.0.0/24 dev eth0  proto kernel  scope link  src 192.168.0.101
+
+    Verify that the router is accessible.
+
+    [student@server1 ~]$ ping -c3 192.168.0.254
+    PING 192.168.0.254 (192.168.0.254) 56(84) bytes of data.
+    64 bytes from 192.168.0.254:icmp_seq=1 ttl=64 time=0.489 ms
+    64 bytes from 192.168.0.254:icmp_seq=2 ttl=64 time=0.510 ms
+    64 bytes from 192.168.0.254:icmp_seq=3 ttl=64 time=0.458 ms
+
+    --- 192.168.0.254 ping statistics ---
+    3 packets transmitted, 3 received, 0% packet loss, time 1999ms
+    rtt min/avg/max/mdev = 0.458/0.485/0.510/0.033 ms
+
+    Show all the hops between the local system and instructor.example.com.
+
+    [student@server1 ~]$ tracepath instructor.example.com
+     1: instructor.example.com                                 0.522ms !H
+         Resume:pmtu 65535
+
+    Display the listening TCP sockets on the local system.
+
+    [student@server1 ~]$ ss -lt
+    State      Recv-Q Send-Q      Local Address:ort          Peer Address:Port
+    LISTEN     0      128                     *:5630                    *:*
+    LISTEN     0      128                     *:unrpc                   *:*
+    LISTEN     0      128                     *:sh                      *:*
+    LISTEN     0      100             127.0.0.1:mtp                     *:*
+    LISTEN     0      128                    ::sunrpc                  :::*
+    LISTEN     0      128                    ::ssh                     :::*
+    LISTEN     0      128                    ::33079                   :::*
+    LISTEN     0      100                   :1:smtp                    :::*
+
+2. Configure Network Settings With nmcli
+
+In this lab, you configure network settings using nmcli, and you convert a system from DHCP to a static configuration.
+
+    Access your server1.example.com VM using the GUI console and log in as student.
+
+    View network settings using nmcli.
+
+        Show all connections.
+
+        [student@server1 ~]$ nmcli con show
+        NAME         UUID                                  TYPE            DEVICE
+        System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0
+
+        Display all configuration settings for the active connection.
+
+        [student@server1 ~]$ nmcli con show "System eth0"
+        connection.id:                         System eth0
+        connection.uuid:                       5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03
+        connection.interface-name:             eth0
+        connection.type:                       802-3-ethernet
+        connection.autoconnect:                yes
+        connection.timestamp:                  1394813303
+        connection.read-only:                  no
+        connection.permissions:
+        ...
+        IP4.ADDRESS[1]:                        ip = 192.168.0.11/24, gw = 192.168.0.254
+        IP4.DNS[1]:                            192.168.0.254
+        IP4.DOMAIN[1]:                         example.com
+        ...
+
+        Show device status.
+
+        [student@server1 ~]$ nmcli dev status
+        DEVICE  TYPE      STATE      CONNECTION
+        eth0    ethernet  connected  System eth0
+        lo      loopback  unmanaged  --
+
+    Display the settings for the eth0 device.
+
+    [student@server1 ~]$ nmcli dev show eth0
+    GENERAL.DEVICE:                        eth0
+    GENERAL.TYPE:                          ethernet
+    GENERAL.HWADDR:                        52:54:00:00:00:0B
+    GENERAL.MTU:                           1500
+    GENERAL.STATE:                         100 (connected)
+    GENERAL.CONNECTION:                    System eth0
+    GENERAL.CON-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/1
+    WIRED-PROPERTIES.CARRIER:              on
+    IP4.ADDRESS[1]:                        ip = 192.168.0.11/24, gw = 192.168.0.254
+    IP4.DNS[1]:                            192.168.0.254
+    IP4.DOMAIN[1]:                         example.com
+    IP6.ADDRESS[1]:                        ip = fe80::5054:ff:fe00:b/64, gw = ::
+
+    As the root user create a static connection with the same IPv4 address, network prefix, and default gateway. Name the new connection static-eth0.
+    	Since access to your machine is provided over the primary network connection, setting incorrect values during network configuration may make your machine unreachable. This is why you should run this lab from the GUI console.
+
+    [student@server1 ~]$ sudo nmcli con add con-name "static-eth0" ifname eth0 type ethernet ip4 192.168.0.11/24 gw4 192.168.0.254
+    Connection 'static-eth0' (f3e8dd32-3c9d-48f6-9066-551e5b6e612d) successfully added.
+
+    Modify the new connection to add the DNS setting.
+
+    [student@server1 ~]$ sudo nmcli con mod "static-eth0" ipv4.dns 192.168.0.254
+
+        View all connections.
+
+        [student@server1 ~]$ nmcli con show
+        NAME         UUID                                  TYPE            DEVICE
+        static-eth0  f3e8dd32-3c9d-48f6-9066-551e5b6e612d  802-3-ethernet  --
+        System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0
+
+        View the active connection.
+
+        [student@server1 ~]$ nmcli con show --active
+        System eth0  5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  802-3-ethernet  eth0
+
+        Activate the new connection.
+
+        [student@server1 ~]$ sudo nmcli con up "static-eth0"
+        Connection successfully activated (D-Bus active path:/org/freedesktop/NetworkManager/ActiveConnection/3)
+
+        View the active connection.
+
+        [student@server1 ~]$ nmcli con show --active
+        NAME         UUID                                  TYPE            DEVICE
+        static-eth0  f3e8dd32-3c9d-48f6-9066-551e5b6e612d  802-3-ethernet  eth0
+
+    Test the connectivity using the new network addresses.
+
+        Verify the IP address.
+
+        [student@server1 ~]$ ip addr show eth0
+        2:eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+            link/ether 52:4:00:00:00:0b brd ff:ff:ff:ff:ff:ff
+            inet 192.168.0.11/24 brd 192.168.0.255 scope global eth0
+               valid_lft forever preferred_lft forever
+            inet6 fe80::5054:ff:fe00:b/64 scope link
+               valid_lft forever preferred_lft forever
+
+        Verify the default gateway.
+
+        [student@server1 ~]$ ip route
+        default via 192.168.0.254 dev eth0  proto static  metric 1024
+        192.168.0.0/24 dev eth0  proto kernel  scope link  src 192.168.0.101
+
+        Ping the DNS address.
+
+        [student@server1 ~]$ ping -c3 192.168.0.254
+        PING 192.168.0.254 (192.168.0.254) 56(84) bytes of data.
+        64 bytes from 192.168.0.254:icmp_seq=1 ttl=64 time=0.419 ms
+        64 bytes from 192.168.0.254:icmp_seq=2 ttl=64 time=0.598 ms
+        64 bytes from 192.168.0.254:icmp_seq=3 ttl=64 time=0.503 ms
+
+        --- 192.168.0.254 ping statistics ---
+        3 packets transmitted, 3 received, 0% packet loss, time 1999ms
+        rtt min/avg/max/mdev = 0.419/0.506/0.598/0.077 ms
+
+    Configure the original connection so that it does not start at boot and verify that the static connection is used when the system reboots.
+
+        Disable the original connection from auto starting at boot.
+
+        [student@server1 ~]$ sudo nmcli con mod "System eth0" connection.autoconnect no
+
+        Reboot the system.
+
+        [student@server1 ~]$ reboot
+
+    Once the system has rebooted, log back in and view the active connection.
+
+    [student@server1 ~]$ nmcli con show --active
+    NAME         UUID                                  TYPE            DEVICE
+    static-eth0  f3e8dd32-3c9d-48f6-9066-551e5b6e612d  802-3-ethernet  eth0
+
+    On the desktop1.example.com system as root, reset the server1.example.com system to revert all changes:
+
+    [root@desktop1 ~]# lab-resetvm
+
+3. Edit Network Configuration Files
+
+In this lab, you edit network configuration files and add an additional network address to each system.
+
+    Log in to server1.example.com via the console GUI as root and edit the /etc/sysconfig/network-scripts/ifcfg-eth0 to disable dhcp, set a static IP for 192.168.0.101, and add an additional address of 192.168.0.201/24.
+
+        Append an entry to the file to specify the IPv4 address.
+
+        [root@server1 ~]# sed -i "s/dhcp/none/" /etc/sysconfig/network-scripts/ifcfg-eth0
+        [root@server1 ~]# echo "IPADDR1=192.168.0.101" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+        [root@server1 ~]# echo "IPADDR2=192.168.0.201" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+
+        Append an entry to the file to specify the network prefix.
+
+        [root@server1 ~]# echo "PREFIX1=24" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+        [root@server1 ~]# echo "PREFIX2=24" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+
+    Reload the configuration changes.
+
+    [root@server1 ~]# nmcli con reload
+
+    Restart the connection with the new settings.
+
+    [root@server1 ~]# nmcli con up "System eth0"
+
+    Look at new ifcfg-eth0 file and make sure network configuration changes took place:
+
+    [root@server1 ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth0
+    [root@server1 ~]# ip addr show dev eth0
+
+    Log in to desktop1.example.com and attempt to ping 192.168.201.
+
+    [root@desktop1 ~]# ping 192.168.0.201
+
+    From the desktop1.example.com system, reset the server1.example.com host to default settings:
+
+    [root@desktop1 ~]# lab-resetvm
+
+4. Configure Host Names and Name Resolution
+
+In this lab, you configure the system host name and name resolution.
+
+    Display the current host name.
+
+    [root@server1 ~]# hostname
+    server1.example.com
+
+    Display the host name status.
+
+    [root@server1 ~]# hostnamectl status
+       Static hostname:server1.example.com
+             Icon name:computer
+               Chassis:n/a
+            Machine ID:9f6fb63045a845d79e5e870b914c61c9
+               Boot ID:d4ec3a2e8d3c48749aa82738c0ea946a
+      Operating System:Red Hat Enterprise Linux Server 7.0 (Maipo)
+           CPE OS Name:cpe:/o:redhat:enterprise_linux:7.0:beta:server
+                Kernel:Linux 3.10.0-97.el7.x86_64
+          Architecture:x86_64
+
+    Temporarily change the host name.
+
+    [root@server1 ~]# hostname testname
+
+    Display the current host name.
+
+    [root@server1 ~]# hostname
+    testname
+
+    View the configuration file providing the host name at network start.
+
+    [root@server1 ~]# cat /etc/hostname
+    server1.example.com
+
+    Reboot the system.
+
+    [root@server1 ~]# reboot
+
+    Display the current host name.
+
+    [root@server1 ~]# hostname
+    server1.example.com
+
+    Set hostname to survive reboots:
+
+    [root@server1 ~]# hostnamectl set-hostname testname.foo
+    [root@server1 ~]# cat /etc/hostname
+
+    Add a local nickname for the instructor server.
+
+        Look up the IP address of instructor.example.com.
+
+        [root@server1 ~]# host instructor.example.com
+        instructor.example.com has address 192.168.0.254
+
+        Modify /etc/hosts so that the name class has the IP address 192.168.0.254 and can be used to communicate with instructor.example.com.
+
+        [root@server1 ~]# vim /etc/hosts
+        [root@server1 ~]# cat /etc/hosts
+        127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+        ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+        192.168.0.254 instructor.example.com class
+        192.168.0.254 content.example.com
+
+        Look up the IP address of class.
+
+        [root@server1 ~]# host class
+        Host class not found:2(SERVFAIL)
+        [root@server1 ~]# getent hosts class
+        192.168.0.254    instructor.example.com class
+
+        Ping class.
+
+        [root@server1 ~]# ping -c3 class
+        PING instructor.example.com (192.168.0.254) 56(84) bytes of data.
+        64 bytes from instructor.example.com (192.168.0.254):icmp_seq=1 ttl=64 time=0.397 ms
+        64 bytes from instructor.example.com (192.168.0.254):icmp_seq=2 ttl=64 time=0.447 ms
+        64 bytes from instructor.example.com (192.168.0.254):icmp_seq=3 ttl=64 time=0.470 ms
+
+        --- instructor.example.com ping statistics ---
+        3 packets transmitted, 3 received, 0% packet loss, time 2000ms
+        rtt min/avg/max/mdev = 0.397/0.438/0.470/0.030 ms
+
+    Reset server1.example.com back to default settings.
+
+    [root@server1 ~]# lab-resetvm
+
+
+

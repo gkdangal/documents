@@ -1,0 +1,180 @@
+Course Goals
+
+    Explain, in depth, benefits of Red Hat OpenShift Container Platform 3
+
+    Identify and qualify use cases
+
+    Explain OpenShift 3 positioning in competitive landscape
+
+    Explain technical architecture
+
+    Demonstrate OpenShift 3
+----------------------------------
+Module Topics
+
+    Course Goals
+
+    Course Activities
+
+    Course Overview
+
+    Assumptions
+
+    Class Environment
+
+    Connection Details
+---------------------------------
+Course Activities
+Selling OpenShift Activity Group
+
+    Describe use of containers
+
+    List four descriptive statements that define what OpenShift is
+
+    Describe in detail benefits of PaaS and OpenShift
+
+    List four OpenShift capabilities that enable DevOps and continuous integration (CI)
+
+    Describe the OpenShift development model (origin → container platform)
+
+    Describe Red Hat OpenShift commercial offerings
+
+    Describe OpenShift Commons
+
+    Describe how companies are changing their development approach
+
+	
+
+    Describe how Red Hat addresses container adoption concerns
+
+    List critical features of OpenShift for Developers and operations
+
+    Describe basic OpenShift security features
+
+    Describe persistent storage and its benefits with OpenShift
+
+    Describe aggregated logging and metrics collection features in OpenShift
+
+    Describe benefits of source-to-image (S2I)
+
+    Describe OpenShift objection handling
+
+    Discover and qualify OpenShift use cases
+
+    Explain Red Hat OpenShift Container Platform positioning in competitive landscape
+------------------------------------
+Course Activities
+OpenShift Architecture Activity Group
+
+    Describe what pods and containers are
+
+    Describe role of masters and infranodes
+
+    Describe role of nodes
+
+    Describe what services and routes are and what they are used for
+
+    Describe external routing into OpenShift applications and role of router
+
+    Describe internal routing within OpenShift
+
+    Describe role of scheduler and replication controllers
+
+    Describe workflow of OpenShift pod deployment
+
+	
+
+    Demonstrate deploying binary container from external registry
+
+    Conduct discussion and whiteboard session of technical architecture of OpenShift deployment
+
+    Describe labels and their role within OpenShift
+
+    Review items in OpenShift web console or the command line: nodes, labels, services, routes, pods, containers
+
+    Provide brief overview of OpenShift aggregated logging and metrics collection facilities
+
+    Demonstrate in-browser (per-pod) and aggregated logging
+
+    Demonstrate collecting load and review metrics
+-----------------------------------------
+Course Activities
+OpenShift User Experience Activity Group
+
+    Describe role of projects and users
+
+    Demonstrate user’s view of the OpenShift web console
+
+    Demonstrate project ownership, isolation, and sharing
+
+    Describe role of quotas and limits
+
+    Demonstrate viewing project’s quota and limits using OpenShift web console
+
+    Demonstrate scaling application up to allowed quota
+
+    Describe S2I process
+
+    Describe role of OpenShift integrated registry
+
+    Describe role of build configurations
+
+    Describe role of image stream and images
+
+    Demonstrate creating S2I-based image
+---------------------------------------------
+Course Activities
+CICD and Pipelines with OpenShift Activity Group
+
+    Describe role of deployment configurations
+
+    Provide brief overview of OpenShift deployment options
+
+    Demonstrate scaling application and triggering new deployment
+
+    Describe CICD workflow and how it is implemented with OpenShift
+
+    Demonstrate delivery pipelines/Jenkins integration and explain the software delivery life cycle (SDLC) and promotion paths
+
+    Demonstrate how using environment variables and internal DNS system wire application components together
+
+    Describe the role of templates
+
+    Demonstrate deploying a multicomponent application from template
+
+    Demonstrate OpenShift integration with Red Hat CloudForms
+
+    Demonstrate using pod/container terminal
+------------------------------------------------
+Course Overview
+Course Modules
+
+    Introduction to Course and Learning Environment
+
+    OpenShift Architecture
+
+    OpenShift User Experience
+
+    CICD and Pipelines with OpenShift
+----------------------------------
+Assumptions
+
+    You want to learn how to use Red Hat OpenShift Container Platform
+
+    You can read and modify some form of code
+
+    You have a workstation available for this training
+
+    You have an SSH client installed on your workstation
+------------------------------------
+Class Environment
+
+    Shared OpenShift cluster provisioned in Amazon Web Services (AWS) and shared between all OPENTLC users
+
+    Provisioning the environment(s) required for this course is covered in the lab(s) for this module.
+------------------------------------------
+
+
+
+
+

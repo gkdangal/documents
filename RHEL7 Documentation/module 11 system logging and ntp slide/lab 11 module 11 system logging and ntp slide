@@ -1,0 +1,74 @@
+System Logging and NTP Labs
+1. Find Log Entries
+
+In this lab, you reconfigure rsyslog to write specific messages to a new log file.
+
+    Change the rsyslog configuration to log all messages with severity debug to /var/log/messages-debug on server1.example.com by adding the /etc/rsyslog.d/debug.conf file.
+
+    [root@server1 ~]# echo "*.debug /var/log/messages-debug" >/etc/rsyslog.d/debug.conf
+
+    Restart the rsyslog service on server1.example.com.
+
+    [root@server1 ~]# systemctl restart rsyslog
+
+    Monitor /var/log/messages-debug with the tail command on server1.example.com.
+
+    [root@server1 ~]# tail -f /var/log/messages-debug
+
+    In a separate terminal window, use the logger command to generate a debug message on server1.example.com.
+
+    [root@server1 ~]# logger -p user.debug "Debug Message Test"
+
+    Switch back to the terminal still running the tail -f /var/log/messages-debug command and verify the message sent with the logger command shows up.
+
+    [root@server1 ~]# tail -f /var/log/messages-debug
+    ...
+    Feb 13 10:7:44 localhost root: Debug Message Test
+
+2. Find Events With journalctl
+
+In this lab, you filter the systemd journal for specific criteria.
+
+    Output only systemd journal messages that originate from the systemd process that always runs with process ID 1 on server1.example.com.
+
+    [root@server1 ~]# journalctl _PID=1
+
+    Display all systemd journal messages that originate from a system service started with user ID 81 on server1.example.com.
+
+    [root@server1 ~]# journalctl _UID=81
+
+    Output the journal messages with priority warning and above on server1.example.com.
+
+    [root@server1 ~]# journalctl -p warning
+
+    Create a journalctl query to show all log events recorded in the previous 10 minutes on server1.example.com. The command assumes a current time of 9:5:00.
+
+    [root@server1 ~]# journalctl --since 9:05:00 --until 9:15:00
+
+    Display only the events originating from the sshd service with the system unit file sshd.service recorded since 9:0:00 this morning on server1.example.com.
+
+    [root@server1 ~]# journalctl --since 9:00:00 _SYSTEMD_UNIT="sshd.service"
+
+3. Configure a Persistent systemd Journal
+
+In this lab, you make the systemd journal persistent.
+
+    Configure the systemd journal to be persistent across reboots.
+
+        Configure the directory /var/log/journal on server1.example.com.
+
+        [root@server1 ~]# mkdir /var/log/journal
+        [root@server1 ~]# chown root:systemd-journal /var/log/journal
+        [root@server1 ~]# chmod 2755 /var/log/journal
+
+        Send the USR1 signal to systemd-journald or reboot server1.example.com.
+
+        [root@server1 ~]# killall -USR1 systemd-journald
+
+    To verify the systemd journal is persistent, look for a new directory with the systemd journal log files that have been written to /var/log/journal. (The exact files which appear on your system may vary, but the directory should have similar contents to the following example.)
+
+    [root@server1 ~]# ls /var/log/journal/4513ad59a3b442ffa4b7ea88343fa55f
+    system.journal     user-1000.journal
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT

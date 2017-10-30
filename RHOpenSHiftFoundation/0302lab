@@ -1,0 +1,124 @@
+1. Demonstrate Authentication to OpenShift Master
+	Skip this section if you already executed the steps in previous demonstrations.
+
+    Action: Log in to the OPENTLC shared OpenShift web console using either of these methods:
+
+        Method 1: Go to https://master.na1.openshift.opentlc.com
+
+        Method 2: Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        LocalMachine$ oc login https://master.na1.openshift.opentlc.com --username shacharb-redhat.com
+        Username: shacharb-redhat.com
+        Password: **********
+        Logged into "https://master.na1.openshift.opentlc.com" as "shacharb-redhat.com" using existing credentials.
+
+2. Demonstrate Creating a Project
+	Skip this section if you already executed the steps in previous demonstrations.
+
+    Action: Click New Project to create a project for your demonstration:
+    Demo01 New Project Button
+
+        Explain what projects are and how different projects can have different user permissions and quotas attached to them.
+
+    Action: Fill in the Name, Display Name, and Description fields:
+    Explore Demo02 Create Project Details
+    	Make sure you replace unique-id or GUID with a unique identifier (such as your client’s name). Project names must be unique in OpenShift.
+    	
+
+    Two other options for completing this task:
+
+        Use the command line from any host with the OpenShift client utility (oc) installed:
+
+        [sborenst@ip-192-168-20-158 ~]$ oc new-project ${GUID}-exploring-openshift --description="This is the Project for exploring OpenShift UI" --display-name="Exploring OpenShift UI"
+        Now using project "guid-exploring-openshift" on server "https://master.na1.openshift.opentlc.com".
+
+        Run the oc new-project ${GUID}-exploring-openshift command without the description and display name information.
+
+3. Demonstrate Deploying an Application Based on a Template
+	Skip this section if you already executed the steps in previous demonstrations.
+
+    Action: After creating your project or after clicking Add to project, enter example in the catalog filter and select cakephp-mysql-example:
+    Explore Demo03 Select Template
+
+        Explain the following aspects of the Application Creation page:
+
+            Point out the Name for this deployment.
+
+            Point out the Memory limits for your PHP application and for the MySQL database container.
+
+            Point out that the Git Repository URL field allows you to define the Git repository that contains the source code for your application.
+            Explore Demo04 App Template Options1
+
+        Explain that there are more settings that you can define as you scroll down the page:
+
+            Point out that you can set different variables in your deployment, such as the database user, passwords, and more, and that these settings are used to deploy the front-end application and the back-end database.
+
+            Point out that you can use Labels to add information to deployment objects and resources that you can then use to group, inspect, scale, or delete them.
+            Explore Demo05 App Template Options2
+
+    Action: When you are done, click Create.
+
+        (Optional) Explain the following features on this screen:
+
+            Point out that on the left you can see an example of how to log in to OpenShift using the OpenShift client utility (oc).
+
+            Point out that on the right you can easily access the webhook trigger to create a new build.
+
+            Point out that you can view the deployment parameters values by clicking Show parameter values:
+            Explore Demo06 App Create1 a
+
+        (Optional) Explain (if you clicked the link) that the expanded parameters now visible at the bottom provide another view of all the settings you can use for this application:
+        Explore Demo07 App Create2 a
+
+    Action: When you are done, click Continue to overview at the top.
+
+4. Demonstrate Exploring Quotas & Limits
+
+    Action: From the menu on the left, select Resources → Quota:
+    Explore Demo15 Quotas01
+
+    Explain that the project’s Quota page displays all of the quotas and limits currently set for the project:
+
+        Point out the graphical display of usage and availability of resources in the project based on requests and limits for CPU and memory.
+
+        Point out the specific quota and usage data for each resource type.
+
+        Point out the container and pod requests and limits.
+        Explore Demo15 Quotas02
+
+    Action: From the menu on the left, select Overview to return to the Overview page.
+
+        Explain that you are now going to scale up the deployment to show how the quota limits restrict the deployment from using more resources than allowed.
+
+    Action: Scale your application to 7 pods by clicking the Up button (marked with a green square) six times.
+
+        Point out that you can see OpenShift scaling up the pods.
+
+        Point out that you can also see the resources used by all of the pod replicas in this deployment.
+        Explore Demo15 Quotas04
+
+    Action: From the menu on the left, select Resources → Quota to return to the Quota page:
+    Explore Demo15 Quotas01
+
+        Explain that the Quota page displays your quota, and that depending on the policy set by the cluster’s administrators you can have a quota set per project, group of projects, user, or none at all:
+
+            Point out that the graphics display the resources that are used by the current project or by other projects.
+
+            Point out that it is easy to spot where your quota is limiting your deployment from scaling up.
+
+            Point out that the limit ranges define the minimum and maximum constraints for container resources such as memory and CPU.
+            Explore Demo15 Quotas05
+
+5. Cleanup
+
+If you are not going do do any additional demonstrations go back to the OpenShift Homepage and delete your project.
+6. Additional Demonstrations
+
+You can do the following optional demonstrations:
+
+    Show adding storage to a container.
+
+    Show metrics and logging for a container.
+
+
+Build Version: 1.8R : Last updated 2017-08-25 12:26:46 EDT

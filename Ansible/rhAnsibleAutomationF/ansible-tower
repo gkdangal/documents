@@ -1,0 +1,11 @@
+OK- we’ve introduced the core concepts of Ansible. Now let’s talk briefly about Ansible Tower. Tower layers in control, knowledge, and delegation on top of Ansible’s simple, powerful, and agentless automation engine.
+
+Tower is a UI and API that centralizes Ansible runs, which also makes it much easier to integrate Ansible into other systems or workflows required for things like CI/CD or DevOps processes.
+
+Also, all Ansible playbook run output is captured and stored inside Tower, so you can easily audit the results including who ran what job, what systems were updated, the output of each system, and so on. It even lets you map those actions back to the LDAP or AD user that initiated the event.
+
+With delegation, Tower enables you to define precise roles and responsibilities so they can only run pre-approved automations in environments they’re supposed to have access to. You can even remove their ability to alter variables, effectively offering them a push-button console from which to launch automation jobs from—no Ansible knowledge or skills required at all.
+
+Finally, Ansible Tower can ingest and tightly control access to the credentials needed to automate various cloud APIs, or even the credentials needed to run jobs on the target systems themselves—which means you can safely automate without concern that your credentials can be exposed to users who should not have them.
+
+Once you’re up and running with Ansible, you should definitely take a look at Tower—there’s a lot of information on our site about it. It’ll help you take your automation effort to the next level.

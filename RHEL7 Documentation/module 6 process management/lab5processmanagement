@@ -1,0 +1,159 @@
+Process Management Labs
+1. Kill Processes
+
+In this lab, you use keyboard sequences and signals to manage and stop processes.
+
+    Log in as student on server1.example.com. Start in your home directory.
+
+    Open two terminal windows, side by side, to be referred to as left and right.
+
+    In the left window, start three processes that append text to an output file at one-second intervals.
+    	To properly background each process, the complete command set must be contained in parentheses and ended with an ampersand.
+
+    [student@server1 ~]$ (while true; do echo -n "game " >> ~/outfile; sleep 1; done) &
+    [student@server1 ~]$ (while true; do echo -n "set " >> ~/outfile; sleep 1; done) &
+    [student@server1 ~]$ (while true; do echo -n "match " >> ~/outfile; sleep 1; done) &
+
+    In the right window, use tail to confirm that all three processes are appending to the file.
+
+    [student@server1 ~]$ tail -f ~/outfile
+
+    In the left window, view jobs to see all three processes running.
+
+    [student@server1 ~]$ jobs
+    [1]   Running                 ( while true; do
+        echo -n "game " >> ~/outfile; sleep 1;
+    done ) &
+    [2]-  Running                 ( while true; do
+        echo -n "set " >> ~/outfile; sleep 1;
+    done ) &
+    [3]+  Running                 ( while true; do
+        echo -n "match " >> ~/outfile; sleep 1;
+    done ) &
+
+    Suspend the game process using signals.
+
+        Confirm that the game process is stopped.
+
+        In the right window, confirm that game output is no longer active.
+
+        [student@server1 ~]$ kill -SIGSTOP %number
+        [student@server1 ~]$ jobs
+
+    Terminate the set process using signals.
+
+        Confirm that the set process has disappeared.
+
+        In the right window, confirm that set output is no longer active.
+
+        [student@server1 ~]$ kill -SIGTERM %number
+        [student@server1 ~]$ jobs
+
+    Resume the game process using signals.
+
+        Confirm that the game process is running.
+
+        In the right window, confirm that game output is again active.
+
+        [student@server1 ~]$ kill -SIGCONT %number
+        [student@server1 ~]$ jobs
+
+    Terminate the remaining two jobs.
+
+        Confirm that no jobs remain and that output has stopped.
+
+        From the left window, terminate the right window’s tail command.
+
+        Close extra terminal windows.
+
+        [student@server1 ~]$ kill -SIGTERM %number
+        [student@server1 ~]$ kill -SIGTERM %number
+        [student@server1 ~]$ jobs
+        [student@server1 ~]$ pkill -SIGTERM tail
+        [student@server1 ~]$
+
+2. Discover Process Priorities
+
+In this exercise, you experience the influence that nice levels have on relative process priorities.
+
+    Log in as student on your desktop1.example.com system.
+
+    Using the special file /proc/cpuinfo, determine the number of CPU cores in your desktop1.example.com system, and then start two instances of the command sha1sum /dev/zero & for each core.
+
+        Determine the number of cores using /proc/cpuinfo.
+
+        [student@desktop1 ~]$ NCORES=$( grep -c '^processor' /proc/cpuinfo )
+
+        Either manually or with a script, start two sha1sum /dev/zero & commands for every core in your system.
+        	The seq command prints a list of numbers.
+
+        [student@desktop1 ~]$ for I in $( seq $((NCORES*2)) )
+        > do
+        >    sha1sum /dev/zero &
+        > done
+
+    Verify that you have all the background jobs running that you expected (two for every core in your system).
+
+    [student@desktop1 ~]$ jobs
+    [1]-  Running                 sha1sum /dev/zero &
+    [2]+  Running                 sha1sum /dev/zero &
+    ...
+
+    Inspect the CPU usage (as a percentage) of all your sha1sum processes, using the ps and pgrep commands.
+
+    [student@desktop1 ~]$ ps u $(pgrep sha1sum)
+
+        Notice that the CPU percentage for all sha1sum processes is about equal.
+
+    Use the killall command to terminate all your sha1sum processes.
+
+    [student@desktop1 ~]$ killall sha1sum
+
+    Start two sha1sum /dev/zero & commands for each of your cores, but give exactly one of them a nice level of 10.
+
+    [student@desktop1 ~]$ for I in $( seq $((NCORES*2-1)) )
+    > do
+    >    sha1sum /dev/zero &
+    > done
+    [student@desktop1 ~]$ nice -n10 sha1sum /dev/zero&
+
+    Using the ps command, inspect the CPU usage of your sha1sum commands. Make sure you include the nice level in your output, as well as the PID and the CPU usage.
+
+    [student@desktop1 ~]$ ps -opid,pcpu,nice,comm $(pgrep sha1sum)
+
+        Notice that the instance of sha1sum with the nice level of 10 gets significantly less CPU than the other instance(s).
+
+    Use the renice command to set the nice level of the sha1sum with a nice level of 10 down to 5. The PID should still be visible in the output of the previous step.
+
+    [student@desktop1 ~]$ renice -n 5 <PID>
+    renice:failed to set priority for <PID> (process ID): Permission denied
+
+        Did this work? Why not?
+
+            Unprivileged users are not allowed to set negative nice values or lower the nice value on an existing process.
+
+    Using the sudo and renice commands, set the nice level for the process you identified in the previous step to -10.
+
+    [student@desktop1 ~]$ sudo renice -n -10 <PID>
+
+    Start the top command as root, then use top to lower the nice level for the sha1sum process using the most CPU back down to 0. What do you observe afterwards?
+
+    [student@desktop1 ~]$ sudo top
+
+        Identify the sha1sum process using the most CPU. It will be near the top of the screen.
+
+        Press R to enter renice mode, then enter the PID you identified, or press Enter if the offered default PID is the one you want.
+
+        Enter 0, then press Enter.
+
+            All sha1sum commands are again using an (almost) equal amount of CPU.
+            	Clean up by exiting top and killing all your sha1sum processes.
+
+        Press q to exit top.
+
+        Kill all your sha1sum processes.
+
+        [student@desktop1 ~]$ killall sha1sum
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT

@@ -1,0 +1,288 @@
+Logical Volume Management Labs
+1. Add a Logical Volume
+
+In this lab, you add a physical volume, volume group, logical volume, and an XFS file system, and then persistently mount the logical volume file system.
+
+    Reset your server1.example.com system with lab-resetvm on desktop1.example.com.
+
+    Log in to server1.example.com, open a terminal, and then switch to root (su).
+
+    Create the physical resources:
+
+        Use fdisk to create two partitions of 256MiB apiece and set them to type Linux LVM.
+
+        [root@server1 ~]# fdisk /dev/vdb
+
+        	The following steps omit some output.
+
+        Add a new primary partition of 256MiB.
+
+        Command (m for help):n
+        Partition type:
+           p   primary (0 primary, 0 extended, 4 free)
+           e   extended
+        Select (default p): Enter
+        Using default response p
+        Partition number (1-4, default 1): Enter
+        First sector (2048-20971519, default 2048): Enter
+        Using default value 2048
+        Last sector, +sectors or +size{K,M,G} (2048-20971519, default 20971519):+256M
+
+        Change the partition type to Linux LVM - 0x8e.
+
+        [Command (m for help):t
+        Selected partition 1
+        Hex code (type L to list all codes):8e
+        Changed type of partition 'Linux' to 'Linux LVM'
+
+        Repeat the previous two steps to add a second primary partition of the same size in the next available partition space.
+
+        Write the changes to the partition table and quit.
+
+        Command (m for help):w
+        The partition table has been altered!
+
+        Use partprobe to register the new partitions with the kernel.
+
+        [root@server1 ~]# partprobe
+
+    Use pvcreate to add the two new partitions as PVs.
+
+    [root@server1 ~]# pvcreate /dev/vdb1 /dev/vdb2
+      Physical volume "/dev/vdb1" successfully created
+      Physical volume "/dev/vdb2" successfully created
+
+    Use vgcreate to create a new VG named shazam, built from the two PVs.
+
+    [root@server1 ~]# vgcreate shazam /dev/vdb1 /dev/vdb2
+      Volume group "shazam" successfully created
+
+    Use lvcreate to create a 400MiB LV named storage from the shazam VG.
+
+    [root@server1 ~]# lvcreate -n storage -L 400M shazam
+      Logical volume "storage" created
+
+        This creates a device called /dev/shazam/storage, currently without a file system on it.
+
+    Add a persistent file system:
+
+        Use mkfs to place an xfs file system on the storage LV, using the LV device name.
+
+        [root@server1 ~]# mkfs -t xfs /dev/shazam/storage
+        meta-data=/dev/shazam/storage    isize=256    agcount=4, agsize=25600 blks
+        ...
+
+        Use mkdir to create a mount point at /storage.
+
+        [root@server1 ~]# mkdir /storage
+
+        Use vim to add the following line to the bottom of /etc/fstab on server1.example.com.
+
+        /dev/shazam/storage    /storage    xfs  defaults  1 2
+
+        Use mount to verify the /etc/fstab entry and mount the new storage LV device.
+
+        [root@server1 ~]# mount -a
+
+    Test and review your work:
+
+        As a final test, copy some files onto /storage and verify how many were copied.
+
+        [root@server1 ~]# cp -a /etc/*.conf /storage
+        [root@server1 ~]# ls /storage | wc -l
+        47
+
+            You will check that you still have the same number of files in the next practice exercise.
+
+        Use fdisk -l /dev/vdb to display the partitions that exist on /dev/vdb.
+
+        [root@server1 ~]# fdisk -l /dev/vdb
+
+        Check the /dev/vdb1 and /dev/vdb2 entries, and notice the Id and System columns showing 8e and Linux LVM, respectively.
+
+        Use pvdisplay to display information about each of the physical volumes. Optionally, include the device name to limit details to a specific PV.
+
+        [root@server1 ~]# pvdisplay /dev/vdb2
+          --- Physical volume ---
+          PV Name               /dev/vdb2
+          VG Name               shazam
+          PV Size               256.00 MiB / not usable 4.00 MiB
+          Allocatable           yes
+          PE Size               4.00 MiB
+          Total PE              63
+          Free PE               26
+          Allocated PE          37
+          PV UUID               N64t6x-URdJ-fVU3-FQ67-zU6g-So7w-hvXMcM
+
+            This shows that your PV is allocated to VG shazam, is 256MiB in size (although 4MiB is not usable), and your physical extent size (PE Size) is 4MiB (the smallest allocatable LV size).
+
+            There are 63 PEs, of which 26 PEs are free for allocation to LVs in the future and 37 PEs are currently allocated to LVs. These translate to MiB values as follows:
+
+                Total 252MiB (63 PEs x 4MiB); remember, 4MiB are unusable.
+
+                Free 104MiB (26 PEs x 4MiB)
+
+                Allocated 148MiB (37 PEs x 4MiB)
+
+        Use vgdisplay vgname to display information about the volume group named shazam.
+
+        [root@server1 ~]# vgdisplay shazam
+
+        Check the following values:
+
+            VG Size is 504.00MiB.
+
+            Total PE is 126.
+
+            Alloc PE / Size is 100 / 400.00MiB.
+
+            Free PE / Size is 26 / 104.00MiB.
+
+        Use lvdisplay /dev/vgname/lvname to display information about the logical volume named storage.
+
+        [root@server1 ~]# lvdisplay /dev/shazam/storage
+
+        Note the LV Path, LV Name, VG Name, LV Status, LV Size, and Current LE (logical extents, which map to physical extents).
+
+        Use mount to display all the devices that are mounted and any mount options. It should include /dev/shazam/storage.
+        	Many tools report the device mapper name instead, /dev/mapper/shazam-storage; it is the same logical volume.
+
+        [root@server1 ~]# mount
+
+        Verify that /dev/mapper/shazam-storage is mounted on /storage and note the associated mount information.
+
+        Use df -h to display human-readable free disk space. Optionally, include the mount point to limit details to that file system.
+
+        [root@server1 ~]# df -h /storage
+        Filesystem                  Size  Used Avail Use% Mounted on
+        /dev/mapper/shazam-storage  397M   21M  377M   6% /storage
+
+            Allowing for file system metadata, these values are in the expected range.
+
+2. Extend a Logical Volume
+
+In this lab, you extend the logical volume added in the previous practice exercise.
+	The following examples use device vdb. Your environment may have different device names. Adjust the device name as necessary in each step.
+
+    Use vgdisplay to check if the VG has sufficient free space to extend the LV to a total size of 700MiB.
+
+    [root@server1 ~]# vgdisplay shazam
+      --- Volume group ---
+      VG Name               shazam
+      System ID
+      Format                lvm2
+    ...
+      VG Size               504.00 MiB
+      PE Size               4.00 MiB
+      Total PE              126
+      Alloc PE / Size       100 / 400.00 MiB
+      Free  PE / Size       26 / 104.00 MiB
+      VG UUID               OBBAtU-2nBS-4SW1-khmF-yJzi-z7bD-DpCrAV
+
+        There is only 104MiB available (26 PEs x 4MiB extents) and we need at least 300MiB to have 700MiB in total. We need to extend the VG.
+
+    For later comparison, use df to check current disk free space:
+
+    [root@server1 ~]# df -h /storage
+    Filesystem                  Size  Used Avail Use% Mounted on
+    /dev/mapper/shazam-storage  397M   21M  377M   6% /storage
+
+    Create the physical resources:
+
+        Use fdisk to create an additional partition of 512MiB and set it to type Linux LVM.
+
+        [root@server1 ~]# fdisk /dev/vdb
+
+        	The following steps omit some output.
+
+        Add a new primary partition of 512MiB.
+
+        Command (m for help): n
+        Partition type:
+           p   primary (2 primary, 0 extended, 2 free)
+           e   extended
+        Select (default p): Enter
+        Using default response p
+        Partition number (3,4, default 3): Enter
+        First sector (1050624-20971519, default 1050624): Enter
+        Using default value 1050624
+        Last sector, +sectors or +size{K,M,G} (1050624-20971519, default 20971519): +512M
+        Partition 3 of type Linux and of size 512 MiB is set
+
+        Change the partition type to Linux LVM - 0x8e.
+
+        Command (m for help): t
+        Partition number (1-3, default 3): Enter
+        Hex code (type L to list all codes): 8e
+        Changed type of partition 'Linux' to 'Linux LVM'
+
+        Write the changes to the partition table and quit.
+
+        Command (m for help): w
+        The partition table has been altered!
+
+        Use partprobe to register the new partitions with the kernel.
+
+        [root@server1 ~]# partprobe
+
+    Use pvcreate to add the new partition as a PV.
+
+    [root@server1 ~]# pvcreate /dev/vdb3
+      Physical volume "/dev/vdb3" successfully created
+
+    Use vgextend to extend the VG named shazam, using the new /dev/vdb3 PV.
+
+    [root@server1 ~]# vgextend shazam /dev/vdb3
+      Volume group "shazam" successfully extended
+
+    Use vgdisplay to check the shazam VG free space again. There should be plenty of free space now.
+
+    [root@server1 ~]# vgdisplay shazam
+      --- Volume group ---
+      VG Name               shazam
+      System ID
+      Format                lvm2
+    ...
+      VG Size               1012.00 MiB
+      PE Size               4.00 MiB
+      Total PE              253
+      Alloc PE / Size       100 / 400.00 MiB
+      Free  PE / Size       153 / 612.00 MiB
+      VG UUID               OBBAtU-2nBS-4SW1-khmF-yJzi-z7bD-DpCrAV
+
+        Available space is now 612MiB (153 PEs x 4MiB extents); perfect.
+
+    Use lvextend to extend the existing LV to 700MiB.
+
+    [root@server1 ~]# lvextend -L 700M /dev/shazam/storage
+      Extending logical volume storage to 700.00 MiB
+      Logical volume storage successfully resized
+
+    	
+
+    In our example, we specified the exact size to make the final LV, but we could also have used:
+
+        -L +300M to add the new space using size in MiB.
+
+        -l 175 to specify the total number of extents (175 PEs x 4MiB).
+
+        -l +75 to add the additional extents needed.
+
+    Use xfs_growfs to extend the XFS file system to the remainder of the free space on the LV.
+
+    [root@server1 ~]# xfs_growfs /storage
+    meta-data=/dev/mapper/shazamstorage  isize=256    agcount=4, agsize=25600 blks
+    ...
+
+    Use df and ls | wc to review the new file system size and verify the existing files are still present.
+
+    [root@server1 ~]# df -h /storage
+    Filesystem                  Size  Used Avail Use% Mounted on
+    /dev/mapper/shazam-storage  684M   21M  663M   6% /storage
+    [root@server1 ~]# ls /storage | wc -l
+    47
+
+        The files are still there and the file system is about the expected size.
+
+
+Build Version: 1.7.7R : Last updated 2017-08-07 09:29:44 EDT
