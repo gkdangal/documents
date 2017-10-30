@@ -645,7 +645,90 @@ localhost | SUCCESS => {
         "exists": false
     }
 }
+---------------------------------------------
+copy files
+
+[vagrant@mgmt ~]$ ansible web4 -b -m copy -a "src=files/test dest=/etc/govinda"
+web4 | SUCCESS => {
+    "changed": true, 
 [vagrant@mgmt ~]$
+---------------------------------------------
+Retrieve a file from the servers
+$ ansible multi -b -m fetch -a "src=/etc/hosts dest=/tmp"
+
+------------------------------------
+Creating directory on remote server
+
+[vagrant@mgmt ~]$ ansible all -m file -a "dest=/tmp/govinda mode=644 state=directory"
+web2 | SUCCESS => {
+    "changed": true, 
+    "failed": false, 
+    "gid": 1000, 
+    "group": "vagrant", 
+    "mode": "0644", 
+    "owner": "vagrant", 
+    "path": "/tmp/govinda", 
+    "secontext": "unconfined_u:object_r:user_tmp_t:s0", 
+    "size": 6, 
+    "state": "directory", 
+    "uid": 1000
+}
+____________________
+creating a syslink 
+ansible all -b -m copy -a "src=files/test dest=/home/vagrant/govinda"
+
+Here’s how to create a directory:
+$ ansible multi -m file -a "dest=/tmp/test mode=644 state=directory"
+
+Here’s how to create a symlink (set state=link ):
+
+$ ansible multi -m file -a "src=/src/symlink dest=/dest/symlink \
+owner=root group=root state=link"
+-----------------------
+Check log files
+$ansible multi -b -a "tail /var/log/messages"
+----------------------------------
+[vagrant@mgmt ~]$ ansible all -b -m shell -a "tail /var/log/messages | grep ansible-command | wc -l"
+web1 | SUCCESS | rc=0 >>
+1
+
+web4 | SUCCESS | rc=0 >>
+1
+
+web3 | SUCCESS | rc=0 >>
+1
+
+lb | SUCCESS | rc=0 >>
+1
+
+web2 | SUCCESS | rc=0 >>
+1
+
+localhost | SUCCESS | rc=0 >>
+1
+----------------------------------------
+Manage cron jobs
+
+$ ansible multi -b -m cron -a "name='daily-cron-all-servers' \
+hour=4 job='/path/to/daily-script.sh'"
+
+Deploy a version-controlled application
+
+$ ansible app -b -m git -a "repo=git://example.com/path/to/repo.git \
+dest=/opt/myapp update=yes version=1.2.4"
+--------------------------
+ansible package -b -m yum -a "name=git state=present"
+
+If you get a message saying the Git server has an “unknown hostkey”, add
+the option accept_hostkey=yes to the command, or add the hostkey to
+your server’s known_hosts file before running this command.
+
+$ ansible app -b -a "/opt/myapp/update.sh"
+------------------------------------------------
+$ ansible app -b -a "/opt/myapp/update.sh"
+
+
+
 
 
 
