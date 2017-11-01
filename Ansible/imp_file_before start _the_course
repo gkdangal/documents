@@ -1,0 +1,43 @@
+Book-example-from github
+https://github.com/geerlingguy/ansible-for-devops
+
+$ ssh-agent bash
+$ ssh-add ~/.ssh/id_rsa
+
+After this you dont have to specify the private key during ssh login.
+=> in this example all server will be shut-down simultaneously.
+-----------------------------------------------------
+Now to run the command on all servers in a group, in this case, atlanta, in 10 parallel forks:
+
+$ansible atlanta -a "/sbin/reboot" -f 10
+
+with passing username
+$ ansible atlanta -a "/usr/bin/foo" -u username
+with asking password
+$ ansible atlanta -a "/usr/bin/foo" -u username --become [--ask-become-pass]
+OR
+$ ansible atlanta -a "/usr/bin/foo" -u username --become -k
+
+It is also possible to become a user other than root using --become-user:
+$ ansible atlanta -a "/usr/bin/foo" -u username --become-user otheruser [--ask-become-pass]
+
+The file module allows changing ownership and permissions on files. These same options can be passed directly to the copy module as well:
+
+$ ansible webservers -m file -a "dest=/srv/foo/a.txt mode=600"
+$ ansible webservers -m file -a "dest=/srv/foo/b.txt mode=600 owner=mdehaan group=mdehaan"
+Ensure a package is at the latest version:
+$ ansible webservers -m yum -a "name=acme state=latest"
+-------------------------------------------------
+Ensure a package is installed to a specific version:
+$ ansible webservers -m yum -a "name=acme-1.5 state=present"
+----------------------------------
+
+
+
+
+
+
+
+
+
+

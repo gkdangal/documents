@@ -1,0 +1,29 @@
+---
+- hosts: web1
+  vars:
+    # Vars can also be passed in via CLI with `--extra-vars="name=value"`.
+    node_apps_location: /usr/local/opt/node
+  tasks:
+  - name: install Remi repo
+	yum :name: epel-release state=present
+  - name: Ensure firewalld is stopped (Since this is for testing)
+    service: name=firewalld state=stopped
+  - name: Install node.js and npn
+    yum: name=npn state=present enablerepo=epel
+  - name: install forever to run our node.js app
+    npm: name=foreever globel=yes state=present
+  - name: Ensure Node.js app folder exists.
+    file: "path={{ node_apps_location }} state=directory"
+  - name: copy example node.js app to server.
+    copy: "src=app dest={{ node_apps_location }}"
+		
+  - name: Install app dependencies define in package.json.
+    npn: path={{ node_apps_location }}/app
+	
+  - name: Starrt example Node.js App.
+    command: "forever start {{ node_apps_location }}/app/app.js"
+    when: "forever_list_stdout.find(node_apps_location + '/app/app.js') == -1"
+		
+	
+
+	

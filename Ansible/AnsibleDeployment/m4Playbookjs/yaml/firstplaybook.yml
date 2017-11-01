@@ -1,0 +1,23 @@
+---
+  host: web1
+  become: yes
+  
+  tasks:
+   -  name: install apache server on host web1
+      yum: name={ { item } } state=present
+	    with_items
+	    - httpd
+	    - httpd-devel
+	 
+    - name: Copy configuration files to destination
+      copy:
+	    src: {{ src.item }}
+	    dest: {{ dest:item }}
+	    with_items
+	    - src: "httpd.conf"
+	      dest: "/etc/httpd/conf/httpd.conf"
+	    - src: "httpd-vhost.conf"
+	      dest: "/etc/httpd/conf/httpd.conf"
+   -  name: starting apache after boot
+      service: name=httpd state=started enabled=yes
+	 
