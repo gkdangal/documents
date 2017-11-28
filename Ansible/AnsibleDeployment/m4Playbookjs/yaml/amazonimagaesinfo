@@ -1,0 +1,18 @@
+mapr-master/opt
+us-estd
+master
+
+Volume ID
+vol-0382c262386b85828
+
+
+CentOS 6.8 (HVM)
+CentOS-6.8-clean - ami-6351e675
+centos-6.9-plain-x86_64-170424_16-disk1-a4bfbd91-d597-4c71-96ac-eeb7c636bd1e-ami-bd3ca7ab.4 - ami-0e98fc18
+
+CentOS 6.8 (HVM) - ami-8f961098
+The official CentOS 6.8 with minimal profile for use in HVM instance types only. The image contain only defaults softwares of the instalation CentOS Official and SELinux is disabled on startup.
+Root device type: ebs Virtualization type: hvm ENA Enabled: No
+
+
+

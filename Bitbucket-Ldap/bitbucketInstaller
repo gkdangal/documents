@@ -1,0 +1,26 @@
+yum install mariadb-server
+systemctl start mysql
+systemctl enable mysql
+mysql -u root -p 
+
+MariaDB [(none)]> create database bitbucket;
+Query OK, 1 row affected (0.05 sec)
+
+MariaDB [(none)]> CREATE USER 'bitbucket'@'localhost' IDENTIFIED BY 'redhat';
+Query OK, 0 rows affected (0.11 sec)
+
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON * . * TO 'bitbucket'@'localhost';
+Query OK, 0 rows affected (0.03 sec)
+
+MariaDB [(none)]> 
+MariaDB [(none)]> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0.03 sec)
+
+###############################
+# mkdir /opt/bitbucket 
+# cd /opt/download
+[root@test2 download]# wget https://www.atlassian.com/software/stash/downloads/binary/atlassian-bitbucket-5.5.2-x64.bin
+
+
+
+

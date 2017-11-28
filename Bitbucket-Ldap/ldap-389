@@ -1,0 +1,49 @@
+
+[root@test2 ~]# setup-ds-admin.pl
+
+==============================================================================
+This program will set up the 389 Directory and Administration Servers.
+
+It is recommended that you have "root" privilege to set up the software.
+Tips for using this program:
+  - Press "Enter" to choose the default and go to the next screen
+  - Type "Control-B" then "Enter" to go back to the previous screen
+  - Type "Control-C" to cancel the setup program
+
+Would you like to continue with set up? [yes]: yes
+
+==============================================================================
+Your system has been scanned for potential problems, missing patches,
+etc.  The following output is a report of the items found that need to
+be addressed before running this software in a production
+environment.
+
+389 Directory Server system tuning analysis version 14-JULY-2016.
+
+NOTICE : System is x86_64-unknown-linux3.10.0-693.2.1.el7.x86_64 (1 processor).
+
+WARNING: There are only 1024 file descriptors (soft limit) available, which
+limit the number of simultaneous connections.  
+
+WARNING  : The warning messages above should be reviewed before proceeding.
+
+Would you like to continue? [no]: yes
+
+==============================================================================
+Choose a setup type:
+
+   1. Express
+       Allows you to quickly set up the servers using the most
+       common options and pre-defined defaults. Useful for quick
+       evaluation of the products.
+
+   2. Typical
+       Allows you to specify common defaults and options.
+
+   3. Custom
+       Allows you to specify more advanced options. This is 
+       recommended for experienced server administrators only.
+
+To accept the default shown in brackets, press the Enter key.
+
+Choose a setup type [2]: 

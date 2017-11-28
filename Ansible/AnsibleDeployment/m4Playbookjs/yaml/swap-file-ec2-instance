@@ -1,0 +1,58 @@
+2  wget -O ./installer_linux.py https://console.cloudendure.com/installer_linux.py
+    3  sudo python ./installer_linux.py -t 2574-FAC0-E3EC-4D42-4943-BB3E-53A0-F2C9-4131-1660-2280-04EF-88BE-1A64-8BA1-3B74
+    4  ls -l
+    5  pwd
+    6  ls -l
+    7  history
+
+
+
+[root@ip-172-31-13-43 ~]# /bin/dd if=/dev/zero of=/mnt/swapfile bs=1M count=6144
+6144+0 records in
+6144+0 records out
+6442450944 bytes (6.4 GB) copied, 95.9291 s, 67.2 MB/s
+[root@ip-172-31-13-43 ~]# 
+
+[root@ip-172-31-13-43 ~]# /bin/dd if=/dev/zero of=/mnt/swapfile bs=1M count=6144
+6144+0 records in
+6144+0 records out
+6442450944 bytes (6.4 GB) copied, 95.9291 s, 67.2 MB/s
+
+[root@ip-172-31-13-43 ~]# chown root:root /mnt/swapfile
+chown root:root /swapfile 
+
+[root@ip-172-31-13-43 ~]# chmod 600 /mnt/swapfile
+chmod 600 /swapfile
+
+[root@ip-172-31-13-43 ~]# mkswap /mnt/swapfile
+Setting up swapspace version 1, size = 6291452 KiB
+no label, UUID=e0994a37-3087-417f-8689-fb89682c1309
+
+[root@ip-172-31-13-43 ~]# swapon /mnt/swapfile
+[root@ip-172-31-13-43 ~]# swapon /swapfil
+-------------------
+[root@ip-172-31-13-43 ~]# vim /etc/fstab
+/mnt/swapfile           swap    swap    default 0       0
+
+------------
+[root@ip-172-31-13-43 ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:           7565         122         656          16        6786        7116
+Swap:          6143           0        6143
+[root@ip-172-31-13-43 ~]# 
+-------------------------------
+[root@ip-172-31-8-131 ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:           7565         121         657          16        6786        7117
+Swap:          6143           0        6143
+[root@ip-172-31-8-131 ~]# 
+--------------------------------------
+[root@ip-172-31-9-86 ~]# free -m
+              total        used        free      shared  buff/cache   available
+Mem:           7565         120         655          16        6790        7118
+Swap:          6143           0        6143
+[root@ip-172-31-9-86 ~]# 
+
+
+
+

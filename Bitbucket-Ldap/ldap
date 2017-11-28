@@ -1,0 +1,280 @@
+##Installing ldap packages.
+#yum -y install openldap compat-openldap openldap-clients openldap-servers openldap-servers-sql openldap-devel
+Ldap root password
+[root@test2 ~]# slappasswd
+New password: redhat
+Re-enter new password: redhat
+{SSHA}y17hECk55niS8BkzC817cGMLkUHxmVQt
+[root@test2 ~]# 
+[root@test2 ~]# slappasswd
+New password: 
+Re-enter new password: 
+{SSHA}e4ZV34vxu4q5QjqKTLLjA7JmBF1/Qf3B
+[root@test2 ~]# 
+########################
+[root@test2 cn=config]# pwd
+/etc/openldap/slapd.d/cn=config
+[root@test2 cn=config]# ls -l
+total 20
+drwxr-x---. 2 ldap ldap  29 Nov 28 15:55 cn=schema
+-rw-------. 1 ldap ldap 378 Nov 28 15:55 cn=schema.ldif
+-rw-------. 1 ldap ldap 513 Nov 28 15:55 olcDatabase={0}config.ldif
+-rw-------. 1 ldap ldap 443 Nov 28 15:55 olcDatabase={-1}frontend.ldif
+-rw-------. 1 ldap ldap 562 Nov 28 15:55 olcDatabase={1}monitor.ldif
+-rw-------. 1 ldap ldap 653 Nov 28 16:10 olcDatabase={2}hdb.ldif
+
+----------------------------
+[root@test2 cn=config]# vim olcDatabase\=\{2\}hdb.ldif
+
+# AUTO-GENERATED FILE - DO NOT EDIT!! Use ldapmodify.
+# CRC32 53c5fdd2
+dn: olcDatabase={2}hdb
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+olcDatabase: {2}hdb
+olcDbDirectory: /var/lib/ldap
+olcSuffix: dc=example,dc=com
+olcDbIndex: objectClass eq,pres
+olcDbIndex: ou,cn,mail,surname,givenname eq,pres,sub
+structuralObjectClass: olcHdbConfig
+entryUUID: 5f3f98b0-68a0-1037-97c5-13ffd7b81a58
+creatorsName: cn=config
+createTimestamp: 20171128155559Z
+olcRootDN: cn=ldapadm,dc=example,dc=com
+entryCSN: 20171128161017.547947Z#000000#000#000000
+modifiersName: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+modifyTimestamp: 20171128161017Z
+#########################################
+
+
+
+
+
+---------------------------------
+[root@test2 ~]#  cd /etc/openldap/slapd.d/
+--------------------------
+[root@test2 slapd.d]# vim db.ldif
+angetype: modify
+replace: olcSuffix
+olcSuffix: dc=example,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=ldapadm,dc=example,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}y17hECk55niS8BkzC817cGMLkUHxmVQt
+---------------------------------------------
+[root@test2 cn=config]# vim olcDatabase\=\{1\}monitor.ldif 
+# AUTO-GENERATED FILE - DO NOT EDIT!! Use ldapmodify.
+# CRC32 3eb40121
+dn: olcDatabase={1}monitor
+objectClass: olcDatabaseConfig
+olcDatabase: {1}monitor
+olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=extern
+ al,cn=auth" read by dn.base="cn=ldapadm,dc=example,dc=com" read by * none
+structuralObjectClass: olcDatabaseConfig
+entryUUID: 5f3f8582-68a0-1037-97c4-13ffd7b81a58
+creatorsName: cn=config
+createTimestamp: 20171128155559Z
+entryCSN: 20171128155559.614055Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20171128155559Z
+~                                
+######################################
+to check configuration
+Ignore checksum error see config file testing succeeded...
+
+[root@test2 cn=config]# slaptest -u
+5a1da56e ldif_read_file: checksum error on "/etc/openldap/slapd.d/cn=config/olcDatabase={1}monitor.ldif"
+5a1da56e ldif_read_file: checksum error on "/etc/openldap/slapd.d/cn=config/olcDatabase={2}hdb.ldif"
+config file testing succeeded
+[root@test2 cn=config]# 
+###########################################
+start and enable slapd ldap server
+[root@test2 cn=config]# systemctl start slapd
+[root@test2 cn=config]# systemctl enable slapd
+Created symlink from /etc/systemd/system/multi-user.target.wants/slapd.service to /usr/lib/systemd/system/slapd.service.
+[root@test2 cn=config]# 
+#########################
+Configure Database for Ldap
+
+Copy sample ldap-db file to this location
+[root@test2 cn=config]# cp -rf /usr/share/openldap-servers/DB_CONFIG.example /ar/lib/ldap/DB_CONFIG
+-----------------------
+Adding ldap pre define schema for ldap
+[root@test2 cn=config]# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=cosine,cn=schema,cn=config"
+
+[root@test2 cn=config]# 
+---------------------
+adding nis schema
+[root@test2 cn=config]# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=nis,cn=schema,cn=config"
+
+[root@test2 cn=config]# 
+--------------------------------
+another schema
+[root@test2 cn=config]# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif 
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=inetorgperson,cn=schema,cn=config"
+
+[root@test2 cn=config]# 
+--------------------------------
+##############################################
+creating ssl certificate for ldap server
+[root@test2 cn=config]# openssl req -new -x509 -nodes -out /etc/pki/tls//certs/exampleldapcert.pem -keyout /etc/pki/tls/certs/exampleldapkey.pem -days 365
+Generating a 2048 bit RSA private key
+...........................+++
+...................+++
+writing new private key to '/etc/pki/tls/certs/exampleldapkey.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:US
+State or Province Name (full name) []:Ga
+Locality Name (eg, city) [Default City]:Alpharetta
+Organization Name (eg, company) [Default Company Ltd]:IT
+Organizational Unit Name (eg, section) []:Devops
+Common Name (eg, your name or your server's hostname) []:test2.example.com
+Email Address []:root@example.com
+[root@test2 cn=config]# ls -l /etc/pk
+pkcs11/ pki/    
+[root@test2 cn=config]# ls -l /etc/pki/tls/cert/
+ls: cannot access /etc/pki/tls/cert/: No such file or directory
+[root@test2 cn=config]# ls -l /etc/pki/tls/certs/
+total 20
+lrwxrwxrwx. 1 root root   49 Sep 11 18:35 ca-bundle.crt -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+lrwxrwxrwx. 1 root root   55 Sep 11 18:35 ca-bundle.trust.crt -> /etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt
+-rw-r--r--. 1 root root 1415 Nov 28 18:29 exampleldapcert.pem
+-rw-r--r--. 1 root root 1704 Nov 28 18:29 exampleldapkey.pem
+-rwxr-xr-x. 1 root root  610 Aug  4 06:41 make-dummy-cert
+-rw-r--r--. 1 root root 2516 Aug  4 06:41 Makefile
+-rwxr-xr-x. 1 root root  829 Aug  4 06:41 renew-dummy-cert
+[root@test2 cn=config]#
+#################################################
+Base object in OpenLDAp
+For base object we need migrationtool we already install migration tool.
+[root@test2 migrationtools]# pwd
+/usr/share/migrationtools
+[root@test2 migrationtools]# 
+
+[root@test2 migrationtools]# vim migrate_common.ph
+
+At line number 71 and 74 and line number 90
+ # Default DNS domain
+ 71 $DEFAULT_MAIL_DOMAIN = "example.com";
+ 72 
+ 73 # Default base 
+ 74 $DEFAULT_BASE = "dc=example,dc=com";
+ 
+ 90  $EXTENDED_SCHEMA = 1;
+#########################################
+Creating base ldif files. This is a temporary file. 
+Do nott make mistake ldap is case sensative so if you put extra space it will create problem on authentication
+[root@test2 migrationtools]# vim /root/base.ldif
+dn: dc=example,dc=com
+bjectClass: top
+objectClass: dcObject
+objectClass: organization
+dc: example
+
+dn: cn=ldapadm,dc=example,dc=com
+objectClass: organizationalRole
+cn: ldapadm
+description: LDAP Manager
+
+dn: ou=People,dc=example,dc=com
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,dc=example,dc=com
+objectClass: organizationalUnit
+ou: Group
+#########################################
+filtering valid Linux User and saving on /root/passwd
+[root@test2 migrationtools]# grep ":10[0-9][0-9]" /etc/passwd >/root/passwd
+Similar to Group to..
+[root@test2 migrationtools]# grep ":10[0-9][0-9]" /etc/group >/root/group
+[root@test2 migrationtools]# 
+-----------------------------------------
+###################################
+Converting these individaul formate to ldif(Ldap data Interchange formate) formate /root/*
+[root@test2 migrationtools]# pwd
+/usr/share/migrationtools
+[root@test2 migrationtools]# ./migrate_passwd.pl /root/passwd /root/user.ldif
+####################################################################
+[root@test1 migrationtools]# ldapadd -x -W -D "cn=Manager,dc=example,dc=com" -f /root/base.ldif
+Enter LDAP Password: 
+adding new entry "dc=example,dc=com"
+
+adding new entry "cn=Manager ,dc=example,dc=com"
+
+adding new entry "ou=People,dc=example,dc=com"
+
+adding new entry "ou=Group,dc=example,dc=com"
+
+[root@test1 migrationtools]# 
+#####################
+again adding user to ldap
+
+[root@test1 migrationtools]# ldapadd -x -W -D "cn=Manager,dc=example,dc=com" -f /root/user.ldif
+Enter LDAP Password: 
+adding new entry "uid=vagrant,ou=People,dc=example,dc=com"
+
+adding new entry "uid=user1,ou=People,dc=example,dc=com"
+
+adding new entry "uid=user2,ou=People,dc=example,dc=com"
+
+adding new entry "uid=user3,ou=People,dc=example,dc=com"
+
+[root@test1 migrationtools]# 
+###
+Again similarly add group to Ldap server.
+
+#####################
+testing Ldap test from server
+
+ ldapsearch -x cn=user2 -b dc=example dc=com
+
+++++++++++++++++++++++++++++++++++
+Testing Ldap server from Client Machine...
+[root@test2 cn=config]# yum install nss-pam-ldapd openldap-client
+[root@test2 ~]# authconfig-tui
+
+[root@test2 ~]# getent passwd user1
+user1:x:1001:1001:user1:/home/user1:/bin/bash
+[root@test2 ~]# getent passwd user2
+user2:x:1002:1002:user2:/home/user2:/bin/bash
+[root@test2 ~]# getent passwd user3
+user3:x:1003:1003:user3:/home/user3:/bin/bash
+[root@test2 ~]# getent passwd vagrant
+vagrant:x:1000:1000:vagrant:/home/vagrant:/bin/bash
+[root@test2 ~]# su - user1
+Last login: Tue Nov 28 16:32:14 UTC 2017 on pts/1
+su: warning: cannot change directory to /home/user1: No such file or directory
+-bash-4.2$
+--------------------------
+Creating home directory for ldap users
+
+
+
+
+
+

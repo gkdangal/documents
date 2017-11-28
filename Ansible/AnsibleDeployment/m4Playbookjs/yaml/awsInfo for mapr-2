@@ -1,0 +1,51 @@
+yum search mapr
+yum remove -y mapr-installer.noarch
+-----------------------------
+LDAP password for root
+[root@mgmt ~]# slappasswd
+New password: 
+Re-enter new password: 
+{SSHA}aI/Odu82GXRoSPfV9HuVEg6psxh9O0y5
+[root@mgmt ~]# 
+-----------------------------
+
+
+
+
+Map-r_master
+master internal DNs
+ip-172-31-14-75.ec2.internal
+172.31.14.75
+
+Slave Internal Dns
+ip-172-31-5-157.ec2.internal
+172.31.5.157
+ip-172-31-1-142.ec2.internal
+172.31.1.142
+
+master
+-------------
+Public DNS (IPv4)
+ec2-34-207-110-189.compute-1.amazonaws.com
+
+IPv4 Public IP
+34.207.110.189
+
+Slave1
+Public DNS (IPv4)
+ec2-52-23-214-12.compute-1.amazonaws.com
+	
+IPv4 Public IP
+52.23.214.12
+
+Slave2
+------------------
+Public DNS (IPv4)
+ec2-34-229-152-227.compute-1.amazonaws.com
+	
+IPv4 Public IP
+34.229.152.227
+
+mapr- user
+mapr-passwd
+

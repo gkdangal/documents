@@ -1,0 +1,4 @@
+###Normalyy if you install git on centos 7 there is 1.8 version which is depricated so you have to install latest git
+###following command helps you to install git 2.14 version.
+
+#rpm -U http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm     && yum install -y git

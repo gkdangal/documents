@@ -1,0 +1,48 @@
+1. crate account on endure
+2. Crate account on GC and manage firwall
+3. crate account on AZUre
+create a viryual instance on azure which we are going to migrate to GC
+Manage firewall inbout and outbound rule on azure, So that wen can access application hosted on 
+Azure can access from out side(for testing purpose i am ceating apache web server on Azure with Centos 7)
+
+Now we are using cloudEndure to migrate virtual instance from Azure to GC
+1. Create a project on Cloudendure( for example: i ma creating a project intoGC)
+2. Select a project type
+there are two type of project Migration or Data Recovery
+3. Again we have to slect target Cloud(where our virtual instances is migrated)
+for example i ma selecting GCP and Contunue...
+4.for GC 
+4a. Put Google Cloud platform Project ID( For example::   migrationtest-185219 => this is my test google cloud platform Project id)
+4b. put Google cloud Platform JSON private key Key.(it is json file you have to download from google cloud for example::migrationtest-2c4ef1272df8.json)
+4c save it
+5. you can see migration target.
+you have to select live migration target(like Google eastUs,....) I am selecting google eastUs here ...
+Please do not forgot this step.
+5.a. you have to selcet your subnet(if you forget to select subnet then cloudendure create its own subnet which can not accessible from out side)
+here i am selecting default subnet becase i already manage firewall rules.
+6. save the replication setting.... after doing this step you will see one popUp window with message
+"""Project setup complete
+
+Congratulations!
+
+Your Live Migration Project is set up.
+
+The next step is to install the CloudEndure Agent on your Source machine.
+"""
+7. Please select show me how button on pup up window..
+7.a you will see cloud endure agaent installation token...
+7. b If you are migrating linux/unix machines or windows machine ....  
+8. I am migrating linux machine so i dont have to downloads windows installaer files.
+8.a download installaer files sinf wget (some time there will not be wget package on minimal linux installation first install wget package and run wget command to dowload python installer script)
+for example centos/fedora/redhat/ubuntu/min/and othre linux hre is command
+
+wget -O ./installer_linux.py https://console.cloudendure.com/installer_linux.py
+9. Run installer_linux.py with cloudEndure token... example here
+sudo python ./installer_linux.py -t E34E-BD62-3989-4D1F-ED4A-75D7-66BB-DC99-1A6E-F3BD-C84D-AD3C-B10E-8FC1-BE4E-4B22
+10. before running script you have to check there is kernel-devel package is installed or not and do not forgot to check 
+virsion of kernel. Some time you will got the problem because of kernel virsion 
+11. after this step... replicationtake place
+you can see the progress bar on cloudendure...
+12. after finish replication you can deploy your replica on gc...
+
+
